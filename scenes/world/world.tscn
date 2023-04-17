@@ -1,0 +1,15 @@
+[gd_scene load_steps=4 format=3 uid="uid://ctfy82xfjs772"]
+
+[ext_resource type="Script" path="res://scenes/world/world.gd" id="1_p63h6"]
+[ext_resource type="Script" path="res://addons/Obblk_TAPI4G/nodes/ot4g_oauth.gd" id="2_4i84v"]
+[ext_resource type="Script" path="res://addons/Obblk_TAPI4G/nodes/ot4g_irc.gd" id="3_mur0n"]
+
+[node name="World" type="Node2D"]
+script = ExtResource("1_p63h6")
+
+[node name="OT4G_OAuth" type="Node" parent="."]
+script = ExtResource("2_4i84v")
+
+[node name="OT4G_IRC" type="Node" parent="OT4G_OAuth"]
+script = ExtResource("3_mur0n")
+initial_channel = "obsidianblk"
