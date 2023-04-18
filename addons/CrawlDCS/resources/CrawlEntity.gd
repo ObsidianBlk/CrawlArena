@@ -8,6 +8,7 @@ signal name_changed(new_name)
 signal position_changed(from, to)
 signal facing_changed(from, to)
 
+signal assigned_to_map()
 signal removed_from_map()
 
 signal meta_value_changed(key)
@@ -81,6 +82,8 @@ func _SetMap(map : CrawlMap) -> void:
 	_mapref = weakref(map)
 	if _mapref.get_ref() == null:
 		removed_from_map.emit()
+	else:
+		assigned_to_map.emit()
 
 func _DirectionNameToFacing(dir : StringName) -> Crawl.SURFACE:
 	var d_facing : Crawl.SURFACE = Crawl.SURFACE.Ground
