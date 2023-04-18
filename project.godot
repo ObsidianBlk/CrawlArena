@@ -15,6 +15,12 @@ run/main_scene="res://scenes/world/world.tscn"
 config/features=PackedStringArray("4.0", "Mobile")
 config/icon="res://icon.svg"
 
+[autoload]
+
+DSV="*res://addons/CrawlDCS/autoloads/DSV.gd"
+UUID="*res://addons/CrawlDCS/autoloads/UUID.gd"
+Crawl="*res://addons/CrawlDCS/autoloads/Crawl.gd"
+
 [display]
 
 window/size/viewport_width=1920
@@ -23,7 +29,7 @@ window/stretch/mode="viewport"
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/Obblk_TAPI4G/plugin.cfg")
+enabled=PackedStringArray("res://addons/Obblk_TAPI4G/plugin.cfg", "res://addons/CrawlDCS/plugin.cfg")
 
 [rendering]
 
