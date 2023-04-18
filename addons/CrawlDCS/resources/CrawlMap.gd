@@ -53,7 +53,6 @@ var _world_env : StringName = &""
 var _resources : Dictionary = {}
 var _grid : Dictionary = {}
 var _entities : Dictionary = {}
-var _focus_entity_uuid : StringName = &""
 
 # ------------------------------------------------------------------------------
 # Variables
@@ -68,8 +67,6 @@ var _default_surface : Dictionary = {
 	Crawl.SURFACE.East: 0,
 	Crawl.SURFACE.West: 0
 }
-
-var _focus_entity_override_uuid : StringName = &""
 
 # ------------------------------------------------------------------------------
 # Override Methods
@@ -357,8 +354,6 @@ func add_entity(entity : CrawlEntity) -> void:
 
 func remove_entity(entity : CrawlEntity) -> void:
 	if not entity.uuid in _entities: return
-	if entity.uuid == _focus_entity_uuid:
-		clear_focus_entity()
 	_entities.erase(entity.uuid)
 	entity._SetMap(null)
 	entity_removed.emit(entity)
@@ -415,47 +410,6 @@ func clear_entities_outside_map() -> void:
 				removal.append(entity)
 	for entity in removal:
 		remove_entity(entity)
-
-func clear_focus_entity() -> void:
-	if _focus_entity_uuid != &"":
-		var ent : CrawlEntity = _entities[_focus_entity_uuid]
-		if ent.position_changed.is_connected(_on_focus_entity_position_changed):
-			ent.position_changed.disconnect(_on_focus_entity_position_changed)
-		if ent.facing_changed.is_connected(_on_focus_entity_facing_changed):
-			ent.facing_changed.disconnect(_on_focus_entity_facing_changed)
-		_focus_entity_uuid = &""
-		focus_position_changed.emit(Vector3i.ZERO)
-
-func set_entity_as_focus(entity : CrawlEntity) -> void:
-	set_entity_uuid_as_focus(entity.uuid)
-
-func set_entity_uuid_as_focus(uuid : StringName) -> void:
-	if not uuid in _entities: return
-	if uuid == _focus_entity_uuid: return
-	
-	clear_focus_entity()
-	_focus_entity_uuid = uuid
-	var ent : CrawlEntity = _entities[uuid]
-	if not ent.position_changed.is_connected(_on_focus_entity_position_changed):
-		ent.position_changed.connect(_on_focus_entity_position_changed)
-	if not ent.facing_changed.is_connected(_on_focus_entity_facing_changed):
-		ent.facing_changed.connect(_on_focus_entity_facing_changed)
-	
-	focus_position_changed.emit(ent.position)
-	focus_facing_changed.emit(ent.facing)
-
-func get_focus_entity_uuid() -> StringName:
-	return _focus_entity_uuid
-
-func get_focus_position() -> Vector3i:
-	if _focus_entity_uuid == &"": return Vector3i.ZERO
-	if not _focus_entity_uuid in _entities: return Vector3i.ZERO
-	return _entities[_focus_entity_uuid].position
-
-func get_focus_facing() -> Crawl.SURFACE:
-	if _focus_entity_uuid == &"": return Crawl.SURFACE.North
-	if not _focus_entity_uuid in _entities: return Crawl.SURFACE.North
-	return _entities[_focus_entity_uuid].facing
 
 func add_cell(position : Vector3i, open_to_adjacent : bool = false) -> int:
 	if position in _grid:
