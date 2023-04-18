@@ -6,12 +6,95 @@ class_name OT4G_IRC
 # ------------------------------------------------------------------------------
 signal irc_connected()
 signal irc_login_attempted(result)
+signal irc_permission_denied()
 
 signal irc_reconnecting()
 signal irc_unavailable()
 signal irc_disconnected()
 
 signal channel_joined(channel_name)
+signal message_received(msgctx)
+signal whisper_received(msgctx)
+
+signal unhandled_message(msg, tags)
+
+
+# ------------------------------------------------------------------------------
+# Sub-Classes
+# ------------------------------------------------------------------------------
+class UserInfo extends RefCounted:
+	var username : String = ""
+	var channel : String = ""
+	var meta : Dictionary = {
+		"user_id": "",
+		"display_name" : "",
+		"subscriber" : "0",
+		"mod" : "0",
+		"badges" : ""
+	}
+	
+	func _init(user : String, ch : String, tags : Dictionary) -> void:
+		username = user
+		channel = ch
+		for key in meta.keys():
+			if key in tags:
+				meta[key] = tags[key]
+	
+	func get_id() -> String:
+		return meta["user_id"]
+	
+	func get_name(user_name : bool = false) -> String:
+		return username if user_name else meta["display_name"]
+	
+	func is_subscriber() -> bool:
+		return meta["subscriber"] == "1"
+	
+	func is_mod() -> bool:
+		return meta["mod"] == "1"
+	
+	func get_badges() -> Array:
+		var badges : Array = []
+		for b in meta["badges"].split(","):
+			var bi : PackedStringArray = b.split("/")
+			badges.append({"badge":bi[0], "version":bi[1]})
+		return badges
+
+
+
+class MessageContext extends RefCounted:
+	var message : String = ""
+	var channel : String = ""
+	var whisper : bool = false
+	var user : UserInfo = null
+	var meta : Dictionary = {
+		"id" : "",
+		"first-msg" : "0",
+		"emotes" : ""
+	}
+	
+	func _init(msg : String, ch : String, wspr : bool, usr : UserInfo, tags : Dictionary) -> void:
+		message = msg
+		channel = ch
+		whisper = wspr
+		user = usr
+		for key in meta.keys():
+			if key in tags:
+				meta[key] = tags[key]
+		
+	func get_id() -> String:
+		return meta["id"]
+	
+	func is_first_message() -> bool:
+		return meta["first-msg"] == "1"
+	
+	func get_emotes() -> Array:
+		var emotes : Array = []
+		for e in meta["emotes"].split(","):
+			# WARNING: This is making a lot of assumptions :D
+			var first : PackedStringArray = e.split(":")
+			var second : PackedStringArray = first[1].split("-")
+			emotes.append({"id":first[0], "start":second[0].to_int(), "end":second[1].to_int()})
+		return emotes
 
 # ------------------------------------------------------------------------------
 # Constants
@@ -41,6 +124,8 @@ var _reconnecting : bool = false
 
 var _channels : Array[String] = []
 
+var user_regex : RegEx = RegEx.new()
+
 # ------------------------------------------------------------------------------
 # Setters
 # ------------------------------------------------------------------------------
@@ -69,6 +154,7 @@ func set_auto_connect(a : bool) -> void:
 # Override Methods
 # ------------------------------------------------------------------------------
 func _ready() -> void:
+	user_regex.compile("(?<=!)[\\w]*(?=@)")
 	if oauth_path != ^"":
 		var n = get_node_or_null(oauth_path)
 		if not is_instance_of(n, OT4G_OAuth):
@@ -102,9 +188,16 @@ func _process(_delta : float) -> void:
 				_websocket = null
 			elif _reconnecting:
 				irc_reconnecting.emit()
+				_websocket.close()
+				_websocket = null
 				connect_async()
 				await(irc_login_attempted)
 				_reconnecting = false
+			else:
+				_websocket.close()
+				_websocket = null
+				irc_disconnected.emit()
+				_connected = false
 
 # ------------------------------------------------------------------------------
 # Private Methods
@@ -151,17 +244,29 @@ func _HandleMessage(msg : String, tags : Dictionary) -> void:
 		return
 	
 	var psa : PackedStringArray = msg.split(" ", true, 3)
+	print(psa, " | ", tags)
 	match psa[1]:
 		"001":
 			irc_login_attempted.emit(true)
 			for channel in _channels:
 				join_channel(channel)
 		"NOTICE":
-			pass
+			if psa[3] == ":Login authentication failed" or psa[3] == "Login unsuccessful":
+				irc_login_attempted.emit(false)
+			elif psa[3] == "You don't have permission to perform that action":
+				irc_permission_denied.emit()
 		"PRIVMSG":
-			pass
+			var usr : String = user_regex.search(psa[0]).get_string()
+			var channel : String = psa[2].right(-1)
+			var ui : UserInfo = UserInfo.new(usr, channel, tags)
+			var mctx : MessageContext = MessageContext.new(psa[3].right(-1), channel, false, ui, tags)
+			message_received.emit(mctx)
 		"WHISPER":
-			pass
+			var usr : String = user_regex.search(psa[0]).get_string()
+			var channel : String = psa[2].right(-1)
+			var ui : UserInfo = UserInfo.new(usr, channel, tags)
+			var mctx : MessageContext = MessageContext.new(psa[3].right(-1), channel, true, ui, tags)
+			whisper_received.emit(mctx)
 		"RECONNECT":
 			_reconnecting = true
 		"JOIN":
@@ -171,7 +276,7 @@ func _HandleMessage(msg : String, tags : Dictionary) -> void:
 		"USERSTATE", "ROOMSTATE":
 			pass
 		_:
-			pass
+			unhandled_message.emit(msg, tags)
 
 # ------------------------------------------------------------------------------
 # Public Methods
