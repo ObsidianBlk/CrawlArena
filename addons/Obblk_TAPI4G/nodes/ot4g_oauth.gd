@@ -223,6 +223,7 @@ func authenticate_async(client_id : String, client_secret : String) -> void:
 		_token = await(user_token_received)
 	is_valid = await(_IsTokenValid_Async(_token))
 	
+	# TODO: If validation fails check for a refresh code and attempt a refresh before reauthenticating.
 	while not is_valid:
 		_RequestToken()
 		_token = await(user_token_received)

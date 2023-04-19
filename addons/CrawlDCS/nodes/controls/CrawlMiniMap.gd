@@ -13,20 +13,24 @@ signal selection_finished(sel_position, sel_size)
 # Constants
 # ------------------------------------------------------------------------------
 const SELECTION_BLINK_INTERVAL : float = 0.08
+const DEFAULT_ENTITY_ICON : Texture = preload("res://addons/CrawlDCS/assets/icons/entity.svg")
 
 # ------------------------------------------------------------------------------
 # Export Variables
 # ------------------------------------------------------------------------------
+@export_category("Crawl Mini-Map")
 @export var map : CrawlMap = null:								set = set_map
 @export var cell_size : float = 16.0:							set = set_cell_size
+@export var focus_entity_uuid : StringName = &"":				set = set_focus_entity_uuid
+@export var focus_entity_icon : Texture = null
+@export var show_entity_types : Array[StringName] = []:			set = set_show_entity_types
+#@export var entity_type_icons : Array[Texture] = []
 @export var background_color : Color = Color.DARK_GOLDENROD:	set = set_background_color
 @export var background_texture : Texture = null:				set = set_background_texture
 @export var wall_color : Color = Color.DARK_OLIVE_GREEN:		set = set_wall_color
 @export var cell_color : Color = Color.DARK_SALMON:				set = set_cell_color
 @export var stairs_color : Color = Color.YELLOW:				set = set_stairs_color
 @export var selection_color : Color = Color.WHITE:				set = set_selection_color
-@export var focus_icon : Texture = null:						set = set_focus_icon
-@export var ignore_focus : bool = true:							set = set_ignore_focus
 
 
 # ------------------------------------------------------------------------------
@@ -43,7 +47,7 @@ var _area_enabled : bool = false
 
 var _selectors_visible : bool = false
 
-var _cursor_sprite : TextureRect = null
+var _entity_items : Dictionary = {}
 
 var _label : Label = null
 
@@ -52,15 +56,53 @@ var _label : Label = null
 # ------------------------------------------------------------------------------
 func set_map(m : CrawlMap) -> void:
 	if m != map:
+		if map != null:
+			if map.entity_added.is_connected(_on_map_entity_added):
+				map.entity_added.disconnect(_on_map_entity_added)
+			if map.entity_removed.is_connected(_on_map_entity_removed):
+				map.entity_removed.disconnect(_on_map_entity_removed)
+			for uuid in _entity_items.keys():
+				_UntrackEntity(_entity_items[uuid]["entity"])
+			
 		map = m
-		# TODO: Possible signal connections
+		if map != null:
+			if not map.entity_added.is_connected(_on_map_entity_added):
+				map.entity_added.connect(_on_map_entity_added)
+			if not map.entity_removed.is_connected(_on_map_entity_removed):
+				map.entity_removed.connect(_on_map_entity_removed)
+			_UpdateTrackedTypes([], show_entity_types)
+			set_focus_entity_uuid(focus_entity_uuid)
 		queue_redraw()
 
 func set_cell_size(s : float) -> void:
 	if s > 0 and s != cell_size:
 		cell_size = s
-		_UpdateCursor()
+		#_UpdateCursor()
 		queue_redraw()
+
+func set_show_entity_types(et : Array[StringName]) -> void:
+	_UpdateTrackedTypes(show_entity_types, et)
+	show_entity_types = et
+
+func set_focus_entity_uuid(uuid : StringName) -> void:
+	if focus_entity_uuid in _entity_items:
+		var ent : CrawlEntity = _entity_items[focus_entity_uuid]
+		if not show_entity_types.has(ent.type):
+			_UntrackEntity(ent)
+	focus_entity_uuid = uuid
+	if focus_entity_uuid != &"" and not focus_entity_uuid in _entity_items:
+		if map == null: return
+		var ent : CrawlEntity = map.get_entity(focus_entity_uuid)
+		if ent == null: return
+		_TrackEntity(ent)
+
+func set_focus_entity_icon(ico : Texture) -> void:
+	if ico != focus_entity_icon:
+		focus_entity_icon = ico
+		if focus_entity_uuid in _entity_items:
+			var ei : TextureRect = _entity_items[focus_entity_uuid]["ctrl"]
+			ei.texture = DEFAULT_ENTITY_ICON if focus_entity_icon == null else focus_entity_icon
+		
 
 func set_background_color(c : Color) -> void:
 	if background_color != c:
@@ -92,18 +134,6 @@ func set_selection_color(c : Color) -> void:
 		selection_color = c
 		queue_redraw()
 
-func set_focus_icon(ico : Texture) -> void:
-	if focus_icon != ico:
-		focus_icon = ico
-		_UpdateCursor()
-
-func set_ignore_focus(i : bool) -> void:
-	if ignore_focus != i:
-		ignore_focus = i
-		if _mouse_entered == ignore_focus:
-			_mouse_entered = false
-			queue_redraw()
-
 # ------------------------------------------------------------------------------
 # Override Methods
 # ------------------------------------------------------------------------------
@@ -111,11 +141,8 @@ func _ready() -> void:
 	if Engine.is_editor_hint(): return
 	
 	resized.connect(_on_resized)
-	_cursor_sprite = TextureRect.new()
-	_cursor_sprite.stretch_mode = TextureRect.STRETCH_SCALE
-	add_child(_cursor_sprite)
-	_UpdateCursor()
-	
+	_UpdateTrackedTypes([], show_entity_types)
+	set_focus_entity_uuid(focus_entity_uuid)
 	_on_selection_blink()
 
 func _draw() -> void:
@@ -127,17 +154,8 @@ func _draw() -> void:
 	else:
 		draw_rect(Rect2(Vector2.ZERO, canvas_size), background_color)
 	
-	var cell_count : Vector2 = Vector2(
-		floor(canvas_size.x / cell_size),
-		floor(canvas_size.y / cell_size)
-	)
-	if map == null or cell_count.x <= 0 or cell_count.y <= 0:
-		return # Well... there's nothing more to draw! Go figure! :)
-	
-	if int(cell_count.x) % 2 == 0: # We don't want an even count of cells.
-		cell_count.x += 1
-	if int(cell_count.y) % 2 == 0:
-		cell_count.y += 1
+	if map == null: return
+	var cell_count : Vector2 = _CalcCellCount()
 	
 	var ox = (canvas_size.x * 0.5) - (cell_size * 0.5)
 	var oy = (canvas_size.y * 0.5) - (cell_size * 0.5)
@@ -185,7 +203,6 @@ func _gui_input(event : InputEvent) -> void:
 			if event.is_pressed():
 				_area_start = _ScreenToMap(_last_mouse_position)
 			elif _area_enabled != event.is_pressed():
-				var focus_pos : Vector3i = map.get_focus_position()
 				var area_end : Vector3i = _ScreenToMap(_last_mouse_position)
 				var fx : int = min(_area_start.x, area_end.x)
 				var fy : int = min(_area_start.y, area_end.y)
@@ -193,7 +210,7 @@ func _gui_input(event : InputEvent) -> void:
 				var tx : int = max(_area_start.x, area_end.x)
 				var ty : int = max(_area_start.y, area_end.y)
 				var tz : int = max(_area_start.z, area_end.z)
-				var from : Vector3i = Vector3i(fx,fy,fz) + Vector3i(focus_pos.x, 0, focus_pos.z)
+				var from : Vector3i = Vector3i(fx,fy,fz) + Vector3i(_origin.x, 0, _origin.z)
 				var to : Vector3i = Vector3i(tx-fx, ty-fy, tz-fz) + Vector3i.ONE
 				selection_finished.emit(from, to)
 			_area_enabled = event.is_pressed()
@@ -206,7 +223,7 @@ func _gui_input(event : InputEvent) -> void:
 func _notification(what : int) -> void:
 	match what:
 		NOTIFICATION_MOUSE_ENTER:
-			_mouse_entered = not ignore_focus
+			_mouse_entered = true #not ignore_focus
 		NOTIFICATION_MOUSE_EXIT:
 			_mouse_entered = false
 		NOTIFICATION_FOCUS_ENTER:
@@ -316,6 +333,20 @@ func _DrawCell(map_position : Vector3i, screen_position : Vector2) -> void:
 			wall_color, 1.0, true
 		)
 
+func _CalcCellCount() -> Vector2i:
+	var canvas_size : Vector2 = get_size()
+	var cell_count : Vector2 = Vector2(
+		floor(canvas_size.x / cell_size),
+		floor(canvas_size.y / cell_size)
+	)
+	
+	if int(cell_count.x) % 2 == 0: # We don't want an even count of cells.
+		cell_count.x -= 1
+	if int(cell_count.y) % 2 == 0:
+		cell_count.y -= 1
+	
+	return Vector2i(cell_count)
+
 func _ScreenToMap(p : Vector2, adjust_by_focus : bool = false) -> Vector3i:
 	var canvas_size : Vector2 = get_size()
 	var cell_count : Vector2 = Vector2(
@@ -327,12 +358,11 @@ func _ScreenToMap(p : Vector2, adjust_by_focus : bool = false) -> Vector3i:
 	# The mouse's map position. May not be needed :)
 	var pos : Vector2i = Vector2i(_last_mouse_position / cell_size) - cell_range
 	if map != null:
-		var focus_pos : Vector3i = map.get_focus_position()
-		var map_pos : Vector3i = Vector3i(-pos.x, focus_pos.y, -pos.y)
+		var map_pos : Vector3i = Vector3i(-pos.x, _origin.y, -pos.y)
 		if adjust_by_focus:
 			print("Map Pos: ", map_pos)
-			map_pos = map_pos - Vector3i(focus_pos.x, 0, focus_pos.z)
-			print("Adjusted Position: ", map_pos, " | Focus Pos: ", focus_pos)
+			map_pos = map_pos - Vector3i(_origin.x, 0, _origin.z)
+			print("Adjusted Position: ", map_pos, " | Focus Pos: ", _origin)
 		return map_pos
 	return Vector3i(-pos.x, 0, -pos.y)
 
@@ -345,24 +375,99 @@ func _CalcSelectionRegion(from : Vector2i, to : Vector2i) -> Rect2i:
 	var sy : int = (ty - fy) + 1
 	return Rect2i(fx, fy, sx, sy)
 
-func _UpdateCursor() -> void:
-	var vhalf : Vector2 = Vector2.ONE * 0.5
-	if _cursor_sprite != null:
-		_cursor_sprite.position = (get_size() * 0.5)
-		
-		if _cursor_sprite.texture != focus_icon:
-			_cursor_sprite.texture = focus_icon
-		if _cursor_sprite.texture != null:
-			var tsize : Vector2 = _cursor_sprite.texture.get_size()
-			_cursor_sprite.pivot_offset = tsize * 0.5
-			_cursor_sprite.scale = Vector2(cell_size, cell_size) / tsize
-			_cursor_sprite.position -= tsize * 0.5
+func _UpdateTrackedTypes(otypes : Array[StringName], ntypes : Array[StringName]) -> void:
+	var added : Array[StringName] = ntypes.filter(func(item): return not otypes.has(item))
+	var rem : Array[StringName] = otypes.filter(func(item): return not ntypes.has(item))
+	
+	for item in _entity_items:
+		if rem.has(item["entity"].type) and item["entity"].uuid != focus_entity_uuid:
+			_UntrackEntity(item["entity"].uuid)
+	
+	if map == null: return
+	for type in added:
+		var elist : Array = map.get_entities({"type":type})
+		for entity in elist:
+			_TrackEntity(entity)
 
-func _UpdateCursorFacing() -> void:
-	if _cursor_sprite == null: return
-	var fdir : Vector3i = Crawl.surface_to_direction_vector(_facing)
+
+func _TrackEntity(entity : CrawlEntity) -> void:
+	if entity.uuid in _entity_items: return
+	if entity.uuid != focus_entity_uuid and show_entity_types.find(entity.type) < 0: return
+	
+	_entity_items[entity.uuid] = {"entity":entity, "ctrl":null}
+	var etr : TextureRect = TextureRect.new()
+	etr.stretch_mode = TextureRect.STRETCH_SCALE
+	etr.texture = DEFAULT_ENTITY_ICON
+	if entity.uuid == focus_entity_uuid and focus_entity_icon != null:
+		etr.texture = focus_entity_icon
+	add_child(etr)
+	_entity_items[entity.uuid]["ctrl"] = etr
+	
+	if not entity.position_changed.is_connected(_on_entity_position_changed.bind(entity.uuid)):
+		entity.position_changed.connect(_on_entity_position_changed.bind(entity.uuid))
+	if not entity.facing_changed.is_connected(_on_entity_facing_changed.bind(entity.uuid)):
+		entity.facing_changed.connect(_on_entity_facing_changed.bind(entity.uuid))
+	
+	_UpdateEntityIcon(entity.uuid)
+	_UpdateEntityIconFacing(entity.uuid)
+
+
+func _UntrackEntity(entity : CrawlEntity) -> void:
+	if not entity.uuid in _entity_items: return
+	
+	if entity.position_changed.is_connected(_on_entity_position_changed.bind(entity.uuid)):
+		entity.position_changed.disconnect(_on_entity_position_changed.bind(entity.uuid))
+	if entity.facing_changed.is_connected(_on_entity_facing_changed.bind(entity.uuid)):
+		entity.facing_changed.disconnect(_on_entity_facing_changed.bind(entity.uuid))
+	
+	if _entity_items[entity.uuid]["ctrl"] != null:
+		remove_child(_entity_items[entity.uuid]["ctrl"])
+		_entity_items[entity.uuid]["ctrl"].queue_free()
+	
+	_entity_items.erase(entity.uuid)
+
+func _UpdateEntityIcon(uuid : StringName) -> void:
+	if not uuid in _entity_items: return
+	if _entity_items[uuid]["ctrl"] == null: return
+	
+	var vhalf : Vector2 = Vector2.ONE * 0.5
+	var canvas_size : Vector2 = get_size()
+	var cell_count : Vector2i = _CalcCellCount()
+	var entity : CrawlEntity = _entity_items[uuid]["entity"]
+	var ico : TextureRect = _entity_items[uuid]["ctrl"]
+	
+	if entity.position.y != _origin.y:
+		ico.visible = false
+		return
+	
+	var dx : int = entity.position.x - _origin.x
+	var dy : int = entity.position.z - _origin.z
+	if abs(dx) > cell_count.x or abs(dy) > cell_count.y:
+		ico.visible = false
+		return
+	
+	ico.visible = true
+	var canv_origin : Vector2 = canvas_size * 0.5
+	ico.position = canv_origin + (Vector2(dx, dy) * cell_size)
+	
+	if ico.texture != null:
+		var tsize : Vector2 = ico.texture.get_size()
+		ico.pivot_offset = tsize * 0.5
+		ico.scale = (Vector2.ONE * cell_size) / tsize
+		ico.position -= tsize * 0.5
+
+
+func _UpdateEntityIconFacing(uuid : StringName) -> void:
+	if not uuid in _entity_items: return
+	if _entity_items[uuid]["ctrl"] == null: return
+	
+	var entity : CrawlEntity = _entity_items[uuid]["entity"]
+	var ico : TextureRect = _entity_items[uuid]["ctrl"]
+	
+	var fdir : Vector3i = Crawl.surface_to_direction_vector(entity.facing)
 	var direction : Vector2 = Vector2(fdir.x, fdir.z)
-	_cursor_sprite.rotation = Vector2.DOWN.angle_to(direction)
+	ico.rotation = Vector2.DOWN.angle_to(direction)
+
 
 # ------------------------------------------------------------------------------
 # Public Methods
@@ -374,19 +479,25 @@ func start_selection(position : Vector3i) -> void:
 func end_selection() -> void:
 	_area_enabled = false
 
+func get_focus_entity() -> CrawlEntity:
+	if focus_entity_uuid in _entity_items:
+		return _entity_items[focus_entity_uuid]["entity"]
+	return null
+
+func set_origin(origin : Vector3i) -> void:
+	if focus_entity_uuid in _entity_items: return
+	_origin = origin
+
+func set_facing(facing : Crawl.SURFACE) -> void:
+	if focus_entity_uuid in _entity_items: return
+	_facing = facing
+
 # ------------------------------------------------------------------------------
 # Handler Methods
 # ------------------------------------------------------------------------------
 func _on_resized() -> void:
-	_UpdateCursor()
-
-func _on_focus_position_changed(focus_position : Vector3i) -> void:
-	_origin = focus_position
-	queue_redraw()
-
-func _on_focus_facing_changed(focus_facing : Crawl.SURFACE) -> void:
-	_facing = focus_facing
-	_UpdateCursorFacing()
+	for uuid in _entity_items.keys():
+		_UpdateEntityIcon(uuid)
 
 func _on_selection_blink() -> void:
 	if Engine.is_editor_hint(): return
@@ -395,3 +506,21 @@ func _on_selection_blink() -> void:
 	var timer : SceneTreeTimer = get_tree().create_timer(SELECTION_BLINK_INTERVAL)
 	timer.timeout.connect(_on_selection_blink)
 	queue_redraw()
+
+func _on_map_entity_added(entity : CrawlEntity) -> void:
+	if entity.uuid == focus_entity_uuid or show_entity_types.find(entity.type) >= 0:
+		_TrackEntity(entity)
+
+func _on_map_entity_removed(entity : CrawlEntity) -> void:
+	_UntrackEntity(entity)
+
+func _on_entity_position_changed(from : Vector3i, to : Vector3i, uuid : StringName) -> void:
+	if uuid == focus_entity_uuid:
+		_origin = to
+	_UpdateEntityIcon(uuid)
+
+func _on_entity_facing_changed(from : Crawl.SURFACE, to : Crawl.SURFACE, uuid : StringName) -> void:
+	if uuid == focus_entity_uuid:
+		_facing = to
+	_UpdateEntityIconFacing(uuid)
+

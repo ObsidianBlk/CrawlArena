@@ -10,8 +10,8 @@ signal cell_added(position)
 signal cell_removed(position)
 signal cell_changed(position)
 
-signal focus_position_changed(position)
-signal focus_facing_changed(surface)
+#signal focus_position_changed(position)
+#signal focus_facing_changed(surface)
 
 signal entity_added(entity)
 signal entity_removed(entity)
@@ -661,8 +661,8 @@ func dig_room(position : Vector3i, size : Vector3i) -> void:
 # ------------------------------------------------------------------------------
 # Handler Methods
 # ------------------------------------------------------------------------------
-func _on_focus_entity_position_changed(from : Vector3i, to : Vector3i) -> void:
-	focus_position_changed.emit(to)
-
-func _on_focus_entity_facing_changed(from : Crawl.SURFACE, to : Crawl.SURFACE) -> void:
-	focus_facing_changed.emit(to)
+#func _on_focus_entity_position_changed(from : Vector3i, to : Vector3i) -> void:
+#	focus_position_changed.emit(to)
+#
+#func _on_focus_entity_facing_changed(from : Crawl.SURFACE, to : Crawl.SURFACE) -> void:
+#	focus_facing_changed.emit(to)

@@ -1,0 +1,25 @@
+[gd_scene load_steps=3 format=3 uid="uid://pxet627daewv"]
+
+[ext_resource type="Script" path="res://scenes/dungeon_editor/DungeonEditor.gd" id="1_1jgi3"]
+[ext_resource type="Script" path="res://addons/CrawlDCS/nodes/controls/CrawlMiniMap.gd" id="1_pbq68"]
+
+[node name="DungeonEditor" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_1jgi3")
+
+[node name="CrawlMiniMap" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_pbq68")
+cell_size = 32.0
+background_color = Color(0.207843, 0.207843, 0.207843, 1)
+wall_color = Color(0.0627451, 0.701961, 0.678431, 1)
