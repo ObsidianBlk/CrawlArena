@@ -173,22 +173,34 @@ func _ClosePeer(response_code : int, msg : String) -> void:
 
 func _ObtainToken_Async(grant : String, code : String) -> void:
 	if _client_id.is_empty() or _client_secret.is_empty() or redirect_uri.is_empty(): return
-	var uri = "%s:%d"%[redirect_uri, port]
 	
 	var request : HTTPRequest = HTTPRequest.new()
 	add_child(request)
+	
+	var code_keyword : String = "refresh_token" if grant == "refresh_token" else "code"
+	var uri : String = ""
+	match grant:
+		"refresh_token":
+			uri = "client_id=%s&client_secret=%s&refresh_token=%s&grant_type=%s"%[
+				_client_id,
+				_client_secret,
+				code,
+				grant
+			]
+		_:
+			uri = "client_id=%s&client_secret=%s&code=%s&grant_type=%s&redirect_uri=%s"%[
+				_client_id,
+				_client_secret,
+				code,
+				grant,
+				"%s:%d"%[redirect_uri, port]
+			]
 	
 	request.request(
 		TWITCH_HTTP_TOKEN_OBTAIN,
 		[USER_AGENT, "Content-Type: application/x-www-form-urlencoded"],
 		HTTPClient.METHOD_POST,
-		"client_id=%s&client_secret=%s&code=%s&grant_type=%s&redirect_uri=%s"%[
-			_client_id,
-			_client_secret,
-			code,
-			grant,
-			uri
-		]
+		uri
 	)
 	var answer = await(request.request_completed)
 	var token_data : String = answer[3].get_string_from_utf8()
@@ -225,6 +237,11 @@ func authenticate_async(client_id : String, client_secret : String) -> void:
 	
 	# TODO: If validation fails check for a refresh code and attempt a refresh before reauthenticating.
 	while not is_valid:
+		if "refresh_token" in _token:
+			_ObtainToken_Async("refresh_token", _token["refresh_token"])
+			_token = await(user_token_received)
+			if not "status" in _token:
+				break; # We're valid
 		_RequestToken()
 		_token = await(user_token_received)
 		is_valid = await(_IsTokenValid_Async(_token))
@@ -259,7 +276,7 @@ func _on_token_refresh_timeout() -> void:
 		user_token_invalid.emit()
 		if not "refresh_token" in _token: return
 		
-		_ObtainToken_Async("", _token["refresh_token"])
+		_ObtainToken_Async("refresh_token", _token["refresh_token"])
 		var token : Dictionary = await(user_token_received)
 		if "error" in token: return
 		
