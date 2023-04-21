@@ -15,6 +15,22 @@ signal selection_finished(sel_position, sel_size)
 const SELECTION_BLINK_INTERVAL : float = 0.08
 const DEFAULT_ENTITY_ICON : Texture = preload("res://addons/CrawlDCS/assets/icons/entity.svg")
 
+const DEFAULT_THEME_TYPE : StringName = &"CrawlMiniMap"
+const THEME_STYLE_BACKGROUND : StringName = &"background"
+const THEME_COLOR_SOLID_WALL : StringName = &"solid_wall"
+const THEME_COLOR_INVISIBLE_WALL : StringName = &"invisible_wall"
+const THEME_COLOR_ILLUSION_WALL : StringName = &"illusion_wall"
+const THEME_COLOR_GROUND : StringName = &"ground"
+const THEME_COLOR_STAIRS : StringName = &"stairs"
+const THEME_COLOR_SELECTION : StringName = &"selection"
+
+const DEFAULT_COLOR_SOLID_WALL : Color = Color.STEEL_BLUE
+const DEFAULT_COLOR_INVISIBLE_WALL : Color = Color.SKY_BLUE
+const DEFAULT_COLOR_ILLUSION_WALL : Color = Color.VIOLET
+const DEFAULT_COLOR_GROUND : Color = Color.SIENNA
+const DEFAULT_COLOR_STAIRS : Color = Color.CORAL
+const DEFAULT_COLOR_SELECTION : Color = Color.THISTLE
+
 # ------------------------------------------------------------------------------
 # Export Variables
 # ------------------------------------------------------------------------------
@@ -24,13 +40,9 @@ const DEFAULT_ENTITY_ICON : Texture = preload("res://addons/CrawlDCS/assets/icon
 @export var focus_entity_uuid : StringName = &"":				set = set_focus_entity_uuid
 @export var focus_entity_icon : Texture = null
 @export var show_entity_types : Array[StringName] = []:			set = set_show_entity_types
+@export var show_invisible_walls : bool = false:				set = set_show_invisible_walls
+@export var show_illusion_walls : bool = false:					set = set_show_illusion_walls
 #@export var entity_type_icons : Array[Texture] = []
-@export var background_color : Color = Color.DARK_GOLDENROD:	set = set_background_color
-@export var background_texture : Texture = null:				set = set_background_texture
-@export var wall_color : Color = Color.DARK_OLIVE_GREEN:		set = set_wall_color
-@export var cell_color : Color = Color.DARK_SALMON:				set = set_cell_color
-@export var stairs_color : Color = Color.YELLOW:				set = set_stairs_color
-@export var selection_color : Color = Color.WHITE:				set = set_selection_color
 
 
 # ------------------------------------------------------------------------------
@@ -102,36 +114,15 @@ func set_focus_entity_icon(ico : Texture) -> void:
 		if focus_entity_uuid in _entity_items:
 			var ei : TextureRect = _entity_items[focus_entity_uuid]["ctrl"]
 			ei.texture = DEFAULT_ENTITY_ICON if focus_entity_icon == null else focus_entity_icon
-		
 
-func set_background_color(c : Color) -> void:
-	if background_color != c:
-		background_color = c
+func set_show_invisible_walls(s : bool) -> void:
+	if s != show_invisible_walls:
+		show_invisible_walls = s
 		queue_redraw()
 
-func set_background_texture(t : Texture) -> void:
-	if background_texture != t:
-		background_texture = t
-		queue_redraw()
-
-func set_wall_color(c : Color) -> void:
-	if wall_color != c:
-		wall_color = c
-		queue_redraw()
-
-func set_cell_color(c : Color) -> void:
-	if cell_color != c:
-		cell_color = c
-		queue_redraw()
-
-func set_stairs_color(c : Color) -> void:
-	if stairs_color != c:
-		stairs_color = c
-		queue_redraw()
-
-func set_selection_color(c : Color) -> void:
-	if selection_color != c:
-		selection_color = c
+func set_show_illusion_walls(s : bool) -> void:
+	if s != show_illusion_walls:
+		show_illusion_walls = s
 		queue_redraw()
 
 # ------------------------------------------------------------------------------
@@ -141,6 +132,7 @@ func _ready() -> void:
 	if Engine.is_editor_hint(): return
 	
 	resized.connect(_on_resized)
+	theme_changed.connect(queue_redraw)
 	_UpdateTrackedTypes([], show_entity_types)
 	set_focus_entity_uuid(focus_entity_uuid)
 	_on_selection_blink()
@@ -149,10 +141,8 @@ func _draw() -> void:
 	var canvas_size : Vector2 = get_size()
 	var canvas_region : Rect2 = Rect2(Vector2.ZERO, canvas_size)
 	
-	if background_texture != null:
-		draw_texture_rect(background_texture, Rect2(Vector2.ZERO, canvas_size), true)
-	else:
-		draw_rect(Rect2(Vector2.ZERO, canvas_size), background_color)
+	var bgstyle : StyleBox = _GetThemeStyleBox(THEME_STYLE_BACKGROUND)
+	draw_style_box(bgstyle, Rect2(Vector2.ZERO, canvas_size))
 	
 	if map == null: return
 	var cell_count : Vector2 = _CalcCellCount()
@@ -170,6 +160,8 @@ func _draw() -> void:
 		Vector2i(_area_start.x, _area_start.z), 
 		mouse_position
 	)
+	
+	var selection_color : Color = _GetThemeColor(THEME_COLOR_SELECTION)
 	
 	for cy in range(-(cell_range.y + 1), cell_range.y):
 		for cx in range(-(cell_range.x + 1), cell_range.x):
@@ -245,6 +237,8 @@ func _DrawStairs(map_position : Vector3i, screen_position : Vector2) -> void:
 	var cell_size_v : Vector2 = Vector2.ONE * cell_size
 	var step_size : Vector2 = cell_size_v * 0.3333
 	
+	var stairs_color : Color = _GetThemeColor(THEME_COLOR_STAIRS)
+	
 	var start : Vector2 = Vector2(
 		screen_position.x,
 		screen_position.y + (step_size.y * 2)
@@ -267,10 +261,13 @@ func _DrawCell(map_position : Vector3i, screen_position : Vector2) -> void:
 	var inner_size : Vector2 = cell_size_v * 0.3
 	var runit : Vector2 = (cell_size_v - inner_size) * 0.5
 	
+	var ground_color : Color = _GetThemeColor(THEME_COLOR_GROUND)
+	var wall_solid_color : Color = _GetThemeColor(THEME_COLOR_SOLID_WALL)
+	
 	if map.is_cell_surface_blocking(map_position, Crawl.SURFACE.Ground):
-		draw_rect(Rect2(screen_position + runit, inner_size), cell_color)
+		draw_rect(Rect2(screen_position + runit, inner_size), ground_color)
 	else:
-		draw_rect(Rect2(screen_position + runit, inner_size), cell_color, false, 1.0)
+		draw_rect(Rect2(screen_position + runit, inner_size), ground_color, false, 1.0)
 	
 	if map.is_cell_surface_blocking(map_position, Crawl.SURFACE.Ceiling):
 		var points : Array = [
@@ -288,7 +285,7 @@ func _DrawCell(map_position : Vector3i, screen_position : Vector2) -> void:
 					pos + points[1].rotated(rad),
 					pos + points[2].rotated(rad),
 					pos + points[3].rotated(rad)
-				]), cell_color)
+				]), ground_color)
 	else:
 		var points : Array = [
 			Vector2(-cell_size_v.x * 0.5, -cell_size_v.y * 0.5),
@@ -305,33 +302,78 @@ func _DrawCell(map_position : Vector3i, screen_position : Vector2) -> void:
 					pos + points[1].rotated(rad),
 					pos + points[2].rotated(rad),
 					pos + points[3].rotated(rad)
-				]), cell_color, 1.0, true)
+				]), ground_color, 1.0, true)
 
+	_DrawWall(map_position, screen_position, Crawl.SURFACE.North)
+	_DrawWall(map_position, screen_position, Crawl.SURFACE.South)
+	_DrawWall(map_position, screen_position, Crawl.SURFACE.East)
+	_DrawWall(map_position, screen_position, Crawl.SURFACE.West)
+
+
+func _DrawWall(map_position : Vector3i, screen_position : Vector2, surface : Crawl.SURFACE) -> void:
+	var is_blocking : bool = map.is_cell_surface_blocking(map_position, surface)
+	var is_visible : bool = map.get_cell_surface_resource(map_position, surface) != &""
+	var from : Vector2 = screen_position
+	var to : Vector2 = screen_position
+	match surface:
+		Crawl.SURFACE.North:
+			to += Vector2(cell_size, 0)
+		Crawl.SURFACE.South:
+			from += Vector2(0, cell_size)
+			to += Vector2.ONE * cell_size
+		Crawl.SURFACE.East:
+			from += Vector2(cell_size, 0)
+			to += Vector2.ONE * cell_size
+		Crawl.SURFACE.West:
+			to += Vector2(0, cell_size)
 	
-	if map.is_cell_surface_blocking(map_position, Crawl.SURFACE.North):
-		draw_line(
-			screen_position,
-			screen_position + Vector2(cell_size, 0),
-			wall_color, 1.0, true
-		)
-	if map.is_cell_surface_blocking(map_position, Crawl.SURFACE.South):
-		draw_line(
-			screen_position + Vector2(0, cell_size),
-			screen_position + Vector2(cell_size, cell_size),
-			wall_color, 1.0, true
-		)
-	if map.is_cell_surface_blocking(map_position, Crawl.SURFACE.East):
-		draw_line(
-			screen_position + Vector2(cell_size, 0),
-			screen_position + Vector2(cell_size, cell_size),
-			wall_color, 1.0, true
-		)
-	if map.is_cell_surface_blocking(map_position, Crawl.SURFACE.West):
-		draw_line(
-			screen_position,
-			screen_position + Vector2(0, cell_size),
-			wall_color, 1.0, true
-		)
+	if is_blocking and is_visible:
+		var color = _GetThemeColor(THEME_COLOR_SOLID_WALL)
+		draw_line(from, to, color, 1.0, true)
+	elif is_blocking and not is_visible and show_invisible_walls:
+		var color = _GetThemeColor(THEME_COLOR_INVISIBLE_WALL)
+		draw_line(from, to, color, 1.0, true)
+	elif not is_blocking and is_visible and show_illusion_walls:
+		var color = _GetThemeColor(THEME_COLOR_ILLUSION_WALL)
+		draw_line(from, to, color, 1.0, true)
+
+
+func _GetThemeType() -> StringName:
+	if theme_type_variation != &"":
+		return theme_type_variation
+	return DEFAULT_THEME_TYPE
+
+func _GetThemeStyleBox(style_name : StringName) -> StyleBox:
+	return get_theme_stylebox(style_name, _GetThemeType())
+
+func _GetThemeFont(font_name : StringName) -> Font:
+	return get_theme_font(font_name, _GetThemeType())
+
+func _GetThemeFontSize(font_size_name : StringName) -> int:
+	return get_theme_font_size(font_size_name, _GetThemeType())
+
+func _GetThemeColor(color_name : StringName) -> Color:
+	var tt : StringName = _GetThemeType()
+	if has_theme_color(color_name, tt):
+		return get_theme_color(color_name, tt)
+	match color_name:
+		THEME_COLOR_GROUND:
+			return DEFAULT_COLOR_GROUND
+		THEME_COLOR_ILLUSION_WALL:
+			return DEFAULT_COLOR_ILLUSION_WALL
+		THEME_COLOR_INVISIBLE_WALL:
+			return DEFAULT_COLOR_INVISIBLE_WALL
+		THEME_COLOR_SOLID_WALL:
+			return DEFAULT_COLOR_SOLID_WALL
+		THEME_COLOR_STAIRS:
+			return DEFAULT_COLOR_STAIRS
+		THEME_COLOR_SELECTION:
+			return DEFAULT_COLOR_SELECTION
+	return Color.BLACK
+
+func _GetThemeConstant(const_name : StringName) -> int:
+	return get_theme_constant(const_name, _GetThemeType())
+
 
 func _CalcCellCount() -> Vector2i:
 	var canvas_size : Vector2 = get_size()

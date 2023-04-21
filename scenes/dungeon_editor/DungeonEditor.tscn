@@ -1,7 +1,51 @@
-[gd_scene load_steps=3 format=3 uid="uid://pxet627daewv"]
+[gd_scene load_steps=10 format=3 uid="uid://pxet627daewv"]
 
 [ext_resource type="Script" path="res://scenes/dungeon_editor/DungeonEditor.gd" id="1_1jgi3"]
 [ext_resource type="Script" path="res://addons/CrawlDCS/nodes/controls/CrawlMiniMap.gd" id="1_pbq68"]
+[ext_resource type="PackedScene" uid="uid://csu0fi8ek2tkk" path="res://scenes/dungeon_editor/ui/dig_state/DigState.tscn" id="2_0bexf"]
+[ext_resource type="Script" path="res://scenes/dungeon_editor/control_nodes/ZElevationBar.gd" id="5_dby4r"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_8aw88"]
+bg_color = Color(0.254902, 0.254902, 0.254902, 1)
+border_width_top = 1
+border_width_bottom = 1
+border_blend = true
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_yyjc6"]
+bg_color = Color(0.466667, 0.529412, 0.592157, 1)
+border_width_top = 1
+border_width_bottom = 1
+border_color = Color(0.627451, 0.635294, 0.85098, 1)
+border_blend = true
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="Theme" id="Theme_7e3yk"]
+ZElevationBar/colors/font_color = Color(1, 1, 1, 1)
+ZElevationBar/constants/spacing = 8
+ZElevationBar/styles/background = SubResource("StyleBoxFlat_8aw88")
+ZElevationBar/styles/highlight = SubResource("StyleBoxFlat_yyjc6")
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_wu536"]
+bg_color = Color(0.184314, 0.184314, 0.184314, 0.784314)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_blend = true
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="Theme" id="Theme_jw5mm"]
+CrawlMiniMap/styles/background = SubResource("StyleBoxFlat_wu536")
 
 [node name="DungeonEditor" type="Control"]
 layout_mode = 3
@@ -12,14 +56,42 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_1jgi3")
 
-[node name="CrawlMiniMap" type="Control" parent="."]
+[node name="Minimap" type="HBoxContainer" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+
+[node name="ZInfoBar" type="MarginContainer" parent="Minimap"]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_right = 8
+
+[node name="Layout" type="VBoxContainer" parent="Minimap/ZInfoBar"]
+layout_mode = 2
+
+[node name="DigState" parent="Minimap/ZInfoBar/Layout" instance=ExtResource("2_0bexf")]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="ZElevationBar" type="Control" parent="Minimap/ZInfoBar/Layout"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+theme = SubResource("Theme_7e3yk")
+script = ExtResource("5_dby4r")
+max_z_level = 2
+
+[node name="CrawlMiniMap" type="Control" parent="Minimap"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme = SubResource("Theme_jw5mm")
 script = ExtResource("1_pbq68")
 cell_size = 32.0
-background_color = Color(0.207843, 0.207843, 0.207843, 1)
-wall_color = Color(0.0627451, 0.701961, 0.678431, 1)
+show_invisible_walls = true
+show_illusion_walls = true
+
+[connection signal="direction_changed" from="Minimap/ZInfoBar/Layout/DigState" to="." method="_on_dig_state_direction_changed"]

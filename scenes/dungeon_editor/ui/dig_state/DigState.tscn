@@ -1,0 +1,28 @@
+[gd_scene load_steps=5 format=3 uid="uid://csu0fi8ek2tkk"]
+
+[ext_resource type="Script" path="res://scenes/dungeon_editor/ui/dig_state/DigState.gd" id="1_4nr3w"]
+[ext_resource type="Texture2D" uid="uid://b0u8pnragy6rl" path="res://assets/dungeon_editor/icons/icon_dig_up.svg" id="1_8h5uu"]
+[ext_resource type="Texture2D" uid="uid://c0holuwusxd2y" path="res://assets/dungeon_editor/icons/icon_dig_foreward.svg" id="2_d68ow"]
+[ext_resource type="Texture2D" uid="uid://d3o586k3gxvde" path="res://assets/dungeon_editor/icons/icon_dig_down.svg" id="3_x1i51"]
+
+[node name="DigState" type="VBoxContainer"]
+script = ExtResource("1_4nr3w")
+
+[node name="btn_dig_up" type="Button" parent="."]
+layout_mode = 2
+icon = ExtResource("1_8h5uu")
+flat = true
+
+[node name="btn_dig_foreward" type="Button" parent="."]
+layout_mode = 2
+icon = ExtResource("2_d68ow")
+flat = true
+
+[node name="btn_dig_Down" type="Button" parent="."]
+layout_mode = 2
+icon = ExtResource("3_x1i51")
+flat = true
+
+[connection signal="pressed" from="btn_dig_up" to="." method="_on_btn_dig_up_pressed"]
+[connection signal="pressed" from="btn_dig_foreward" to="." method="_on_btn_dig_foreward_pressed"]
+[connection signal="pressed" from="btn_dig_Down" to="." method="_on_btn_dig_down_pressed"]

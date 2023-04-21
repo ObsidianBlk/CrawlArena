@@ -286,6 +286,28 @@ func clone(clone_entities : bool = false) -> CrawlMap:
 		cm._entities = _CloneEntities()
 	return cm
 
+func get_aabb() -> AABB:
+	var init : bool = true
+	var d_min : Vector3i = Vector3i.ZERO
+	var d_max : Vector3i = Vector3i.ZERO
+	
+	for cell_pos in _grid.keys():
+		if init:
+			d_min = cell_pos
+			d_max = cell_pos
+			init = false
+		else:
+			d_min.x = min(d_min.x, cell_pos.x)
+			d_min.y = min(d_min.y, cell_pos.y)
+			d_min.z = min(d_min.z, cell_pos.z)
+			d_max.x = max(d_max.x, cell_pos.x)
+			d_max.y = max(d_max.y, cell_pos.y)
+			d_max.z = max(d_max.z, cell_pos.z)
+	
+	if init:
+		return AABB(Vector3.ZERO, Vector3.ZERO)
+	return AABB(Vector3(d_min), Vector3.ONE + Vector3(abs(d_max - d_min)))
+
 func add_resource(resource : StringName) -> int:
 	if resource in _resources:
 		return ERR_ALREADY_IN_USE
