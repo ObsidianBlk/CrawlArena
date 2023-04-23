@@ -24,6 +24,7 @@ const TOKEN_FILENAME : String = "token"
 # Export Variables
 # ------------------------------------------------------------------------------
 @export_category("Obblk's TAPI4G OAuth")
+@export var verbose_messages : bool = true
 @export var redirect_uri : String = "http://localhost"
 @export var port : int = 15815:										set = set_port
 @export var scopes : Array[String] = ["chat:edit", "chat:read"]
@@ -68,9 +69,9 @@ func _process(_delta : float) -> void:
 	if "error" in data:
 		var msg : String = "Error %s: %s"%[data["error"], data["error_description"]]
 		_ClosePeer(400, msg)
-		print(msg)
+		_Print([msg])
 	else:
-		print("Authorization Granted")
+		_Print(["Authorization Granted"])
 		_ClosePeer(200, "Authorization Granted!")
 		#authorization_code
 		_ObtainToken_Async("authorization_code", data["code"])
@@ -78,6 +79,13 @@ func _process(_delta : float) -> void:
 # ------------------------------------------------------------------------------
 # Private Methods
 # ------------------------------------------------------------------------------
+func _Print(args : Array) -> void:
+	if not verbose_messages: return
+	var str : String = ""
+	for item in args:
+		str = "%s%s"%[str, item]
+	print(str)
+
 func _StoreToken(token_data : String) -> void:
 	if _client_secret.is_empty(): return
 	if !DirAccess.dir_exists_absolute(AUTH_BASE_PATH):
@@ -127,7 +135,7 @@ func _IsTokenValid_Async(token : Dictionary) -> bool:
 func _RequestToken() -> void:
 	if _client_id.is_empty() or _client_secret.is_empty() or redirect_uri.is_empty(): return
 	if _server.is_listening(): return
-	print("Requesting new token")
+	_Print(["Requesting new token"])
 	
 	var uri = "%s:%d"%[redirect_uri, port]
 	
@@ -138,7 +146,7 @@ func _RequestToken() -> void:
 		scope_req
 	])
 	_server.listen(port)
-	print("Waiting for user to login...")
+	_Print(["Waiting for user to login..."])
 	# From this point on, the _process() method is listening and the response will be handled
 	# between _ProcessPeerResponse(), _ClosePeer(), and _ObtainToken_Async() methods
 
@@ -226,27 +234,30 @@ func authenticate_async(client_id : String, client_secret : String) -> void:
 	user_token_authentication_started.emit()
 	_authenticating = true
 	
+	_Print(["Loading pre-existing token..."])
 	_token = {}
 	_LoadToken()
 	
 	var is_valid : bool = false
 	if _token.is_empty():
+		_Print(["No pre-existing token found. Requesting authentication..."])
 		_RequestToken()
 		_token = await(user_token_received)
 	is_valid = await(_IsTokenValid_Async(_token))
 	
-	# TODO: If validation fails check for a refresh code and attempt a refresh before reauthenticating.
 	while not is_valid:
+		_Print(["Obtained token invalid..."])
 		if "refresh_token" in _token:
+			_Print(["Attempting to refresh token..."])
 			_ObtainToken_Async("refresh_token", _token["refresh_token"])
 			_token = await(user_token_received)
-			if not "status" in _token:
-				break; # We're valid
-		_RequestToken()
-		_token = await(user_token_received)
+		else:
+			_Print(["Requesting re-authorization..."])
+			_RequestToken()
+			_token = await(user_token_received)
 		is_valid = await(_IsTokenValid_Async(_token))
 	
-	print("User token verified")
+	_Print(["User token verified"])
 	_authenticated = true
 	user_token_valid.emit()
 	get_tree().create_timer(3600).timeout.connect(_on_token_refresh_timeout)

@@ -14,6 +14,7 @@ icon = ExtResource("1_8h5uu")
 flat = true
 
 [node name="btn_dig_foreward" type="Button" parent="."]
+modulate = Color(1, 0.388235, 0.278431, 1)
 layout_mode = 2
 icon = ExtResource("2_d68ow")
 flat = true

@@ -108,6 +108,7 @@ const PONG_RESPONSE : String = "PONG :tmi.twitch.tv"
 # Export Variables
 # ------------------------------------------------------------------------------
 @export_category("Obblk's TAPI4G IRC")
+@export var verbose_messages : bool = true
 @export var oauth_path : NodePath = "":				set = set_oauth_path
 @export var chat_timeout_ms : int = 320
 @export var auto_connect : bool = true:				set = set_auto_connect
@@ -202,6 +203,13 @@ func _process(_delta : float) -> void:
 # ------------------------------------------------------------------------------
 # Private Methods
 # ------------------------------------------------------------------------------
+func _Print(args : Array) -> void:
+	if not verbose_messages: return
+	var str : String = ""
+	for item in args:
+		str = "%s%s"%[str, item]
+	print(str)
+
 func _UpdateOAuthConnections(old_oauth : OT4G_OAuth, new_oauth : OT4G_OAuth) -> void:
 	if old_oauth != null:
 		if old_oauth.user_token_invalid.is_connected(_on_user_token_invalid):
@@ -244,7 +252,7 @@ func _HandleMessage(msg : String, tags : Dictionary) -> void:
 		return
 	
 	var psa : PackedStringArray = msg.split(" ", true, 3)
-	print(psa, " | ", tags)
+	_Print([psa, " | ", tags])
 	match psa[1]:
 		"001":
 			irc_login_attempted.emit(true)
@@ -285,12 +293,15 @@ func connect_async() -> void:
 	if _user_info.is_empty(): return
 	if _websocket != null: return
 	
+	_Print(["Connecting Async"])
 	_websocket = WebSocketPeer.new()
 	_websocket.connect_to_url(TWITCH_IRC_ADDRESS)
 	await(irc_connected)
+	_Print(["IRC Connected: ", _user_info])
 	send("PASS oauth:%s"%[_user_info["access_token"]])
 	send("NICK %s"%[_user_info["username"].to_lower()])
 	var success : bool = await(irc_login_attempted)
+	_Print(["Login response status: ", success])
 	if not success:
 		_websocket.close()
 		_websocket = null
