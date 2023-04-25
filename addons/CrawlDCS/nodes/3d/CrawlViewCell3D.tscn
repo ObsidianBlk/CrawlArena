@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://ds21235k3q5es"]
+
+[ext_resource type="Script" path="res://addons/CrawlDCS/nodes/3d/CrawlViewCell3D.gd" id="1_nb75r"]
+
+[node name="CrawlViewCell3D" type="Node3D"]
+script = ExtResource("1_nb75r")

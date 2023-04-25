@@ -2,11 +2,22 @@ extends Node
 
 
 # ------------------------------------------------------------------------------
+# Signals
+# ------------------------------------------------------------------------------
+signal lookup_table_added(ltname)
+signal lookup_table_updated(ltname)
+
+# ------------------------------------------------------------------------------
 # Constants and ENUMs
 # ------------------------------------------------------------------------------
 enum SURFACE {North=0x01, East=0x02, South=0x04, West=0x08, Ground=0x10, Ceiling=0x20}
 const ALL_COMPASS_SURFACES : int = 15
 const ALL_SURFACES : int = 63
+
+# ------------------------------------------------------------------------------
+# Variables
+# ------------------------------------------------------------------------------
+var _lookup_tables : Dictionary = {}
 
 # ------------------------------------------------------------------------------
 # Public Methods
@@ -109,3 +120,26 @@ func surface_to_surface_angle(from : SURFACE, to : SURFACE) -> float:
 		SURFACE.Ceiling:
 			return deg90 * 2 if to == SURFACE.Ground else deg90
 	return 0.0
+
+
+func store_lookup_table(ltname : StringName, mrlt : CrawlMRLT) -> void:
+	if ltname == &"": return
+	if ltname in _lookup_tables: return
+	_lookup_tables[ltname] = mrlt
+	if not mrlt.updated.is_connected(_on_mrlt_updated.bind(ltname)):
+		mrlt.updated.connect(_on_mrlt_updated.bind(ltname))
+	lookup_table_added.emit(ltname)
+
+func has_lookup_table(ltname : StringName) -> bool:
+	return ltname in _lookup_tables
+
+func get_lookup_table(ltname : StringName) -> CrawlMRLT:
+	if not ltname in _lookup_tables: return null
+	return _lookup_tables[ltname]
+
+# ------------------------------------------------------------------------------
+# Handler Methods
+# ------------------------------------------------------------------------------
+func _on_mrlt_updated(ltname : StringName) -> void:
+	lookup_table_updated.emit(ltname)
+
