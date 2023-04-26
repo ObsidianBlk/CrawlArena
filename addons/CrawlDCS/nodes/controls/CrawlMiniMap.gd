@@ -23,6 +23,8 @@ const THEME_COLOR_ILLUSION_WALL : StringName = &"illusion_wall"
 const THEME_COLOR_GROUND : StringName = &"ground"
 const THEME_COLOR_STAIRS : StringName = &"stairs"
 const THEME_COLOR_SELECTION : StringName = &"selection"
+const THEME_FONT_COORD : StringName = &"coord"
+const THEME_FONT_SIZE_COORD : StringName = &"coord"
 
 const DEFAULT_COLOR_SOLID_WALL : Color = Color.STEEL_BLUE
 const DEFAULT_COLOR_INVISIBLE_WALL : Color = Color.SKY_BLUE
@@ -30,6 +32,7 @@ const DEFAULT_COLOR_ILLUSION_WALL : Color = Color.VIOLET
 const DEFAULT_COLOR_GROUND : Color = Color.SIENNA
 const DEFAULT_COLOR_STAIRS : Color = Color.CORAL
 const DEFAULT_COLOR_SELECTION : Color = Color.THISTLE
+const DEFAULT_FONT_SIZE_COORD : int = 16
 
 # ------------------------------------------------------------------------------
 # Export Variables
@@ -559,6 +562,7 @@ func _on_map_entity_removed(entity : CrawlEntity) -> void:
 func _on_entity_position_changed(from : Vector3i, to : Vector3i, uuid : StringName) -> void:
 	if uuid == focus_entity_uuid:
 		_origin = to
+		queue_redraw()
 	_UpdateEntityIcon(uuid)
 
 func _on_entity_facing_changed(from : Crawl.SURFACE, to : Crawl.SURFACE, uuid : StringName) -> void:

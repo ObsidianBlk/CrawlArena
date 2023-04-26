@@ -72,13 +72,15 @@ func _draw() -> void:
 	
 	var canvas_size : Vector2 = get_size()
 	var steps : float = 1.0 + abs(max_z_level - min_z_level)
-	var rect : Rect2 = Rect2(0, 0, canvas_size.x, (canvas_size.y / steps) - float(spacing))
+	var rsize : Vector2 = Vector2(canvas_size.x, (canvas_size.y / steps) - float(spacing))
+	var rpos : Vector2 = Vector2(0, canvas_size.y - rsize.y)
+	var rect : Rect2 = Rect2(rpos, rsize)
 	
 	for i in range(steps):
 		draw_style_box(highlight if min_z_level + i == z_level else background, rect)
 		if min_z_level + i == z_level and show_z_level:
 			_DrawZLevelText(rect)
-		rect.position.y += rect.size.y + float(spacing)
+		rect.position.y -= rect.size.y + float(spacing)
 
 # ------------------------------------------------------------------------------
 # Private Methods
