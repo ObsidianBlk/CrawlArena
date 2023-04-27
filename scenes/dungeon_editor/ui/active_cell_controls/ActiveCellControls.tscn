@@ -1,0 +1,52 @@
+[gd_scene load_steps=2 format=3 uid="uid://dlnthjlobn6wo"]
+
+[ext_resource type="PackedScene" uid="uid://cu1mxbdrdfj27" path="res://scenes/dungeon_editor/control_nodes/resource_view_3d_control/ResourceView3DControl.tscn" id="1_5jjkv"]
+
+[node name="ActiveCellControls" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="RV3DC" type="HBoxContainer" parent="."]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="Cardinals" type="GridContainer" parent="RV3DC"]
+layout_mode = 2
+columns = 3
+
+[node name="Control" type="Control" parent="RV3DC/Cardinals"]
+custom_minimum_size = Vector2(32, 0)
+layout_mode = 2
+
+[node name="RVC_North" parent="RV3DC/Cardinals" instance=ExtResource("1_5jjkv")]
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+
+[node name="Control2" type="Control" parent="RV3DC/Cardinals"]
+custom_minimum_size = Vector2(32, 0)
+layout_mode = 2
+
+[node name="RVC_West" parent="RV3DC/Cardinals" instance=ExtResource("1_5jjkv")]
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+
+[node name="Control3" type="Control" parent="RV3DC/Cardinals"]
+custom_minimum_size = Vector2(32, 0)
+layout_mode = 2
+
+[node name="RVC_East" parent="RV3DC/Cardinals" instance=ExtResource("1_5jjkv")]
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+
+[node name="Control4" type="Control" parent="RV3DC/Cardinals"]
+custom_minimum_size = Vector2(32, 0)
+layout_mode = 2
+
+[node name="RVC_South" parent="RV3DC/Cardinals" instance=ExtResource("1_5jjkv")]
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
