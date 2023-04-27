@@ -1,6 +1,8 @@
 extends Control
 
 
+const CELL_SIZE : float = 4.4
+
 # ------------------------------------------------------------------------------
 # Variables
 # ------------------------------------------------------------------------------
@@ -13,8 +15,10 @@ var _dig_direction : int = 1 # 0 = Down | 1 = Foreward | 2 = Up
 # Onready Variables
 # ------------------------------------------------------------------------------
 @onready var _crawl_mini_map : CrawlMiniMap = %CrawlMiniMap
-@onready var _z_elevation_bar = %ZElevationBar
-@onready var _dig_state = %DigState
+@onready var _z_elevation_bar : Control = %ZElevationBar
+@onready var _dig_state : Control = %DigState
+@onready var _crawl_view_3d : CrawlView3D = %CrawlView3D
+@onready var _dungeon_viewport : SubViewport = %DungeonViewport
 
 
 # ------------------------------------------------------------------------------
@@ -22,7 +26,7 @@ var _dig_direction : int = 1 # 0 = Down | 1 = Foreward | 2 = Up
 # ------------------------------------------------------------------------------
 func _ready() -> void:
 	_map = CrawlMap.new()
-	_map.add_resource(&"basic")
+	_map.add_resource(&"default")
 	_map.add_cell(Vector3i.ZERO)
 	
 	_editor_entity = CrawlEntity.new()
@@ -37,6 +41,17 @@ func _ready() -> void:
 	_map.cell_added.connect(_on_map_cell_count_changed)
 	_map.cell_removed.connect(_on_map_cell_count_changed)
 	_editor_entity.position_changed.connect(_on_editor_entity_position_changed)
+	
+	_crawl_view_3d.cell_size = CELL_SIZE
+	_crawl_view_3d.map = _map
+	var elt : CrawlMRLT = Crawl.get_lookup_table(&"entities")
+	if elt != null:
+		var view : Node3D = elt.load_meta_resource(&"unique", &"editor", true)
+		if view != null:
+			view.cell_size = CELL_SIZE
+			view.entity = _editor_entity
+			_dungeon_viewport.add_child(view)
+	
 	_on_map_cell_count_changed(Vector3i.ZERO)
 	_on_editor_entity_position_changed(Vector3i.ZERO, _editor_entity.position)
 
@@ -93,7 +108,7 @@ func _on_map_cell_count_changed(_pos : Vector3i) -> void:
 	_z_elevation_bar.min_z_level = bounds.position.y
 	_z_elevation_bar.max_z_level = bounds.end.y - 1
 
-func _on_editor_entity_position_changed(from : Vector3i, to : Vector3i) -> void:
+func _on_editor_entity_position_changed(_from : Vector3i, to : Vector3i) -> void:
 	_z_elevation_bar.z_level = to.y
 
 func _on_dig_state_direction_changed(direction : int):

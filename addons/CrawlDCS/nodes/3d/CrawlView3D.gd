@@ -67,11 +67,13 @@ func set_lookup_table_name(ltn : StringName) -> void:
 # Override Methods
 # ------------------------------------------------------------------------------
 func _ready() -> void:
-	cell_container = Node3D.new()
-	add_child(cell_container)
+	pass
+	#cell_container = Node3D.new()
+	#add_child(cell_container)
 
 func _process(_delta : float) -> void:
-	if cell_container != null and _cell_update_requested:
+	#if cell_container != null and _cell_update_requested:
+	if _cell_update_requested:
 		_cell_update_requested = false
 		_UpdateCells(_focus_position)
 
@@ -79,21 +81,24 @@ func _process(_delta : float) -> void:
 # Private Methods
 # ------------------------------------------------------------------------------
 func _ClearAllCells() -> void:
-	if cell_container == null: return
-	for child in cell_container.get_children():
-		cell_container.remove_child(child)
+	#if cell_container == null: return
+	#for child in cell_container.get_children():
+	for child in get_children():
+		#cell_container.remove_child(child)
+		remove_child(child)
 		child.queue_free()
 
 
 func _UpdateCells(origin : Vector3i) -> void:
-	if cell_container == null: return
+	#if cell_container == null: return
 	
 	var rad : Vector3 = Vector3(unit_radius, unit_radius, unit_radius)
 	var bounds : AABB = AABB(Vector3(origin) - rad, rad*2)
 	var stored_pos : Array = []
 	var available_cells : Array = []
 	
-	for child in cell_container.get_children():
+	#for child in cell_container.get_children():
+	for child in get_children():
 		if not is_instance_of(child, CrawlViewCell3D): continue
 		if not bounds.has_point(Vector3(child.map_position)):
 			available_cells.append(child)
@@ -117,12 +122,13 @@ func _UpdateCells(origin : Vector3i) -> void:
 						cell.cell_size = cell_size
 						cell.lookup_table_name = lookup_table_name
 					else:
-						var cell : CrawlViewCell3D = CRAWLVIEWCELL3D.instantiate()
+						var cell : CrawlViewCell3D = CrawlViewCell3D.new()#CRAWLVIEWCELL3D.instantiate()
 						cell.cell_size = cell_size
 						cell.lookup_table_name = lookup_table_name
 						cell.map = map
 						cell.map_position = pos
-						cell_container.add_child(cell)
+						#cell_container.add_child(cell)
+						add_child(cell)
 						#print("Position : ", pos * CELL_SIZE)
 						cell.position = pos * cell_size
 

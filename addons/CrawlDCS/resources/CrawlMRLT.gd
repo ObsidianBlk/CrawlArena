@@ -16,9 +16,20 @@ const MRLT_META_DATA_SCHEMA : Dictionary = {
 }
 
 const MRLT_SCHEMA : Dictionary = {
-	"!KEY_OF_TYPE_str":{&"type":TYPE_DICTIONARY, &"def":{
-		"!KEY_OF_TYPE_str":{&"type":TYPE_DICTIONARY, &"def":MRLT_META_DATA_SCHEMA}
-	}}
+	"!KEY_OF_TYPE_str":{
+		&"type":TYPE_STRING,
+		&"def":{
+			&"type":TYPE_DICTIONARY,
+			&"def":{
+				"!KEY_OF_TYPE_str":{
+					&"type":TYPE_STRING,
+					&"def":{
+						&"type":TYPE_DICTIONARY, &"def":MRLT_META_DATA_SCHEMA
+					}
+				}
+			}
+		}
+	}
 }
 
 # ------------------------------------------------------------------------------

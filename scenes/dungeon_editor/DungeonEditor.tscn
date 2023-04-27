@@ -1,8 +1,9 @@
-[gd_scene load_steps=10 format=3 uid="uid://pxet627daewv"]
+[gd_scene load_steps=14 format=3 uid="uid://pxet627daewv"]
 
 [ext_resource type="Script" path="res://scenes/dungeon_editor/DungeonEditor.gd" id="1_1jgi3"]
 [ext_resource type="Script" path="res://addons/CrawlDCS/nodes/controls/CrawlMiniMap.gd" id="1_pbq68"]
 [ext_resource type="PackedScene" uid="uid://csu0fi8ek2tkk" path="res://scenes/dungeon_editor/ui/dig_state/DigState.tscn" id="2_0bexf"]
+[ext_resource type="Script" path="res://addons/CrawlDCS/nodes/3d/CrawlView3D.gd" id="5_6ffkw"]
 [ext_resource type="Script" path="res://scenes/dungeon_editor/control_nodes/ZElevationBar.gd" id="5_dby4r"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_8aw88"]
@@ -31,6 +32,15 @@ ZElevationBar/colors/font_color = Color(1, 1, 1, 1)
 ZElevationBar/constants/spacing = 8
 ZElevationBar/styles/background = SubResource("StyleBoxFlat_8aw88")
 ZElevationBar/styles/highlight = SubResource("StyleBoxFlat_yyjc6")
+
+[sub_resource type="Environment" id="Environment_v3143"]
+background_mode = 1
+background_color = Color(1, 1, 1, 1)
+
+[sub_resource type="World3D" id="World3D_2vqry"]
+environment = SubResource("Environment_v3143")
+
+[sub_resource type="BoxMesh" id="BoxMesh_pg1a3"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_wu536"]
 bg_color = Color(0.184314, 0.184314, 0.184314, 0.784314)
@@ -84,8 +94,57 @@ theme = SubResource("Theme_7e3yk")
 script = ExtResource("5_dby4r")
 max_z_level = 2
 
-[node name="CrawlMiniMap" type="Control" parent="Minimap"]
+[node name="Control" type="Control" parent="Minimap"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="DungeonView" type="SubViewportContainer" parent="Minimap/Control"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+stretch = true
+
+[node name="DungeonViewport" type="SubViewport" parent="Minimap/Control/DungeonView"]
 unique_name_in_owner = true
+own_world_3d = true
+world_3d = SubResource("World3D_2vqry")
+handle_input_locally = false
+size = Vector2i(1844, 1080)
+render_target_update_mode = 4
+
+[node name="CrawlView3D" type="Node3D" parent="Minimap/Control/DungeonView/DungeonViewport"]
+unique_name_in_owner = true
+script = ExtResource("5_6ffkw")
+cell_size = 2.2
+lookup_table_name = &"level_geometry"
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Minimap/Control/DungeonView/DungeonViewport"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, -1.287)
+mesh = SubResource("BoxMesh_pg1a3")
+
+[node name="OmniLight3D" type="OmniLight3D" parent="Minimap/Control/DungeonView/DungeonViewport"]
+
+[node name="MarginContainer" type="MarginContainer" parent="Minimap/Control"]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -40.0
+offset_top = -40.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 24
+
+[node name="CrawlMiniMap" type="Control" parent="Minimap/Control/MarginContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(512, 384)
 layout_mode = 2
 size_flags_horizontal = 3
 theme = SubResource("Theme_jw5mm")

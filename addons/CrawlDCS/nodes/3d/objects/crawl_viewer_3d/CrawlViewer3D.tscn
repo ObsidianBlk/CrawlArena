@@ -1,0 +1,23 @@
+[gd_scene load_steps=3 format=3 uid="uid://k1elglnqhsc"]
+
+[ext_resource type="Script" path="res://addons/CrawlDCS/nodes/3d/objects/crawl_viewer_3d/CrawlViewer3D.gd" id="1_6eyjc"]
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_qxeaj"]
+radius = 0.25
+height = 1.8
+
+[node name="CrawlViewer3D" type="Node3D"]
+script = ExtResource("1_6eyjc")
+body_node_path = NodePath("Body")
+
+[node name="Body" type="Node3D" parent="."]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+mesh = SubResource("CapsuleMesh_qxeaj")
+
+[node name="Gimble" type="Node3D" parent="Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.8, 0)
+
+[node name="Camera3D" type="Camera3D" parent="Body/Gimble"]
+transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, 0, 0)
