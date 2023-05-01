@@ -1,0 +1,171 @@
+[gd_scene load_steps=7 format=3 uid="uid://dlnthjlobn6wo"]
+
+[ext_resource type="PackedScene" uid="uid://cu1mxbdrdfj27" path="res://scenes/dungeon_editor/control_nodes/resource_view_3d_control/ResourceView3DControl.tscn" id="1_5jjkv"]
+[ext_resource type="Script" path="res://scenes/dungeon_editor/control_nodes/map_cell_control/MapCellControl.gd" id="1_57c8y"]
+[ext_resource type="Texture2D" uid="uid://bj36ogw6kj1e4" path="res://assets/dungeon_editor/icons/wall_blocking.svg" id="1_qxdil"]
+[ext_resource type="Texture2D" uid="uid://buc85vyi17caq" path="res://assets/dungeon_editor/icons/icon_large_compass.svg" id="2_i4ylu"]
+[ext_resource type="Texture2D" uid="uid://bla3u3m3258lj" path="res://assets/dungeon_editor/icons/icon_large_CeilingGround.svg" id="3_8akcw"]
+[ext_resource type="Texture2D" uid="uid://divihn5g5svcs" path="res://assets/dungeon_editor/icons/add_stairs.svg" id="4_gjklv"]
+
+[node name="MapCellControl" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_57c8y")
+
+[node name="AspectRatioContainer" type="AspectRatioContainer" parent="."]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="Layout" type="GridContainer" parent="AspectRatioContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+columns = 4
+
+[node name="Control" type="Control" parent="AspectRatioContainer/Layout"]
+custom_minimum_size = Vector2(32, 0)
+layout_mode = 2
+
+[node name="North" type="VBoxContainer" parent="AspectRatioContainer/Layout"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="NorthBlocking" type="Button" parent="AspectRatioContainer/Layout/North"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 32)
+layout_mode = 2
+icon = ExtResource("1_qxdil")
+icon_alignment = 1
+expand_icon = true
+
+[node name="RVC_North" parent="AspectRatioContainer/Layout/North" instance=ExtResource("1_5jjkv")]
+unique_name_in_owner = true
+layout_mode = 2
+resource_section = &"walls"
+
+[node name="Control2" type="Control" parent="AspectRatioContainer/Layout"]
+custom_minimum_size = Vector2(32, 0)
+layout_mode = 2
+
+[node name="Ceiling" type="VBoxContainer" parent="AspectRatioContainer/Layout"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="CeilingBlocking" type="Button" parent="AspectRatioContainer/Layout/Ceiling"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 32)
+layout_mode = 2
+icon = ExtResource("1_qxdil")
+icon_alignment = 1
+expand_icon = true
+
+[node name="RVC_Ceiling" parent="AspectRatioContainer/Layout/Ceiling" instance=ExtResource("1_5jjkv")]
+unique_name_in_owner = true
+layout_mode = 2
+resource_section = &"ceiling"
+
+[node name="West" type="HBoxContainer" parent="AspectRatioContainer/Layout"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="WestBlocking" type="Button" parent="AspectRatioContainer/Layout/West"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+size_flags_vertical = 4
+icon = ExtResource("1_qxdil")
+icon_alignment = 1
+expand_icon = true
+
+[node name="RVC_West" parent="AspectRatioContainer/Layout/West" instance=ExtResource("1_5jjkv")]
+unique_name_in_owner = true
+layout_mode = 2
+resource_section = &"walls"
+
+[node name="Compass" type="TextureRect" parent="AspectRatioContainer/Layout"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+texture = ExtResource("2_i4ylu")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="East" type="HBoxContainer" parent="AspectRatioContainer/Layout"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="RVC_East" parent="AspectRatioContainer/Layout/East" instance=ExtResource("1_5jjkv")]
+unique_name_in_owner = true
+layout_mode = 2
+resource_section = &"walls"
+
+[node name="EastBlocking" type="Button" parent="AspectRatioContainer/Layout/East"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+size_flags_vertical = 4
+icon = ExtResource("1_qxdil")
+icon_alignment = 1
+expand_icon = true
+
+[node name="VertSurface" type="TextureRect" parent="AspectRatioContainer/Layout"]
+layout_mode = 2
+size_flags_vertical = 3
+texture = ExtResource("3_8akcw")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Control4" type="Control" parent="AspectRatioContainer/Layout"]
+custom_minimum_size = Vector2(32, 0)
+layout_mode = 2
+
+[node name="South" type="VBoxContainer" parent="AspectRatioContainer/Layout"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="RVC_South" parent="AspectRatioContainer/Layout/South" instance=ExtResource("1_5jjkv")]
+unique_name_in_owner = true
+layout_mode = 2
+resource_section = &"walls"
+
+[node name="SouthBlocking" type="Button" parent="AspectRatioContainer/Layout/South"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 32)
+layout_mode = 2
+icon = ExtResource("1_qxdil")
+icon_alignment = 1
+expand_icon = true
+
+[node name="StairToggle" type="Button" parent="AspectRatioContainer/Layout"]
+unique_name_in_owner = true
+layout_mode = 2
+icon = ExtResource("4_gjklv")
+icon_alignment = 1
+expand_icon = true
+
+[node name="Ground" type="VBoxContainer" parent="AspectRatioContainer/Layout"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="RVC_Ground" parent="AspectRatioContainer/Layout/Ground" instance=ExtResource("1_5jjkv")]
+unique_name_in_owner = true
+layout_mode = 2
+resource_section = &"ground"
+
+[node name="GroundBlocking" type="Button" parent="AspectRatioContainer/Layout/Ground"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 32)
+layout_mode = 2
+icon = ExtResource("1_qxdil")
+icon_alignment = 1
+expand_icon = true

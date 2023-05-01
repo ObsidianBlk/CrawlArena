@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c0holuwusxd2y"
-path="res://.godot/imported/icon_dig_foreward.svg-f1d1bd5a74b46147793d32e39e692abb.ctex"
+uid="uid://buc85vyi17caq"
+path="res://.godot/imported/icon_large_compass.svg-1d0dac5b0b1a20ac5a01e4db303d32df.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/dungeon_editor/icons/icon_dig_foreward.svg"
-dest_files=["res://.godot/imported/icon_dig_foreward.svg-f1d1bd5a74b46147793d32e39e692abb.ctex"]
+source_file="res://assets/dungeon_editor/icons/icon_large_compass.svg"
+dest_files=["res://.godot/imported/icon_large_compass.svg-1d0dac5b0b1a20ac5a01e4db303d32df.ctex"]
 
 [params]
 
@@ -32,6 +32,6 @@ process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
 detect_3d/compress_to=1
-svg/scale=4.0
+svg/scale=1.0
 editor/scale_with_editor_scale=false
 editor/convert_colors_with_editor_theme=false

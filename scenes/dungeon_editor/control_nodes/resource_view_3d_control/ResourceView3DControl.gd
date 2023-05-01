@@ -24,6 +24,8 @@ const THEME_STYLE_PRESS : StringName = &"press"
 @export var lookup_table_name : StringName = &"":							set = set_lookup_table_name
 @export var resource_section : StringName = &"":							set = set_resource_section
 @export var resource_name : StringName = &"":								set = set_resource_name
+@export_group("Sizing")
+@export var view_size : int = 32:											set = set_view_size
 @export_group("Camera")
 @export var camera_height : float = 1.0:									set = set_camera_height
 @export_range(-90.0, 90.0, 0.1) var camera_pitch_degrees : float = 0.0:		set = set_camera_pitch_degrees
@@ -71,6 +73,11 @@ func set_resource_name(rn : StringName) -> void:
 		resource_name = rn
 		_UpdateResourceNode()
 
+func set_view_size(s : int) -> void:
+	if s > 0 and s != view_size:
+		view_size = s
+		_UpdatePanelSize()
+
 func set_camera_height(h : float) -> void:
 	if h != camera_height:
 		camera_height = h
@@ -105,6 +112,7 @@ func set_duration(d : float) -> void:
 # ------------------------------------------------------------------------------
 func _ready() -> void:
 	_UpdatePanelStyle()
+	_UpdatePanelSize()
 	_UpdateCameraPlacement()
 	_UpdateResourceNode()
 	if enable_seesaw:
@@ -183,6 +191,10 @@ func _UpdatePanelStyle() -> void:
 		_cpanel.add_theme_stylebox_override(&"panel", _GetThemeStyleBox(THEME_STYLE_FOCUS))
 	else:
 		_cpanel.add_theme_stylebox_override(&"panel", _GetThemeStyleBox(THEME_STYLE_NORMAL))
+
+func _UpdatePanelSize() -> void:
+	if _cpanel == null: return
+	_cpanel.custom_minimum_size = Vector2.ONE * float(view_size)
 
 func _UpdateCameraPlacement() -> void:
 	if _gimble == null or _pitch == null or _camera == null: return

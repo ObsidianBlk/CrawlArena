@@ -1,0 +1,55 @@
+[gd_scene load_steps=2 format=3 uid="uid://bqw3jxo1pmbcv"]
+
+[ext_resource type="PackedScene" uid="uid://cu1mxbdrdfj27" path="res://scenes/dungeon_editor/control_nodes/resource_view_3d_control/ResourceView3DControl.tscn" id="1_whfvh"]
+
+[node name="ResourceSelectionWindow" type="Window"]
+title = "Title Goes Here"
+size = Vector2i(772, 547)
+wrap_controls = true
+transient = true
+exclusive = true
+unresizable = true
+popup_window = true
+
+[node name="PanelContainer" type="PanelContainer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VLayout" type="VBoxContainer" parent="PanelContainer"]
+layout_mode = 2
+
+[node name="Primary" type="HBoxContainer" parent="PanelContainer/VLayout"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="SelectionList" type="MarginContainer" parent="PanelContainer/VLayout/Primary"]
+custom_minimum_size = Vector2(256, 0)
+layout_mode = 2
+
+[node name="Scroll" type="ScrollContainer" parent="PanelContainer/VLayout/Primary/SelectionList"]
+layout_mode = 2
+
+[node name="Container" type="VBoxContainer" parent="PanelContainer/VLayout/Primary/SelectionList/Scroll"]
+layout_mode = 2
+
+[node name="ResourceView3DControl" parent="PanelContainer/VLayout/Primary" instance=ExtResource("1_whfvh")]
+layout_mode = 2
+view_size = 512
+
+[node name="Buttons" type="HBoxContainer" parent="PanelContainer/VLayout"]
+layout_mode = 2
+
+[node name="Select" type="Button" parent="PanelContainer/VLayout/Buttons"]
+layout_mode = 2
+text = "Select"
+
+[node name="Control" type="Control" parent="PanelContainer/VLayout/Buttons"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Cancel" type="Button" parent="PanelContainer/VLayout/Buttons"]
+layout_mode = 2
+text = "Cancel"

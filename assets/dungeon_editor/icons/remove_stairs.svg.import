@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c0holuwusxd2y"
-path="res://.godot/imported/icon_dig_foreward.svg-f1d1bd5a74b46147793d32e39e692abb.ctex"
+uid="uid://dkcth4fldns42"
+path="res://.godot/imported/remove_stairs.svg-824189f8d7ad768470aaab073ee364d1.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/dungeon_editor/icons/icon_dig_foreward.svg"
-dest_files=["res://.godot/imported/icon_dig_foreward.svg-f1d1bd5a74b46147793d32e39e692abb.ctex"]
+source_file="res://assets/dungeon_editor/icons/remove_stairs.svg"
+dest_files=["res://.godot/imported/remove_stairs.svg-824189f8d7ad768470aaab073ee364d1.ctex"]
 
 [params]
 

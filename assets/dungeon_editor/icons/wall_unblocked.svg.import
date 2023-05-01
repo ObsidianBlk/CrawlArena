@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c0holuwusxd2y"
-path="res://.godot/imported/icon_dig_foreward.svg-f1d1bd5a74b46147793d32e39e692abb.ctex"
+uid="uid://dyagboqostuo"
+path="res://.godot/imported/wall_unblocked.svg-63f52d4884a7c7a90850abaeb1a9c045.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/dungeon_editor/icons/icon_dig_foreward.svg"
-dest_files=["res://.godot/imported/icon_dig_foreward.svg-f1d1bd5a74b46147793d32e39e692abb.ctex"]
+source_file="res://assets/dungeon_editor/icons/wall_unblocked.svg"
+dest_files=["res://.godot/imported/wall_unblocked.svg-63f52d4884a7c7a90850abaeb1a9c045.ctex"]
 
 [params]
 

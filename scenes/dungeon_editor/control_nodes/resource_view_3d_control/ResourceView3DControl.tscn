@@ -1,24 +1,34 @@
-[gd_scene load_steps=3 format=3 uid="uid://cu1mxbdrdfj27"]
+[gd_scene load_steps=4 format=3 uid="uid://cu1mxbdrdfj27"]
 
 [ext_resource type="Script" path="res://scenes/dungeon_editor/control_nodes/resource_view_3d_control/ResourceView3DControl.gd" id="1_35pcw"]
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_42ggx"]
+content_margin_left = 4.0
+content_margin_top = 4.0
+content_margin_right = 4.0
+content_margin_bottom = 4.0
+bg_color = Color(1, 0.365, 0.365, 1)
+draw_center = false
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+corner_detail = 1
+
 [sub_resource type="World3D" id="World3D_dph8y"]
 
-[node name="ResourceView3DControl" type="Control"]
-layout_mode = 3
-anchors_preset = 0
+[node name="ResourceView3DControl" type="CenterContainer"]
 offset_right = 24.0
 offset_bottom = 24.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
 script = ExtResource("1_35pcw")
 
 [node name="CPanel" type="PanelContainer" parent="."]
 unique_name_in_owner = true
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_42ggx")
 
 [node name="CView" type="SubViewportContainer" parent="CPanel"]
 layout_mode = 2
@@ -34,10 +44,11 @@ render_target_update_mode = 4
 
 [node name="Gimble" type="Node3D" parent="CPanel/CView/SubViewport"]
 unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
 
 [node name="Pitch" type="Node3D" parent="CPanel/CView/SubViewport/Gimble"]
 unique_name_in_owner = true
 
 [node name="Camera3D" type="Camera3D" parent="CPanel/CView/SubViewport/Gimble/Pitch"]
 unique_name_in_owner = true
-transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, 0, 0)
+transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, 0, 2)
