@@ -1,3 +1,4 @@
+@tool
 extends Control
 
 
@@ -62,12 +63,12 @@ func set_preview_size(s : int) -> void:
 
 func set_map(m : CrawlMap) -> void:
 	if m != map:
-		if map != null:
+		if not Engine.is_editor_hint() and map != null:
 			for signal_name in [&"cell_changed", &"cell_added", &"cell_removed"]:
 				if map.is_connected(signal_name, _on_map_cell_changed):
 					map.disconnect(signal_name, _on_map_cell_changed)
 		map = m
-		if map != null:
+		if not Engine.is_editor_hint() and map != null:
 			for signal_name in [&"cell_changed", &"cell_added", &"cell_removed"]:
 				if not map.is_connected(signal_name, _on_map_cell_changed):
 					map.connect(signal_name, _on_map_cell_changed)
@@ -103,6 +104,7 @@ func _ready() -> void:
 	
 	_btn_stair_toggle.pressed.connect(_on_btn_stairs_toggled)
 	
+	_UpdateLookupTable()
 	_UpdatePreviewSize()
 	_UpdateCellState()
 
@@ -120,6 +122,7 @@ func _UpdatePreviewSize() -> void:
 		ctrl.view_size = preview_size
 
 func _UpdateLookupTable() -> void:
+	if Engine.is_editor_hint(): return
 	for ctrl in [_rvc_north, _rvc_south, _rvc_east, _rvc_west, _rvc_ceiling, _rvc_ground]:
 		if ctrl == null: continue
 		ctrl.lookup_table_name = lookup_table_name
@@ -138,6 +141,8 @@ func _UpdateCellSurfaceState(ctrl : Control, btn : Button, surface : Crawl.SURFA
 			btn.icon = ICON_WALL_UNBLOCKED
 
 func _UpdateCellState() -> void:
+	if Engine.is_editor_hint(): return
+	
 	_UpdateCellSurfaceState(_rvc_north, _btn_north_blocking, Crawl.SURFACE.North)
 	_UpdateCellSurfaceState(_rvc_south, _btn_south_blocking, Crawl.SURFACE.South)
 	_UpdateCellSurfaceState(_rvc_east, _btn_east_blocking, Crawl.SURFACE.East)

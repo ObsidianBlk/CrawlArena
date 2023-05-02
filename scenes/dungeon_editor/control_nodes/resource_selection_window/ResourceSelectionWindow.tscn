@@ -1,5 +1,6 @@
-[gd_scene load_steps=2 format=3 uid="uid://bqw3jxo1pmbcv"]
+[gd_scene load_steps=3 format=3 uid="uid://bqw3jxo1pmbcv"]
 
+[ext_resource type="Script" path="res://scenes/dungeon_editor/control_nodes/resource_selection_window/ResourceSelectionWindow.gd" id="1_cbusr"]
 [ext_resource type="PackedScene" uid="uid://cu1mxbdrdfj27" path="res://scenes/dungeon_editor/control_nodes/resource_view_3d_control/ResourceView3DControl.tscn" id="1_whfvh"]
 
 [node name="ResourceSelectionWindow" type="Window"]
@@ -10,6 +11,7 @@ transient = true
 exclusive = true
 unresizable = true
 popup_window = true
+script = ExtResource("1_cbusr")
 
 [node name="PanelContainer" type="PanelContainer" parent="."]
 anchors_preset = 15
@@ -32,10 +34,12 @@ layout_mode = 2
 [node name="Scroll" type="ScrollContainer" parent="PanelContainer/VLayout/Primary/SelectionList"]
 layout_mode = 2
 
-[node name="Container" type="VBoxContainer" parent="PanelContainer/VLayout/Primary/SelectionList/Scroll"]
+[node name="ListContainer" type="VBoxContainer" parent="PanelContainer/VLayout/Primary/SelectionList/Scroll"]
+unique_name_in_owner = true
 layout_mode = 2
 
 [node name="ResourceView3DControl" parent="PanelContainer/VLayout/Primary" instance=ExtResource("1_whfvh")]
+unique_name_in_owner = true
 layout_mode = 2
 view_size = 512
 
@@ -44,6 +48,7 @@ layout_mode = 2
 
 [node name="Select" type="Button" parent="PanelContainer/VLayout/Buttons"]
 layout_mode = 2
+size_flags_horizontal = 3
 text = "Select"
 
 [node name="Control" type="Control" parent="PanelContainer/VLayout/Buttons"]
@@ -52,4 +57,5 @@ size_flags_horizontal = 3
 
 [node name="Cancel" type="Button" parent="PanelContainer/VLayout/Buttons"]
 layout_mode = 2
+size_flags_horizontal = 3
 text = "Cancel"

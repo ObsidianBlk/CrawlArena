@@ -7,8 +7,7 @@
 [ext_resource type="Texture2D" uid="uid://bla3u3m3258lj" path="res://assets/dungeon_editor/icons/icon_large_CeilingGround.svg" id="3_8akcw"]
 [ext_resource type="Texture2D" uid="uid://divihn5g5svcs" path="res://assets/dungeon_editor/icons/add_stairs.svg" id="4_gjklv"]
 
-[node name="MapCellControl" type="Control"]
-layout_mode = 3
+[node name="MapCellControl" type="CenterContainer"]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -17,9 +16,7 @@ grow_vertical = 2
 script = ExtResource("1_57c8y")
 
 [node name="AspectRatioContainer" type="AspectRatioContainer" parent="."]
-layout_mode = 0
-offset_right = 40.0
-offset_bottom = 40.0
+layout_mode = 2
 
 [node name="Layout" type="GridContainer" parent="AspectRatioContainer"]
 layout_mode = 2
@@ -46,7 +43,7 @@ expand_icon = true
 [node name="RVC_North" parent="AspectRatioContainer/Layout/North" instance=ExtResource("1_5jjkv")]
 unique_name_in_owner = true
 layout_mode = 2
-resource_section = &"walls"
+resource_section = &"wall"
 
 [node name="Control2" type="Control" parent="AspectRatioContainer/Layout"]
 custom_minimum_size = Vector2(32, 0)
@@ -87,7 +84,7 @@ expand_icon = true
 [node name="RVC_West" parent="AspectRatioContainer/Layout/West" instance=ExtResource("1_5jjkv")]
 unique_name_in_owner = true
 layout_mode = 2
-resource_section = &"walls"
+resource_section = &"wall"
 
 [node name="Compass" type="TextureRect" parent="AspectRatioContainer/Layout"]
 layout_mode = 2
@@ -105,7 +102,7 @@ size_flags_vertical = 3
 [node name="RVC_East" parent="AspectRatioContainer/Layout/East" instance=ExtResource("1_5jjkv")]
 unique_name_in_owner = true
 layout_mode = 2
-resource_section = &"walls"
+resource_section = &"wall"
 
 [node name="EastBlocking" type="Button" parent="AspectRatioContainer/Layout/East"]
 unique_name_in_owner = true
@@ -135,7 +132,7 @@ size_flags_vertical = 3
 [node name="RVC_South" parent="AspectRatioContainer/Layout/South" instance=ExtResource("1_5jjkv")]
 unique_name_in_owner = true
 layout_mode = 2
-resource_section = &"walls"
+resource_section = &"wall"
 
 [node name="SouthBlocking" type="Button" parent="AspectRatioContainer/Layout/South"]
 unique_name_in_owner = true

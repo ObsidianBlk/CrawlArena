@@ -9,20 +9,26 @@
 script = ExtResource("1_4nr3w")
 
 [node name="btn_dig_up" type="Button" parent="."]
+custom_minimum_size = Vector2(32, 32)
 layout_mode = 2
 icon = ExtResource("1_8h5uu")
 flat = true
+expand_icon = true
 
 [node name="btn_dig_foreward" type="Button" parent="."]
 modulate = Color(1, 0.388235, 0.278431, 1)
+custom_minimum_size = Vector2(32, 32)
 layout_mode = 2
 icon = ExtResource("2_d68ow")
 flat = true
+expand_icon = true
 
 [node name="btn_dig_Down" type="Button" parent="."]
+custom_minimum_size = Vector2(32, 32)
 layout_mode = 2
 icon = ExtResource("3_x1i51")
 flat = true
+expand_icon = true
 
 [connection signal="pressed" from="btn_dig_up" to="." method="_on_btn_dig_up_pressed"]
 [connection signal="pressed" from="btn_dig_foreward" to="." method="_on_btn_dig_foreward_pressed"]

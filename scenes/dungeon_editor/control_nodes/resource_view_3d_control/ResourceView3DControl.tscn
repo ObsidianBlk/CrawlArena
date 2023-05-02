@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://scenes/dungeon_editor/control_nodes/resource_view_3d_control/ResourceView3DControl.gd" id="1_35pcw"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_42ggx"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_lg6ij"]
 content_margin_left = 4.0
 content_margin_top = 4.0
 content_margin_right = 4.0
@@ -22,13 +22,15 @@ offset_right = 24.0
 offset_bottom = 24.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
+mouse_filter = 0
 script = ExtResource("1_35pcw")
 
 [node name="CPanel" type="PanelContainer" parent="."]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(32, 32)
 layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_42ggx")
+mouse_filter = 1
+theme_override_styles/panel = SubResource("StyleBoxFlat_lg6ij")
 
 [node name="CView" type="SubViewportContainer" parent="CPanel"]
 layout_mode = 2
@@ -51,4 +53,6 @@ unique_name_in_owner = true
 
 [node name="Camera3D" type="Camera3D" parent="CPanel/CView/SubViewport/Gimble/Pitch"]
 unique_name_in_owner = true
-transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, 0, 2)
+transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, 0, -2)
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="CPanel/CView/SubViewport"]

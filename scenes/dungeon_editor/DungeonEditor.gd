@@ -20,6 +20,8 @@ var _dig_direction : int = 1 # 0 = Down | 1 = Foreward | 2 = Up
 @onready var _crawl_view_3d : CrawlView3D = %CrawlView3D
 @onready var _dungeon_viewport : SubViewport = %DungeonViewport
 
+@onready var _active_cell_state : Control = %ActiveCellState
+
 
 # ------------------------------------------------------------------------------
 # Override Methods
@@ -51,6 +53,10 @@ func _ready() -> void:
 			view.cell_size = CELL_SIZE
 			view.entity = _editor_entity
 			_dungeon_viewport.add_child(view)
+	
+	_active_cell_state.map = _map
+	_active_cell_state.lookup_table_name = &"level_geometry"
+	_active_cell_state.surface_resource_pressed.connect(_on_active_cell_state_surface_resource_pressed)
 	
 	_on_map_cell_count_changed(Vector3i.ZERO)
 	_on_editor_entity_position_changed(Vector3i.ZERO, _editor_entity.position)
@@ -110,6 +116,11 @@ func _on_map_cell_count_changed(_pos : Vector3i) -> void:
 
 func _on_editor_entity_position_changed(_from : Vector3i, to : Vector3i) -> void:
 	_z_elevation_bar.z_level = to.y
+	_active_cell_state.map_position = to
 
 func _on_dig_state_direction_changed(direction : int):
 	_dig_direction = direction
+
+func _on_active_cell_state_surface_resource_pressed(surface : Crawl.SURFACE, current_resource : StringName) -> void:
+	print("Surface ", surface, " pressed. Current Resource: ", current_resource)
+

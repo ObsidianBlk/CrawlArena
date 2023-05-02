@@ -5,7 +5,7 @@ extends Control
 # ------------------------------------------------------------------------------
 # Signals
 # ------------------------------------------------------------------------------
-
+signal pressed()
 
 # ------------------------------------------------------------------------------
 # Constants
@@ -123,11 +123,14 @@ func _gui_input(event : InputEvent) -> void:
 		if event.button_index == MOUSE_BUTTON_LEFT:
 			_press_active = event.is_pressed()
 			_UpdatePanelStyle()
+			if _press_active:
+				pressed.emit()
 			accept_event()
 	elif _focus_active:
 		if event.is_action_pressed("ui_accept"):
 			_press_active = true
 			_UpdatePanelStyle()
+			pressed.emit()
 			accept_event()
 		elif event.is_action_released("ui_accept"):
 			_press_active = false
@@ -200,7 +203,7 @@ func _UpdateCameraPlacement() -> void:
 	if _gimble == null or _pitch == null or _camera == null: return
 	_gimble.position.y = camera_height
 	_pitch.rotation_degrees.x = camera_pitch_degrees
-	_camera.position.z = camera_zoom
+	_camera.position.z = -camera_zoom
 
 func _UpdateResourceNode() -> void:
 	if Engine.is_editor_hint(): return # Don't update this in editor!
@@ -219,6 +222,8 @@ func _UpdateResourceNode() -> void:
 	_resource_node = mrlt.load_meta_resource(resource_section, resource_name, true)
 	if _resource_node == null:
 		printerr("ResourceView3DControl [", self.name, "]: Failed to get resource node \"", resource_section, ":", resource_name, "\"")
+		return
+	_sub_viewport.add_child(_resource_node)
 
 
 func _AnimCamera() -> void:
