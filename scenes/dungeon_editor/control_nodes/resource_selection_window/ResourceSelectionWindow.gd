@@ -1,14 +1,19 @@
+@tool
 extends Window
 
 # ------------------------------------------------------------------------------
 # Signals
 # ------------------------------------------------------------------------------
 signal item_active(idx)
+signal item_selected(section_name, resource_name)
+signal canceled()
 
 # ------------------------------------------------------------------------------
 # Constants
 # ------------------------------------------------------------------------------
 const RESOURCEENTRYITEM : PackedScene = preload("res://scenes/dungeon_editor/control_nodes/resource_selection_window/resource_entry_item/ResourceEntryItem.tscn")
+
+const DEFAULT_THEME_TYPE : StringName = &"ResourceSelectionWindow"
 
 # ------------------------------------------------------------------------------
 # Export Variables
@@ -34,6 +39,7 @@ var _active_entry : int = -1
 # ------------------------------------------------------------------------------
 @onready var _resource_view : Control = %ResourceView3DControl
 @onready var _list_container : Control = %ListContainer
+@onready var _cpanel : PanelContainer = $CPanel
 
 
 # ------------------------------------------------------------------------------
@@ -68,12 +74,41 @@ func set_section_name(sn : StringName) -> void:
 # Override Methods
 # ------------------------------------------------------------------------------
 func _ready() -> void:
+	visibility_changed.connect(_on_visibility_changed)
+	_UpdateChildThemeTypeVariations(_GetThemeType())
 	_UpdateCameraPlacement()
-	_UpdateResourceList()
+	if visible:
+		_UpdateResourceList()
+
+func _notification(what : int) -> void:
+	match what:
+		NOTIFICATION_THEME_CHANGED:
+			if theme_type_variation != &"":
+				_UpdateChildThemeTypeVariations(theme_type_variation)
+			else:
+				_UpdateChildThemeTypeVariations(DEFAULT_THEME_TYPE)
+		NOTIFICATION_VISIBILITY_CHANGED:
+			pass
 
 # ------------------------------------------------------------------------------
 # Private Methods
 # ------------------------------------------------------------------------------
+func _GetThemeType() -> StringName:
+	if theme_type_variation != &"":
+		return theme_type_variation
+	return DEFAULT_THEME_TYPE
+
+func _UpdateChildThemeTypeVariations(variation : StringName) -> void:
+	if _resource_view != null:
+		if _resource_view.theme_type_variation != variation:
+			_resource_view.theme_type_variation = variation
+	if _cpanel != null:
+		if _cpanel.theme_type_variation != variation:
+			_cpanel.theme_type_variation = variation
+	for entry in _entries:
+		if entry.theme_type_variation != variation:
+			entry.theme_type_variation = variation
+
 func _UpdateCameraPlacement() -> void:
 	if _resource_view == null: return
 	_resource_view.camera_height = camera_height
@@ -87,8 +122,10 @@ func _ClearResourceList() -> void:
 		entry.queue_free()
 	_entries.clear()
 	_active_entry = -1
+	_resource_view.resource_name = &""
 
 func _UpdateResourceList() -> void:
+	if Engine.is_editor_hint(): return
 	_ClearResourceList()
 	if _resource_view == null: return
 	_resource_view.lookup_table_name = lookup_table_name
@@ -121,6 +158,13 @@ func has_active_entry() -> bool:
 func get_active_entry_index() -> int:
 	return _active_entry
 
+func clear_active_entry() -> void:
+	for entry in _entries:
+		if entry.is_active():
+			entry.set_active(false)
+			_resource_view.resource_name = &""
+			break
+
 func set_entry_metadata(idx : int, metadata : Variant) -> void:
 	if idx >= 0 and idx < _entries.size():
 		_entries[idx].set_meta_data(metadata)
@@ -133,7 +177,23 @@ func get_entry_metadata(idx : int) -> Variant:
 # ------------------------------------------------------------------------------
 # Handler Methods
 # ------------------------------------------------------------------------------
+func _on_visibility_changed() -> void:
+	if visible:
+		_UpdateResourceList()
+
 func _on_entry_active(idx : int, resource_name : StringName) -> void:
 	_resource_view.resource_name = resource_name
 	_active_entry = idx
 	item_active.emit(idx)
+
+func _on_select_pressed():
+	if lookup_table_name == &"" or section_name == &"": return
+	if _active_entry < 0: return
+	item_selected.emit(section_name, _resource_view.resource_name)
+	clear_active_entry()
+	visible = false
+
+func _on_cancel_pressed():
+	clear_active_entry()
+	visible = false
+	canceled.emit()

@@ -1,14 +1,82 @@
-[gd_scene load_steps=15 format=3 uid="uid://pxet627daewv"]
+[gd_scene load_steps=22 format=3 uid="uid://pxet627daewv"]
 
 [ext_resource type="Script" path="res://scenes/dungeon_editor/DungeonEditor.gd" id="1_1jgi3"]
 [ext_resource type="Script" path="res://addons/CrawlDCS/nodes/controls/CrawlMiniMap.gd" id="1_pbq68"]
 [ext_resource type="PackedScene" uid="uid://csu0fi8ek2tkk" path="res://scenes/dungeon_editor/ui/dig_state/DigState.tscn" id="2_0bexf"]
+[ext_resource type="PackedScene" uid="uid://bqw3jxo1pmbcv" path="res://scenes/dungeon_editor/control_nodes/resource_selection_window/ResourceSelectionWindow.tscn" id="2_6l5h0"]
 [ext_resource type="Script" path="res://addons/CrawlDCS/nodes/3d/CrawlView3D.gd" id="5_6ffkw"]
 [ext_resource type="Script" path="res://scenes/dungeon_editor/control_nodes/ZElevationBar.gd" id="5_dby4r"]
 [ext_resource type="PackedScene" uid="uid://dlnthjlobn6wo" path="res://scenes/dungeon_editor/control_nodes/map_cell_control/MapCellControl.tscn" id="6_1clgy"]
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_wu536"]
+bg_color = Color(0.168627, 0.168627, 0.168627, 0.784314)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_blend = true
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_3t1pj"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_0pci3"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_y402g"]
+content_margin_left = 12.0
+content_margin_top = 8.0
+content_margin_right = 12.0
+content_margin_bottom = 8.0
+bg_color = Color(0.176471, 0.176471, 0.176471, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_jhuj1"]
+content_margin_left = 4.0
+content_margin_top = 4.0
+content_margin_right = 4.0
+content_margin_bottom = 4.0
+bg_color = Color(0, 0, 0, 0)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.45098, 0.45098, 0.45098, 1)
+border_blend = true
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_i5x0t"]
+content_margin_left = 4.0
+content_margin_top = 4.0
+content_margin_right = 4.0
+content_margin_bottom = 4.0
+bg_color = Color(0, 0, 0, 0)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_blend = true
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_01eyq"]
+content_margin_left = 4.0
+content_margin_top = 4.0
+content_margin_right = 4.0
+content_margin_bottom = 4.0
+bg_color = Color(0, 0, 0, 0)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pwhqc"]
+content_margin_left = 4.0
+content_margin_top = 4.0
+content_margin_right = 4.0
+content_margin_bottom = 4.0
+bg_color = Color(0, 0, 0, 0)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.552941, 0.67451, 0.8, 1)
+
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_8aw88"]
-bg_color = Color(0.254902, 0.254902, 0.254902, 1)
+bg_color = Color(0.360784, 0.360784, 0.360784, 1)
 border_width_top = 1
 border_width_bottom = 1
 border_blend = true
@@ -28,9 +96,18 @@ corner_radius_top_right = 8
 corner_radius_bottom_right = 8
 corner_radius_bottom_left = 8
 
-[sub_resource type="Theme" id="Theme_7e3yk"]
+[sub_resource type="Theme" id="Theme_juc02"]
+CrawlMiniMap/styles/background = SubResource("StyleBoxFlat_wu536")
+ResourceSelectionWindow/styles/item_normal = SubResource("StyleBoxFlat_3t1pj")
+ResourceSelectionWindow/styles/normal = SubResource("StyleBoxEmpty_0pci3")
+ResourceSelectionWindow/styles/panel = SubResource("StyleBoxFlat_y402g")
+ResourceView3DControl/styles/focus = SubResource("StyleBoxFlat_jhuj1")
+ResourceView3DControl/styles/hover = SubResource("StyleBoxFlat_i5x0t")
+ResourceView3DControl/styles/normal = SubResource("StyleBoxFlat_01eyq")
+ResourceView3DControl/styles/pressed = SubResource("StyleBoxFlat_pwhqc")
 ZElevationBar/colors/font_color = Color(1, 1, 1, 1)
 ZElevationBar/constants/spacing = 8
+ZElevationBar/font_sizes/font_size = 36
 ZElevationBar/styles/background = SubResource("StyleBoxFlat_8aw88")
 ZElevationBar/styles/highlight = SubResource("StyleBoxFlat_yyjc6")
 
@@ -43,21 +120,6 @@ environment = SubResource("Environment_v3143")
 
 [sub_resource type="BoxMesh" id="BoxMesh_pg1a3"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_wu536"]
-bg_color = Color(0.184314, 0.184314, 0.184314, 0.784314)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_blend = true
-corner_radius_top_left = 8
-corner_radius_top_right = 8
-corner_radius_bottom_right = 8
-corner_radius_bottom_left = 8
-
-[sub_resource type="Theme" id="Theme_jw5mm"]
-CrawlMiniMap/styles/background = SubResource("StyleBoxFlat_wu536")
-
 [node name="DungeonEditor" type="Control"]
 layout_mode = 3
 anchors_preset = 15
@@ -65,7 +127,13 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme = SubResource("Theme_juc02")
 script = ExtResource("1_1jgi3")
+
+[node name="RSW_Level" parent="." instance=ExtResource("2_6l5h0")]
+unique_name_in_owner = true
+size = Vector2i(796, 571)
+visible = false
 
 [node name="Minimap" type="HBoxContainer" parent="."]
 layout_mode = 1
@@ -91,7 +159,6 @@ layout_mode = 2
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
-theme = SubResource("Theme_7e3yk")
 script = ExtResource("5_dby4r")
 max_z_level = 2
 
@@ -127,7 +194,7 @@ lookup_table_name = &"level_geometry"
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, -1.287)
 mesh = SubResource("BoxMesh_pg1a3")
 
-[node name="OmniLight3D" type="OmniLight3D" parent="Minimap/Control/DungeonView/DungeonViewport"]
+[node name="OmniLight3D" type="DirectionalLight3D" parent="Minimap/Control/DungeonView/DungeonViewport"]
 
 [node name="MarginContainer" type="MarginContainer" parent="Minimap/Control"]
 layout_mode = 1
@@ -148,7 +215,6 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(512, 384)
 layout_mode = 2
 size_flags_horizontal = 3
-theme = SubResource("Theme_jw5mm")
 script = ExtResource("1_pbq68")
 cell_size = 32.0
 show_invisible_walls = true

@@ -11,19 +11,20 @@ signal active()
 # Constants
 # ------------------------------------------------------------------------------
 const DEFAULT_THEME_TYPE : StringName = &"ResourceSelectionWindow"
-const THEME_STYLE_NORMAL : String = "normal"
-const THEME_STYLE_HOVER : String = "hover"
-const THEME_STYLE_FOCUS : String = "focus"
-const THEME_STYLE_ACTIVE : String = "active"
+const THEME_STYLE_BASE : String = "item"
+const THEME_STATE_NORMAL : String = "normal"
+const THEME_STATE_HOVER : String = "hover"
+const THEME_STATE_FOCUS : String = "focus"
+const THEME_STATE_ACTIVE : String = "active"
 
-const THEME_FONT_HEADING : String = "heading"
-const THEME_FONT_SIZE_HEADING : String = "heading_size"
+const THEME_FONT_HEADING : String = "item_heading"
+const THEME_FONT_SIZE_HEADING : String = "item_heading_size"
 
-const THEME_FONT_NAME : String = "name"
-const THEME_FONT_SIZE_NAME : String = "name_size"
+const THEME_FONT_NAME : String = "item_name"
+const THEME_FONT_SIZE_NAME : String = "item_name_size"
 
-const THEME_FONT_DESCRIPTION : String = "description"
-const THEME_FONT_SIZE_DESCRIPTION : String = "description_size"
+const THEME_FONT_DESCRIPTION : String = "item_description"
+const THEME_FONT_SIZE_DESCRIPTION : String = "item_description_size"
 
 # ------------------------------------------------------------------------------
 # Export Variables
@@ -127,16 +128,17 @@ func _GetThemeFontSize(font_size_name : StringName) -> int:
 	return get_theme_font_size(font_size_name, _GetThemeType())
 
 func _UpdateTheme() -> void:
-	var state : String = THEME_STYLE_NORMAL
+	var state : String = THEME_STATE_NORMAL
 	if _item_active:
-		state = THEME_STYLE_ACTIVE
+		state = THEME_STATE_ACTIVE
 	elif _hover_active:
-		state = THEME_STYLE_HOVER
+		state = THEME_STATE_HOVER
 	elif _focus_active:
-		state = THEME_STYLE_FOCUS
+		state = THEME_STATE_FOCUS
 		
 	if _cpanel != null:
-		_cpanel.add_theme_stylebox_override(&"panel", _GetThemeStyleBox(state))
+		var sb : StyleBox = _GetThemeStyleBox("%s_%s"%[THEME_STYLE_BASE, state])
+		_cpanel.add_theme_stylebox_override(&"panel", sb)
 	
 	if _lbl_description_heading != null and _lbl_name_heading != null:
 		var font : Font = _GetThemeFont("%s_%s"%[THEME_FONT_HEADING, state])
@@ -162,6 +164,13 @@ func _UpdateTheme() -> void:
 # ------------------------------------------------------------------------------
 # Public Methods
 # ------------------------------------------------------------------------------
+func is_active() -> bool:
+	return _item_active
+
+func set_active(active : bool) -> void:
+	_item_active = active
+	_UpdateTheme()
+
 func set_meta_data(meta : Variant) -> void:
 	_meta = meta
 

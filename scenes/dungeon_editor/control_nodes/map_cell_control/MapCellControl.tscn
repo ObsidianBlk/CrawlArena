@@ -66,6 +66,7 @@ expand_icon = true
 unique_name_in_owner = true
 layout_mode = 2
 resource_section = &"ceiling"
+camera_pitch_degrees = 10.0
 
 [node name="West" type="HBoxContainer" parent="AspectRatioContainer/Layout"]
 layout_mode = 2
@@ -158,6 +159,7 @@ size_flags_vertical = 3
 unique_name_in_owner = true
 layout_mode = 2
 resource_section = &"ground"
+camera_pitch_degrees = -10.0
 
 [node name="GroundBlocking" type="Button" parent="AspectRatioContainer/Layout/Ground"]
 unique_name_in_owner = true

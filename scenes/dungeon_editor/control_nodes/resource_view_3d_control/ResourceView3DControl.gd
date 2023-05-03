@@ -122,7 +122,7 @@ func _gui_input(event : InputEvent) -> void:
 	if _mouse_entered and is_instance_of(event, InputEventMouseButton):
 		if event.button_index == MOUSE_BUTTON_LEFT:
 			_press_active = event.is_pressed()
-			_UpdatePanelStyle()
+			_UpdatePanelStyle.call_deferred()
 			if _press_active:
 				pressed.emit()
 			accept_event()
@@ -186,7 +186,7 @@ func _GetThemeStyleBox(style_name : StringName) -> StyleBox:
 
 func _UpdatePanelStyle() -> void:
 	if _cpanel == null: return
-	if _press_active:
+	if _mouse_entered and _press_active:
 		_cpanel.add_theme_stylebox_override(&"panel", _GetThemeStyleBox(THEME_STYLE_PRESS))
 	elif _mouse_entered:
 		_cpanel.add_theme_stylebox_override(&"panel", _GetThemeStyleBox(THEME_STYLE_HOVER))
@@ -238,7 +238,7 @@ func _AnimCamera() -> void:
 	_anim_active = true
 	var tween : Tween = create_tween()
 	tween.set_ease(Tween.EASE_IN_OUT)
-	tween.tween_property(_gimble, "rotation_degrees:z", arc * 0.5, dur * 0.5)
+	tween.tween_property(_gimble, "rotation_degrees:y", arc * 0.5, dur * 0.5)
 	await(tween.finished)
 	
 	if not enable_seesaw:
@@ -248,7 +248,7 @@ func _AnimCamera() -> void:
 	
 	tween = create_tween()
 	tween.set_ease(Tween.EASE_IN_OUT)
-	tween.tween_property(_gimble, "rotation_degrees:z", -(arc * 0.5), dur)
+	tween.tween_property(_gimble, "rotation_degrees:y", -(arc * 0.5), dur)
 	await(tween.finished)
 	
 	if not enable_seesaw:
@@ -258,7 +258,7 @@ func _AnimCamera() -> void:
 	
 	tween = create_tween()
 	tween.set_ease(Tween.EASE_IN_OUT)
-	tween.tween_property(_gimble, "rotation_degrees:z", 0.0, dur * 0.5)
+	tween.tween_property(_gimble, "rotation_degrees:y", 0.0, dur * 0.5)
 	tween.finished.connect(
 		func():
 			_anim_active = false

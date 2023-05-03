@@ -89,9 +89,13 @@ func _DrawZLevelText(rect : Rect2) -> void:
 	var font : Font = _GetThemeFont(THEME_FONT)
 	var font_size : int = _GetThemeFontSize(THEME_FONT_SIZE)
 	var font_color : Color = _GetThemeColor(THEME_FONT_COLOR)
-	var pos : Vector2 = rect.position + rect.size * 0.5
-
-	draw_string(font, pos, "%d"%[z_level], HORIZONTAL_ALIGNMENT_CENTER, -1, font_size, font_color)
+	
+	var text : String = "%d"%[z_level]
+	var text_size : Vector2 = font.get_string_size(text,HORIZONTAL_ALIGNMENT_LEFT, -1, font_size)
+	text_size.y = 0.0
+	var pos : Vector2 = (rect.position + rect.size * 0.5) - (text_size * 0.5)
+	
+	draw_string(font, pos, text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, font_color)
 
 func _GetThemeType() -> StringName:
 	if theme_type_variation != &"":

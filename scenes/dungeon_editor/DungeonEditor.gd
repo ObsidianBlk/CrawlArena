@@ -22,6 +22,7 @@ var _dig_direction : int = 1 # 0 = Down | 1 = Foreward | 2 = Up
 
 @onready var _active_cell_state : Control = %ActiveCellState
 
+@onready var _rsw_level : Window = %RSW_Level
 
 # ------------------------------------------------------------------------------
 # Override Methods
@@ -57,6 +58,8 @@ func _ready() -> void:
 	_active_cell_state.map = _map
 	_active_cell_state.lookup_table_name = &"level_geometry"
 	_active_cell_state.surface_resource_pressed.connect(_on_active_cell_state_surface_resource_pressed)
+	
+	_rsw_level.lookup_table_name = &"level_geometry"
 	
 	_on_map_cell_count_changed(Vector3i.ZERO)
 	_on_editor_entity_position_changed(Vector3i.ZERO, _editor_entity.position)
@@ -122,5 +125,30 @@ func _on_dig_state_direction_changed(direction : int):
 	_dig_direction = direction
 
 func _on_active_cell_state_surface_resource_pressed(surface : Crawl.SURFACE, current_resource : StringName) -> void:
-	print("Surface ", surface, " pressed. Current Resource: ", current_resource)
+	if _rsw_level.visible: return
+	if not _rsw_level.item_selected.is_connected(_on_level_item_selected.bind(surface)):
+		_rsw_level.item_selected.connect(_on_level_item_selected.bind(surface))
+	if not _rsw_level.canceled.is_connected(_on_level_item_selection_canceled.bind(surface)):
+		_rsw_level.canceled.connect(_on_level_item_selection_canceled.bind(surface))
+	match surface:
+		Crawl.SURFACE.Ground:
+			_rsw_level.section_name = &"ground"
+		Crawl.SURFACE.Ceiling:
+			_rsw_level.section_name = &"ceiling"
+		_:
+			_rsw_level.section_name = &"wall"
+	_rsw_level.popup_centered()
 
+func _on_level_item_selected(section_name : StringName, resource_name : StringName, surface : Crawl.SURFACE) -> void:
+	if _map == null: return
+	var mrid : int = _map.get_resource_id(resource_name)
+	if mrid < 0 and resource_name != &"":
+		mrid = _map.add_resource(resource_name)
+	_map.set_cell_surface_resource(_editor_entity.position, surface, mrid,true)
+	_on_level_item_selection_canceled.call_deferred(surface)
+
+func _on_level_item_selection_canceled(surface : Crawl.SURFACE) -> void:
+	if _rsw_level.item_selected.is_connected(_on_level_item_selected.bind(surface)):
+		_rsw_level.item_selected.disconnect(_on_level_item_selected.bind(surface))
+	if _rsw_level.canceled.is_connected(_on_level_item_selection_canceled.bind(surface)):
+		_rsw_level.canceled.disconnect(_on_level_item_selection_canceled.bind(surface))
