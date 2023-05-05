@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://scenes/dungeon_editor/control_nodes/resource_view_3d_control/ResourceView3DControl.gd" id="1_35pcw"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_p8n5m"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_t5p2l"]
 content_margin_left = 4.0
 content_margin_top = 4.0
 content_margin_right = 4.0
@@ -24,13 +24,15 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 mouse_filter = 0
 script = ExtResource("1_35pcw")
+resource_position = null
+duration = 1.0
 
 [node name="CPanel" type="PanelContainer" parent="."]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(32, 32)
 layout_mode = 2
 mouse_filter = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_p8n5m")
+theme_override_styles/panel = SubResource("StyleBoxFlat_t5p2l")
 
 [node name="CView" type="SubViewportContainer" parent="CPanel"]
 layout_mode = 2

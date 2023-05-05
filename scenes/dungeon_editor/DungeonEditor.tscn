@@ -134,6 +134,7 @@ script = ExtResource("1_1jgi3")
 unique_name_in_owner = true
 size = Vector2i(796, 571)
 visible = false
+allow_none = true
 
 [node name="Minimap" type="HBoxContainer" parent="."]
 layout_mode = 1

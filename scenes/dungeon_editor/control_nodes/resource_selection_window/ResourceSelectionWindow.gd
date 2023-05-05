@@ -19,6 +19,7 @@ const DEFAULT_THEME_TYPE : StringName = &"ResourceSelectionWindow"
 # Export Variables
 # ------------------------------------------------------------------------------
 @export_category("Resource Selection Window")
+@export var allow_none : bool = true
 @export_group("View")
 @export var camera_height : float = 1.0:									set = set_camera_height
 @export_range(-90.0, 90.0, 0.1) var camera_pitch_degrees : float = 0.0:		set = set_camera_pitch_degrees
@@ -45,6 +46,11 @@ var _active_entry : int = -1
 # ------------------------------------------------------------------------------
 # Setters
 # ------------------------------------------------------------------------------
+func set_allow_none(n : bool) -> void:
+	if n != allow_none:
+		allow_none = n
+		_UpdateResourceList()
+
 func set_camera_height(h : float) -> void:
 	if h != camera_height:
 		camera_height = h
@@ -137,17 +143,25 @@ func _UpdateResourceList() -> void:
 	if mrlt == null: return
 	if not mrlt.has_section(section_name): return
 	
+	var StoreEntry = func(info : Dictionary, empty_resource_name : bool = false):
+		var entry = RESOURCEENTRYITEM.instantiate()
+		if entry != null:
+			entry.entry_name = info["name"]
+			entry.description = info["description"]
+			var idx : int = _entries.size()
+			_entries.append(entry)
+			_list_container.add_child(entry)
+			entry.active.connect(_on_entry_active.bind(
+				idx,
+				&"" if empty_resource_name else info["name"]
+			))
+	
+	if allow_none:
+		StoreEntry.call({"name":&"Empty", "description":"Empty Selection"}, true)
+	
 	var info_list : Array = mrlt.get_meta_resource_descriptions(section_name)
 	for info in info_list:
-		var entry = RESOURCEENTRYITEM.instantiate()
-		if entry == null: continue
-		entry.entry_name = info["name"]
-		entry.description = info["description"]
-		var idx : int = _entries.size()
-		_entries.append(entry)
-		_list_container.add_child(entry)
-		
-		entry.active.connect(_on_entry_active.bind(idx, info["name"]))
+		StoreEntry.call(info)
 
 # ------------------------------------------------------------------------------
 # Public Methods

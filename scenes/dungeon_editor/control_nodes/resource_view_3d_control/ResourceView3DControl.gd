@@ -24,6 +24,7 @@ const THEME_STYLE_PRESS : StringName = &"press"
 @export var lookup_table_name : StringName = &"":							set = set_lookup_table_name
 @export var resource_section : StringName = &"":							set = set_resource_section
 @export var resource_name : StringName = &"":								set = set_resource_name
+@export var resource_position : Vector3 = Vector3.ZERO:						set = set_resource_position
 @export_group("Sizing")
 @export var view_size : int = 32:											set = set_view_size
 @export_group("Camera")
@@ -33,7 +34,7 @@ const THEME_STYLE_PRESS : StringName = &"press"
 @export_group("Animation")
 @export var enable_seesaw : bool = true:									set = set_enable_seesaw
 @export_range(0.0, 180.0, 0.1) var arc_degrees : float = 90.0:				set = set_arc_degrees
-@export var duration : float = 1.0:											set = set_duration
+@export var duration : float = 2.0:											set = set_duration
 
 # ------------------------------------------------------------------------------
 # Variables
@@ -72,6 +73,11 @@ func set_resource_name(rn : StringName) -> void:
 	if rn != resource_name:
 		resource_name = rn
 		_UpdateResourceNode()
+
+func set_resource_position(rp : Vector3) -> void:
+	resource_position = rp
+	if _resource_node != null:
+		_resource_node.position = resource_position
 
 func set_view_size(s : int) -> void:
 	if s > 0 and s != view_size:
@@ -224,6 +230,7 @@ func _UpdateResourceNode() -> void:
 		printerr("ResourceView3DControl [", self.name, "]: Failed to get resource node \"", resource_section, ":", resource_name, "\"")
 		return
 	_sub_viewport.add_child(_resource_node)
+	_resource_node.position = resource_position
 
 
 func _AnimCamera() -> void:

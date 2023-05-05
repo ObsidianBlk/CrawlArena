@@ -12,6 +12,7 @@ exclusive = true
 unresizable = true
 popup_window = true
 script = ExtResource("1_cbusr")
+allow_none = null
 
 [node name="CPanel" type="PanelContainer" parent="."]
 anchors_preset = 15
@@ -19,6 +20,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme_type_variation = &"ResourceSelectionWindow"
 
 [node name="VLayout" type="VBoxContainer" parent="CPanel"]
 layout_mode = 2
@@ -42,7 +44,10 @@ layout_mode = 2
 unique_name_in_owner = true
 layout_mode = 2
 mouse_filter = 2
+theme_type_variation = &"ResourceSelectionWindow"
+resource_position = null
 view_size = 512
+duration = 1.0
 
 [node name="Buttons" type="HBoxContainer" parent="CPanel/VLayout"]
 layout_mode = 2
