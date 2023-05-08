@@ -12,7 +12,6 @@ exclusive = true
 unresizable = true
 popup_window = true
 script = ExtResource("1_cbusr")
-allow_none = null
 
 [node name="CPanel" type="PanelContainer" parent="."]
 anchors_preset = 15
@@ -39,15 +38,14 @@ layout_mode = 2
 [node name="ListContainer" type="VBoxContainer" parent="CPanel/VLayout/Primary/SelectionList/Scroll"]
 unique_name_in_owner = true
 layout_mode = 2
+size_flags_horizontal = 3
 
 [node name="ResourceView3DControl" parent="CPanel/VLayout/Primary" instance=ExtResource("1_whfvh")]
 unique_name_in_owner = true
 layout_mode = 2
 mouse_filter = 2
 theme_type_variation = &"ResourceSelectionWindow"
-resource_position = null
 view_size = 512
-duration = 1.0
 
 [node name="Buttons" type="HBoxContainer" parent="CPanel/VLayout"]
 layout_mode = 2

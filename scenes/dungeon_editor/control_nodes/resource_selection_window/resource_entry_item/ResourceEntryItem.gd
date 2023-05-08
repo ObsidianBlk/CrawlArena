@@ -17,14 +17,9 @@ const THEME_STATE_HOVER : String = "hover"
 const THEME_STATE_FOCUS : String = "focus"
 const THEME_STATE_ACTIVE : String = "active"
 
-const THEME_FONT_HEADING : String = "item_heading"
-const THEME_FONT_SIZE_HEADING : String = "item_heading_size"
-
 const THEME_FONT_NAME : String = "item_name"
 const THEME_FONT_SIZE_NAME : String = "item_name_size"
 
-const THEME_FONT_DESCRIPTION : String = "item_description"
-const THEME_FONT_SIZE_DESCRIPTION : String = "item_description_size"
 
 # ------------------------------------------------------------------------------
 # Export Variables
@@ -48,10 +43,7 @@ var _item_active : bool = false
 # Onready Variables
 # ------------------------------------------------------------------------------
 @onready var _cpanel : PanelContainer = $CPanel
-@onready var _lbl_name_heading : Label = $CPanel/Layout/LblNameHeading
-@onready var _lbl_name : Label = $CPanel/Layout/LblName
-@onready var _lbl_description_heading : Label = $CPanel/Layout/LblDescriptionHeading
-@onready var _lbl_description : Label = $CPanel/Layout/LblDescription
+@onready var _lbl_name : Label = $CPanel/LblName
 
 
 # ------------------------------------------------------------------------------
@@ -64,8 +56,7 @@ func set_entry_name(n : String) -> void:
 
 func set_description(d : String) -> void:
 	description = d
-	if _lbl_description != null:
-		_lbl_description.text = description
+	tooltip_text = description
 
 # ------------------------------------------------------------------------------
 # Override Methods
@@ -140,25 +131,11 @@ func _UpdateTheme() -> void:
 		var sb : StyleBox = _GetThemeStyleBox("%s_%s"%[THEME_STYLE_BASE, state])
 		_cpanel.add_theme_stylebox_override(&"panel", sb)
 	
-	if _lbl_description_heading != null and _lbl_name_heading != null:
-		var font : Font = _GetThemeFont("%s_%s"%[THEME_FONT_HEADING, state])
-		var font_size : int = _GetThemeFontSize("%s_%s"%[THEME_FONT_SIZE_HEADING, state])
-		_lbl_description_heading.add_theme_font_override(&"font", font)
-		_lbl_description_heading.add_theme_font_size_override(&"font_size", font_size)
-		_lbl_name_heading.add_theme_font_override(&"font", font)
-		_lbl_name_heading.add_theme_font_size_override(&"font_size", font_size)
-	
 	if _lbl_name != null:
 		var font : Font = _GetThemeFont("%s_%s"%[THEME_FONT_NAME, state])
 		var font_size : int = _GetThemeFontSize("%s_%s"%[THEME_FONT_SIZE_NAME, state])
 		_lbl_name.add_theme_font_override(&"font", font)
 		_lbl_name.add_theme_font_size_override(&"font_size", font_size)
-	
-	if _lbl_description != null:
-		var font : Font = _GetThemeFont("%s_%s"%[THEME_FONT_DESCRIPTION, state])
-		var font_size : int = _GetThemeFontSize("%s_%s"%[THEME_FONT_SIZE_DESCRIPTION, state])
-		_lbl_description.add_theme_font_override(&"font", font)
-		_lbl_description.add_theme_font_size_override(&"font_size", font_size)
 
 
 # ------------------------------------------------------------------------------
