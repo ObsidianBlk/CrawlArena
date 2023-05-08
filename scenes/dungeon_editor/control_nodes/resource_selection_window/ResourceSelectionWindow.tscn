@@ -12,6 +12,8 @@ exclusive = true
 unresizable = true
 popup_window = true
 script = ExtResource("1_cbusr")
+camera_height = 2.2
+light_angle_degrees = null
 
 [node name="CPanel" type="PanelContainer" parent="."]
 anchors_preset = 15
@@ -46,6 +48,8 @@ layout_mode = 2
 mouse_filter = 2
 theme_type_variation = &"ResourceSelectionWindow"
 view_size = 512
+light_angle_degrees = 0.0
+camera_height = 2.2
 
 [node name="Buttons" type="HBoxContainer" parent="CPanel/VLayout"]
 layout_mode = 2

@@ -24,10 +24,11 @@ const DEFAULT_THEME_TYPE : StringName = &"ResourceSelectionWindow"
 @export var camera_height : float = 1.0:									set = set_camera_height
 @export_range(-90.0, 90.0, 0.1) var camera_pitch_degrees : float = 0.0:		set = set_camera_pitch_degrees
 @export var camera_zoom : float = 2.0:										set = set_camera_zoom
+@export_range(-90.0, 90.0, 0.1) var light_angle_degrees : float = 0.0:		set = set_light_angle_degrees
 @export_group("Resource")
 @export var lookup_table_name : StringName = &"":							set = set_lookup_table_name
 @export var section_name : StringName = &"":								set = set_section_name
-
+@export var resource_position : Vector3 = Vector3.ZERO:						set = set_resource_position
 
 # ------------------------------------------------------------------------------
 # Variables
@@ -66,6 +67,12 @@ func set_camera_zoom(z : float) -> void:
 		camera_zoom = z
 		_UpdateCameraPlacement()
 
+func set_light_angle_degrees(d : float) -> void:
+	if d >= -90.0 and d <= 90.0:
+		light_angle_degrees = d
+		if _resource_view != null:
+			_resource_view.light_angle_degrees = light_angle_degrees
+
 func set_lookup_table_name(ltn : StringName) -> void:
 	if ltn != lookup_table_name:
 		lookup_table_name = ltn
@@ -76,10 +83,17 @@ func set_section_name(sn : StringName) -> void:
 		section_name = sn
 		_UpdateResourceList()
 
+func set_resource_position(p : Vector3) -> void:
+	resource_position = p
+	if _resource_view != null:
+		_resource_view.resource_position = resource_position
+
 # ------------------------------------------------------------------------------
 # Override Methods
 # ------------------------------------------------------------------------------
 func _ready() -> void:
+	set_resource_position(resource_position)
+	set_light_angle_degrees(light_angle_degrees)
 	visibility_changed.connect(_on_visibility_changed)
 	_UpdateChildThemeTypeVariations(_GetThemeType())
 	_UpdateCameraPlacement()

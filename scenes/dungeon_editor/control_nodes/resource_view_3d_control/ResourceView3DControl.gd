@@ -27,6 +27,8 @@ const THEME_STYLE_PRESS : StringName = &"press"
 @export var resource_position : Vector3 = Vector3.ZERO:						set = set_resource_position
 @export_group("Sizing")
 @export var view_size : int = 32:											set = set_view_size
+@export_group("Lighting")
+@export_range(-90.0, 90.0, 0.1) var light_angle_degrees : float = 0.0:		set = set_light_angle_degrees
 @export_group("Camera")
 @export var camera_height : float = 1.0:									set = set_camera_height
 @export_range(-90.0, 90.0, 0.1) var camera_pitch_degrees : float = 0.0:		set = set_camera_pitch_degrees
@@ -55,6 +57,7 @@ var _resource_node : Node3D = null
 @onready var _camera : Camera3D = %Camera3D
 @onready var _gimble : Node3D = %Gimble
 @onready var _pitch : Node3D = %Pitch
+@onready var _sun : DirectionalLight3D = %Sun
 
 # ------------------------------------------------------------------------------
 # Setters
@@ -83,6 +86,12 @@ func set_view_size(s : int) -> void:
 	if s > 0 and s != view_size:
 		view_size = s
 		_UpdatePanelSize()
+
+func set_light_angle_degrees(d : float) -> void:
+	if d >= -90.0 and d <= 90.0:
+		light_angle_degrees = d
+		if _sun != null:
+			_sun.rotation_degrees.x = light_angle_degrees
 
 func set_camera_height(h : float) -> void:
 	if h != camera_height:
@@ -117,6 +126,7 @@ func set_duration(d : float) -> void:
 # Override Methods
 # ------------------------------------------------------------------------------
 func _ready() -> void:
+	set_light_angle_degrees(light_angle_degrees)
 	_UpdatePanelStyle()
 	_UpdatePanelSize()
 	_UpdateCameraPlacement()

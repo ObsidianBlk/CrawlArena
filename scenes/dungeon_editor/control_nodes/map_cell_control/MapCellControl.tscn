@@ -14,6 +14,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_57c8y")
+hide_stairs = null
 
 [node name="AspectRatioContainer" type="AspectRatioContainer" parent="."]
 layout_mode = 2
@@ -44,7 +45,7 @@ expand_icon = true
 unique_name_in_owner = true
 layout_mode = 2
 resource_section = &"wall"
-resource_position = Vector3(0, 0, 0)
+light_angle_degrees = 0.0
 
 [node name="Control2" type="Control" parent="AspectRatioContainer/Layout"]
 custom_minimum_size = Vector2(32, 0)
@@ -68,6 +69,7 @@ unique_name_in_owner = true
 layout_mode = 2
 resource_section = &"ceiling"
 resource_position = Vector3(0, 2.2, 0)
+light_angle_degrees = 90.0
 camera_height = 0.0
 camera_pitch_degrees = -80.0
 
@@ -89,7 +91,7 @@ expand_icon = true
 unique_name_in_owner = true
 layout_mode = 2
 resource_section = &"wall"
-resource_position = Vector3(0, 0, 0)
+light_angle_degrees = 0.0
 
 [node name="Compass" type="TextureRect" parent="AspectRatioContainer/Layout"]
 layout_mode = 2
@@ -108,7 +110,7 @@ size_flags_vertical = 3
 unique_name_in_owner = true
 layout_mode = 2
 resource_section = &"wall"
-resource_position = Vector3(0, 0, 0)
+light_angle_degrees = 0.0
 
 [node name="EastBlocking" type="Button" parent="AspectRatioContainer/Layout/East"]
 unique_name_in_owner = true
@@ -139,7 +141,7 @@ size_flags_vertical = 3
 unique_name_in_owner = true
 layout_mode = 2
 resource_section = &"wall"
-resource_position = Vector3(0, 0, 0)
+light_angle_degrees = 0.0
 
 [node name="SouthBlocking" type="Button" parent="AspectRatioContainer/Layout/South"]
 unique_name_in_owner = true
@@ -165,7 +167,7 @@ size_flags_vertical = 3
 unique_name_in_owner = true
 layout_mode = 2
 resource_section = &"ground"
-resource_position = Vector3(0, 0, 0)
+light_angle_degrees = -90.0
 camera_height = 2.2
 camera_pitch_degrees = 80.0
 

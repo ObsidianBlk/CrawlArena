@@ -130,13 +130,22 @@ func _on_active_cell_state_surface_resource_pressed(surface : Crawl.SURFACE, cur
 		_rsw_level.item_selected.connect(_on_level_item_selected.bind(surface))
 	if not _rsw_level.canceled.is_connected(_on_level_item_selection_canceled.bind(surface)):
 		_rsw_level.canceled.connect(_on_level_item_selection_canceled.bind(surface))
+	_rsw_level.resource_position = Vector3.ZERO
 	match surface:
 		Crawl.SURFACE.Ground:
 			_rsw_level.section_name = &"ground"
+			_rsw_level.camera_pitch_degrees = 80.0
+			_rsw_level.light_angle_degrees = -90.0
 		Crawl.SURFACE.Ceiling:
 			_rsw_level.section_name = &"ceiling"
+			_rsw_level.camera_pitch_degrees = -80.0
+			_rsw_level.resource_position = Vector3(0.0, 4.4, 0.0)
+			_rsw_level.light_angle_degrees = 90.0
 		_:
 			_rsw_level.section_name = &"wall"
+			_rsw_level.camera_pitch_degrees = 0.0
+			_rsw_level.camera_zoom = 4
+			_rsw_level.light_angle_degrees = 0.0
 	_rsw_level.popup_centered()
 
 func _on_level_item_selected(section_name : StringName, resource_name : StringName, surface : Crawl.SURFACE) -> void:

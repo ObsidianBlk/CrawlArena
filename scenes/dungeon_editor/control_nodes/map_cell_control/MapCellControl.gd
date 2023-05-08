@@ -23,6 +23,7 @@ const ICON_WALL_UNBLOCKED : Texture = preload("res://assets/dungeon_editor/icons
 @export_category("Map Cell Control")
 @export_group("Visuals")
 @export var preview_size : int = 32:							set = set_preview_size
+@export var hide_stairs : bool = false:							set = set_hide_stairs
 @export_group("Resource")
 @export var map : CrawlMap = null:								set = set_map
 @export var map_position : Vector3i = Vector3i.ZERO:			set = set_map_position
@@ -61,6 +62,11 @@ func set_preview_size(s : int) -> void:
 		preview_size = s
 		_UpdatePreviewSize()
 
+func set_hide_stairs(h : bool) -> void:
+	hide_stairs = h
+	if _btn_stair_toggle != null:
+		_btn_stair_toggle.visible = not hide_stairs
+
 func set_map(m : CrawlMap) -> void:
 	if m != map:
 		if not Engine.is_editor_hint() and map != null:
@@ -88,6 +94,7 @@ func set_lookup_table_name(ltn : StringName) -> void:
 # Override Methods
 # ------------------------------------------------------------------------------
 func _ready() -> void:
+	set_hide_stairs(hide_stairs)
 	_rvc_north.pressed.connect(_on_rvc_surface_pressed.bind(Crawl.SURFACE.North))
 	_rvc_south.pressed.connect(_on_rvc_surface_pressed.bind(Crawl.SURFACE.South))
 	_rvc_east.pressed.connect(_on_rvc_surface_pressed.bind(Crawl.SURFACE.East))
