@@ -13,7 +13,6 @@ unresizable = true
 popup_window = true
 script = ExtResource("1_cbusr")
 camera_height = 2.2
-light_angle_degrees = null
 
 [node name="CPanel" type="PanelContainer" parent="."]
 anchors_preset = 15

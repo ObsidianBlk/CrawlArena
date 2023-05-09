@@ -19,6 +19,7 @@ var _dig_direction : int = 1 # 0 = Down | 1 = Foreward | 2 = Up
 @onready var _dig_state : Control = %DigState
 @onready var _crawl_view_3d : CrawlView3D = %CrawlView3D
 @onready var _dungeon_viewport : SubViewport = %DungeonViewport
+@onready var _entity_container : Node3D = %EntityContainer
 
 @onready var _active_cell_state : Control = %ActiveCellState
 
@@ -28,41 +29,14 @@ var _dig_direction : int = 1 # 0 = Down | 1 = Foreward | 2 = Up
 # Override Methods
 # ------------------------------------------------------------------------------
 func _ready() -> void:
-	_map = CrawlMap.new()
-	_map.add_resource(&"default")
-	_map.add_cell(Vector3i.ZERO)
-	
-	_editor_entity = CrawlEntity.new()
-	_editor_entity.type = &"editor"
-	_editor_entity.uuid = UUID.v7()
-	
-	_map.add_entity(_editor_entity)
-	
-	_crawl_mini_map.map = _map
-	_crawl_mini_map.focus_entity_uuid = _editor_entity.uuid
-	
-	_map.cell_added.connect(_on_map_cell_count_changed)
-	_map.cell_removed.connect(_on_map_cell_count_changed)
-	_editor_entity.position_changed.connect(_on_editor_entity_position_changed)
-	
 	_crawl_view_3d.cell_size = CELL_SIZE
-	_crawl_view_3d.map = _map
-	var elt : CrawlMRLT = Crawl.get_lookup_table(&"entities")
-	if elt != null:
-		var view : Node3D = elt.load_meta_resource(&"unique", &"editor", true)
-		if view != null:
-			view.cell_size = CELL_SIZE
-			view.entity = _editor_entity
-			_dungeon_viewport.add_child(view)
 	
-	_active_cell_state.map = _map
 	_active_cell_state.lookup_table_name = &"level_geometry"
 	_active_cell_state.surface_resource_pressed.connect(_on_active_cell_state_surface_resource_pressed)
 	
 	_rsw_level.lookup_table_name = &"level_geometry"
+	_CreateDungeon()
 	
-	_on_map_cell_count_changed(Vector3i.ZERO)
-	_on_editor_entity_position_changed(Vector3i.ZERO, _editor_entity.position)
 
 func _input(event : InputEvent) -> void:
 	if _editor_entity == null: return
@@ -109,8 +83,74 @@ func _input(event : InputEvent) -> void:
 		accept_event()
 
 # ------------------------------------------------------------------------------
+# Private Methods
+# ------------------------------------------------------------------------------
+func _ClearDungeon() -> void:
+	_active_cell_state.map = null
+	_crawl_view_3d.map = null
+	_crawl_mini_map.map = null
+	_crawl_mini_map.focus_entity_uuid = &""
+	
+	for child in _entity_container.get_children():
+		_entity_container.remove_child(child)
+		child.queue_free()
+
+	if _map != null:
+		if _map.cell_added.is_connected(_on_map_cell_count_changed):
+			_map.cell_added.disconnect(_on_map_cell_count_changed)
+		if _map.cell_removed.is_connected(_on_map_cell_count_changed):
+			_map.cell_removed.disconnect(_on_map_cell_count_changed)
+		_map = null
+	
+	if _editor_entity != null:
+		if _editor_entity.position_changed.is_connected(_on_editor_entity_position_changed):
+			_editor_entity.position_changed.disconnect(_on_editor_entity_position_changed)
+		_editor_entity = null
+
+func _CreateDungeon() -> void:
+	_ClearDungeon()
+	
+	_map = CrawlMap.new()
+	_map.add_resource(&"default")
+	_map.add_cell(Vector3i.ZERO)
+	
+	_editor_entity = CrawlEntity.new()
+	_editor_entity.type = &"editor"
+	_editor_entity.uuid = UUID.v7()
+	
+	_map.add_entity(_editor_entity)
+	
+	_map.cell_added.connect(_on_map_cell_count_changed)
+	_map.cell_removed.connect(_on_map_cell_count_changed)
+	_editor_entity.position_changed.connect(_on_editor_entity_position_changed)
+	
+	_active_cell_state.map = _map
+	_crawl_view_3d.map = _map
+	_crawl_mini_map.map = _map
+	_crawl_mini_map.focus_entity_uuid = _editor_entity.uuid
+	
+	var elt : CrawlMRLT = Crawl.get_lookup_table(&"entities")
+	if elt != null:
+		var view : Node3D = elt.load_meta_resource(&"unique", &"editor", true)
+		if view != null:
+			view.cell_size = CELL_SIZE
+			view.entity = _editor_entity
+			_entity_container.add_child(view)
+	
+	_on_map_cell_count_changed(Vector3i.ZERO)
+	_on_editor_entity_position_changed(Vector3i.ZERO, _editor_entity.position)
+	
+
+# ------------------------------------------------------------------------------
 # Handler Methods
 # ------------------------------------------------------------------------------
+func _on_request_new_map_pressed() -> void:
+	# TODO: Check if a map already exists and if that map is "dirty"
+	#   if so, bring up a dialog box warning that a new Dungeon will
+	#   erase the existing one.
+	#   If the map is NOT dirty, then just create a new dungeon.
+	_CreateDungeon()
+
 func _on_map_cell_count_changed(_pos : Vector3i) -> void:
 	var bounds : AABB = _map.get_aabb()
 	if bounds.size.x < 0 or bounds.size.y < 0: return

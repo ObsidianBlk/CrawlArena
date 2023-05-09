@@ -1,9 +1,12 @@
-[gd_scene load_steps=22 format=3 uid="uid://pxet627daewv"]
+[gd_scene load_steps=26 format=3 uid="uid://pxet627daewv"]
 
 [ext_resource type="Script" path="res://scenes/dungeon_editor/DungeonEditor.gd" id="1_1jgi3"]
 [ext_resource type="Script" path="res://addons/CrawlDCS/nodes/controls/CrawlMiniMap.gd" id="1_pbq68"]
 [ext_resource type="PackedScene" uid="uid://csu0fi8ek2tkk" path="res://scenes/dungeon_editor/ui/dig_state/DigState.tscn" id="2_0bexf"]
 [ext_resource type="PackedScene" uid="uid://bqw3jxo1pmbcv" path="res://scenes/dungeon_editor/control_nodes/resource_selection_window/ResourceSelectionWindow.tscn" id="2_6l5h0"]
+[ext_resource type="Texture2D" uid="uid://ceq5e02od7tjg" path="res://assets/dungeon_editor/icons/ui/add.svg" id="3_ptshy"]
+[ext_resource type="Texture2D" uid="uid://cj317tiupwv3k" path="res://assets/dungeon_editor/icons/ui/load.svg" id="4_36ksn"]
+[ext_resource type="Texture2D" uid="uid://c5poc3om8e2d8" path="res://assets/dungeon_editor/icons/ui/store.svg" id="5_2h7nc"]
 [ext_resource type="Script" path="res://addons/CrawlDCS/nodes/3d/CrawlView3D.gd" id="5_6ffkw"]
 [ext_resource type="Script" path="res://scenes/dungeon_editor/control_nodes/ZElevationBar.gd" id="5_dby4r"]
 [ext_resource type="PackedScene" uid="uid://dlnthjlobn6wo" path="res://scenes/dungeon_editor/control_nodes/map_cell_control/MapCellControl.tscn" id="6_1clgy"]
@@ -82,6 +85,23 @@ border_width_right = 4
 border_width_bottom = 4
 border_color = Color(0.552941, 0.67451, 0.8, 1)
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_3io3g"]
+content_margin_left = 8.0
+content_margin_top = 8.0
+content_margin_right = 8.0
+content_margin_bottom = 8.0
+bg_color = Color(0.176471, 0.176471, 0.176471, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.854902, 0.854902, 0.854902, 1)
+border_blend = true
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_8aw88"]
 bg_color = Color(0.360784, 0.360784, 0.360784, 1)
 border_width_top = 1
@@ -112,6 +132,7 @@ ResourceView3DControl/styles/focus = SubResource("StyleBoxFlat_jhuj1")
 ResourceView3DControl/styles/hover = SubResource("StyleBoxFlat_i5x0t")
 ResourceView3DControl/styles/normal = SubResource("StyleBoxFlat_01eyq")
 ResourceView3DControl/styles/pressed = SubResource("StyleBoxFlat_pwhqc")
+Toolbar/styles/panel = SubResource("StyleBoxFlat_3io3g")
 ZElevationBar/colors/font_color = Color(1, 1, 1, 1)
 ZElevationBar/constants/spacing = 8
 ZElevationBar/font_sizes/font_size = 36
@@ -143,7 +164,7 @@ size = Vector2i(796, 571)
 visible = false
 light_angle_degrees = 0.0
 
-[node name="Minimap" type="HBoxContainer" parent="."]
+[node name="Layout" type="VBoxContainer" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -151,30 +172,59 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="ZInfoBar" type="MarginContainer" parent="Minimap"]
+[node name="Toolbar" type="PanelContainer" parent="Layout"]
+layout_mode = 2
+theme_type_variation = &"Toolbar"
+
+[node name="Buttons" type="HBoxContainer" parent="Layout/Toolbar"]
+layout_mode = 2
+
+[node name="RequestNewMap" type="Button" parent="Layout/Toolbar/Buttons"]
+layout_mode = 2
+size_flags_horizontal = 0
+icon = ExtResource("3_ptshy")
+icon_alignment = 1
+
+[node name="RequestLoadMap" type="Button" parent="Layout/Toolbar/Buttons"]
+layout_mode = 2
+size_flags_horizontal = 0
+icon = ExtResource("4_36ksn")
+icon_alignment = 1
+
+[node name="RequestSaveMap" type="Button" parent="Layout/Toolbar/Buttons"]
+layout_mode = 2
+size_flags_horizontal = 0
+icon = ExtResource("5_2h7nc")
+icon_alignment = 1
+
+[node name="Primary" type="HBoxContainer" parent="Layout"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="ZInfoBar" type="MarginContainer" parent="Layout/Primary"]
 layout_mode = 2
 theme_override_constants/margin_left = 8
 theme_override_constants/margin_right = 8
 
-[node name="Layout" type="VBoxContainer" parent="Minimap/ZInfoBar"]
+[node name="Layout" type="VBoxContainer" parent="Layout/Primary/ZInfoBar"]
 layout_mode = 2
 
-[node name="DigState" parent="Minimap/ZInfoBar/Layout" instance=ExtResource("2_0bexf")]
+[node name="DigState" parent="Layout/Primary/ZInfoBar/Layout" instance=ExtResource("2_0bexf")]
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="ZElevationBar" type="Control" parent="Minimap/ZInfoBar/Layout"]
+[node name="ZElevationBar" type="Control" parent="Layout/Primary/ZInfoBar/Layout"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
 script = ExtResource("5_dby4r")
 max_z_level = 2
 
-[node name="Control" type="Control" parent="Minimap"]
+[node name="Control" type="Control" parent="Layout/Primary"]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="DungeonView" type="SubViewportContainer" parent="Minimap/Control"]
+[node name="DungeonView" type="SubViewportContainer" parent="Layout/Primary/Control"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -184,27 +234,30 @@ grow_vertical = 2
 size_flags_horizontal = 3
 stretch = true
 
-[node name="DungeonViewport" type="SubViewport" parent="Minimap/Control/DungeonView"]
+[node name="DungeonViewport" type="SubViewport" parent="Layout/Primary/Control/DungeonView"]
 unique_name_in_owner = true
 own_world_3d = true
 world_3d = SubResource("World3D_2vqry")
 handle_input_locally = false
-size = Vector2i(1524, 1080)
+size = Vector2i(1508, 1036)
 render_target_update_mode = 4
 
-[node name="CrawlView3D" type="Node3D" parent="Minimap/Control/DungeonView/DungeonViewport"]
+[node name="CrawlView3D" type="Node3D" parent="Layout/Primary/Control/DungeonView/DungeonViewport"]
 unique_name_in_owner = true
 script = ExtResource("5_6ffkw")
 cell_size = 2.2
 lookup_table_name = &"level_geometry"
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Minimap/Control/DungeonView/DungeonViewport"]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Layout/Primary/Control/DungeonView/DungeonViewport"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, -1.287)
 mesh = SubResource("BoxMesh_pg1a3")
 
-[node name="OmniLight3D" type="DirectionalLight3D" parent="Minimap/Control/DungeonView/DungeonViewport"]
+[node name="OmniLight3D" type="DirectionalLight3D" parent="Layout/Primary/Control/DungeonView/DungeonViewport"]
 
-[node name="MarginContainer" type="MarginContainer" parent="Minimap/Control"]
+[node name="EntityContainer" type="Node3D" parent="Layout/Primary/Control/DungeonView/DungeonViewport"]
+unique_name_in_owner = true
+
+[node name="MarginContainer" type="MarginContainer" parent="Layout/Primary/Control"]
 layout_mode = 1
 anchors_preset = 3
 anchor_left = 1.0
@@ -218,7 +271,7 @@ grow_vertical = 0
 theme_override_constants/margin_right = 24
 theme_override_constants/margin_bottom = 24
 
-[node name="CrawlMiniMap" type="Control" parent="Minimap/Control/MarginContainer"]
+[node name="CrawlMiniMap" type="Control" parent="Layout/Primary/Control/MarginContainer"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(512, 384)
 layout_mode = 2
@@ -228,15 +281,18 @@ cell_size = 32.0
 show_invisible_walls = true
 show_illusion_walls = true
 
-[node name="Sidebar" type="PanelContainer" parent="Minimap"]
+[node name="Sidebar" type="PanelContainer" parent="Layout/Primary"]
+layout_mode = 2
+theme_type_variation = &"Toolbar"
+
+[node name="Layout" type="VBoxContainer" parent="Layout/Primary/Sidebar"]
 layout_mode = 2
 
-[node name="Layout" type="VBoxContainer" parent="Minimap/Sidebar"]
-layout_mode = 2
-
-[node name="ActiveCellState" parent="Minimap/Sidebar/Layout" instance=ExtResource("6_1clgy")]
+[node name="ActiveCellState" parent="Layout/Primary/Sidebar/Layout" instance=ExtResource("6_1clgy")]
 unique_name_in_owner = true
 layout_mode = 2
 preview_size = 64
+hide_stairs = false
 
-[connection signal="direction_changed" from="Minimap/ZInfoBar/Layout/DigState" to="." method="_on_dig_state_direction_changed"]
+[connection signal="pressed" from="Layout/Toolbar/Buttons/RequestNewMap" to="." method="_on_request_new_map_pressed"]
+[connection signal="direction_changed" from="Layout/Primary/ZInfoBar/Layout/DigState" to="." method="_on_dig_state_direction_changed"]
