@@ -119,7 +119,6 @@ func _BuildCell() -> void:
 	if map == null or not map.has_cell(map_position):
 		_ClearCell()
 		return
-	print("Building cell for... ", map_position)
 	_UpdateSurfaceNode(
 		&"ground", &"ground",
 		map.get_cell_surface_resource(map_position, Crawl.SURFACE.Ground),

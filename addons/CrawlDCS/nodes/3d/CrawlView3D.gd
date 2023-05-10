@@ -10,10 +10,11 @@ const CRAWLVIEWCELL3D : PackedScene = preload("res://addons/CrawlDCS/nodes/3d/Cr
 # ------------------------------------------------------------------------------
 # Export Variables
 # ------------------------------------------------------------------------------
-@export var map : CrawlMap = null :				set = set_map
-@export var unit_radius : int = 4 :				set = set_unit_radius
-@export var cell_size : float = 5.0:			set = set_cell_size
-@export var lookup_table_name : StringName:		set = set_lookup_table_name
+@export var map : CrawlMap = null :						set = set_map
+@export var focus_position : Vector3i = Vector3i.ZERO:	set = set_focus_position
+@export var unit_radius : int = 4 :						set = set_unit_radius
+@export var cell_size : float = 5.0:					set = set_cell_size
+@export var lookup_table_name : StringName:				set = set_lookup_table_name
 
 # ------------------------------------------------------------------------------
 # Variables
@@ -21,8 +22,6 @@ const CRAWLVIEWCELL3D : PackedScene = preload("res://addons/CrawlDCS/nodes/3d/Cr
 var _cells : Dictionary = {}
 var _map_changed : bool = false
 var _cell_update_requested : bool = false
-
-var _focus_position : Vector3i = Vector3i.ZERO
 
 # ------------------------------------------------------------------------------
 # Onready Variables
@@ -47,6 +46,10 @@ func set_map(cmap : CrawlMap) -> void:
 		_map_changed = true
 		_cell_update_requested = true
 
+func set_focus_position(p : Vector3i) -> void:
+	if p != focus_position:
+		focus_position = p
+		_cell_update_requested = true
 
 func set_unit_radius(ur : int) -> void:
 	if ur > 0 and ur != unit_radius:
@@ -75,7 +78,7 @@ func _process(_delta : float) -> void:
 	#if cell_container != null and _cell_update_requested:
 	if _cell_update_requested:
 		_cell_update_requested = false
-		_UpdateCells(_focus_position)
+		_UpdateCells(focus_position)
 
 # ------------------------------------------------------------------------------
 # Private Methods
@@ -136,6 +139,3 @@ func _UpdateCells(origin : Vector3i) -> void:
 # ------------------------------------------------------------------------------
 # Handler Methods
 # ------------------------------------------------------------------------------
-#func _on_focus_position_changed(focus_position : Vector3i) -> void:
-#	_focus_position = focus_position
-#	_cell_update_requested = true

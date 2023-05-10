@@ -1,4 +1,4 @@
-[gd_scene load_steps=26 format=3 uid="uid://pxet627daewv"]
+[gd_scene load_steps=27 format=3 uid="uid://pxet627daewv"]
 
 [ext_resource type="Script" path="res://scenes/dungeon_editor/DungeonEditor.gd" id="1_1jgi3"]
 [ext_resource type="Script" path="res://addons/CrawlDCS/nodes/controls/CrawlMiniMap.gd" id="1_pbq68"]
@@ -10,6 +10,7 @@
 [ext_resource type="Script" path="res://addons/CrawlDCS/nodes/3d/CrawlView3D.gd" id="5_6ffkw"]
 [ext_resource type="Script" path="res://scenes/dungeon_editor/control_nodes/ZElevationBar.gd" id="5_dby4r"]
 [ext_resource type="PackedScene" uid="uid://dlnthjlobn6wo" path="res://scenes/dungeon_editor/control_nodes/map_cell_control/MapCellControl.tscn" id="6_1clgy"]
+[ext_resource type="Texture2D" uid="uid://cshj7xn2p57f" path="res://assets/dungeon_editor/icons/ui/arrow_up.svg" id="10_owjt7"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_wu536"]
 bg_color = Color(0.168627, 0.168627, 0.168627, 0.784314)
@@ -162,7 +163,6 @@ script = ExtResource("1_1jgi3")
 unique_name_in_owner = true
 size = Vector2i(796, 571)
 visible = false
-light_angle_degrees = 0.0
 
 [node name="Layout" type="VBoxContainer" parent="."]
 layout_mode = 1
@@ -278,6 +278,7 @@ layout_mode = 2
 size_flags_horizontal = 3
 script = ExtResource("1_pbq68")
 cell_size = 32.0
+focus_entity_icon = ExtResource("10_owjt7")
 show_invisible_walls = true
 show_illusion_walls = true
 
@@ -292,7 +293,8 @@ layout_mode = 2
 unique_name_in_owner = true
 layout_mode = 2
 preview_size = 64
-hide_stairs = false
 
 [connection signal="pressed" from="Layout/Toolbar/Buttons/RequestNewMap" to="." method="_on_request_new_map_pressed"]
 [connection signal="direction_changed" from="Layout/Primary/ZInfoBar/Layout/DigState" to="." method="_on_dig_state_direction_changed"]
+[connection signal="stair_state_toggled" from="Layout/Primary/Sidebar/Layout/ActiveCellState" to="." method="_on_active_cell_stair_state_toggled"]
+[connection signal="surface_blocking_toggled" from="Layout/Primary/Sidebar/Layout/ActiveCellState" to="." method="_on_active_cell_surface_blocking_toggled"]

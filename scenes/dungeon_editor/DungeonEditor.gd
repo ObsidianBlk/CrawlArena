@@ -160,9 +160,23 @@ func _on_map_cell_count_changed(_pos : Vector3i) -> void:
 func _on_editor_entity_position_changed(_from : Vector3i, to : Vector3i) -> void:
 	_z_elevation_bar.z_level = to.y
 	_active_cell_state.map_position = to
+	_crawl_view_3d.focus_position = to
 
 func _on_dig_state_direction_changed(direction : int):
 	_dig_direction = direction
+
+func _on_active_cell_stair_state_toggled() -> void:
+	if _map == null or _editor_entity == null: return
+	if not _map.has_cell(_editor_entity.position): return
+	var pos : Vector3i = _editor_entity.position
+	_map.set_cell_stairs(pos, not _map.is_cell_stairs(pos))
+
+func _on_active_cell_surface_blocking_toggled(surface : Crawl.SURFACE):
+	if _map == null or _editor_entity == null: return
+	if not _map.has_cell(_editor_entity.position): return
+	var pos : Vector3i = _editor_entity.position
+	var is_blocking : bool = _map.is_cell_surface_blocking(pos, surface)
+	_map.set_cell_surface_blocking(pos, surface, not is_blocking, true)
 
 func _on_active_cell_state_surface_resource_pressed(surface : Crawl.SURFACE, current_resource : StringName) -> void:
 	if _rsw_level.visible: return

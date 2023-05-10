@@ -47,7 +47,6 @@ layout_mode = 2
 mouse_filter = 2
 theme_type_variation = &"ResourceSelectionWindow"
 view_size = 512
-light_angle_degrees = 0.0
 camera_height = 2.2
 
 [node name="Buttons" type="HBoxContainer" parent="CPanel/VLayout"]
