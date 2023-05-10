@@ -21,6 +21,7 @@ DSV="*res://addons/CrawlDCS/autoloads/DSV.gd"
 UUID="*res://addons/CrawlDCS/autoloads/UUID.gd"
 Crawl="*res://addons/CrawlDCS/autoloads/Crawl.gd"
 Arena="*res://scripts/autos/Arena.gd"
+DungeonDatabase="*res://scripts/autos/DungeonDatabase.gd"
 
 [display]
 

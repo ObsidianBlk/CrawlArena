@@ -1,6 +1,5 @@
 extends Node
 
-
 func _ready() -> void:
 	var lglt : CrawlMRLT = CrawlMRLT.new()
 	lglt.register_from_dictionary({

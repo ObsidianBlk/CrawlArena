@@ -110,6 +110,7 @@ func set_focus_entity_uuid(uuid : StringName) -> void:
 		var ent : CrawlEntity = map.get_entity(focus_entity_uuid)
 		if ent == null: return
 		_TrackEntity(ent)
+	queue_redraw()
 
 func set_focus_entity_icon(ico : Texture) -> void:
 	if ico != focus_entity_icon:
@@ -453,6 +454,8 @@ func _TrackEntity(entity : CrawlEntity) -> void:
 	if not entity.facing_changed.is_connected(_on_entity_facing_changed.bind(entity.uuid)):
 		entity.facing_changed.connect(_on_entity_facing_changed.bind(entity.uuid))
 	
+	if entity.uuid == focus_entity_uuid:
+		_origin = entity.position
 	_UpdateEntityIcon(entity.uuid)
 	_UpdateEntityIconFacing(entity.uuid)
 

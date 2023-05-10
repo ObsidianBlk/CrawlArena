@@ -5,7 +5,7 @@ extends Control
 # ------------------------------------------------------------------------------
 # Signals
 # ------------------------------------------------------------------------------
-signal surface_resource_pressed(surface, current_resource_name)
+signal surface_resource_selected(surface, resource_name)
 signal surface_blocking_toggled(surface)
 signal stair_state_toggled()
 
@@ -53,6 +53,8 @@ const ICON_WALL_UNBLOCKED : Texture = preload("res://assets/dungeon_editor/icons
 @onready var _btn_ceiling_blocking : Button = %CeilingBlocking
 @onready var _btn_ground_blocking : Button = %GroundBlocking
 
+@onready var _rsw : Window = %RSW
+
 
 # ------------------------------------------------------------------------------
 # Setters
@@ -95,6 +97,10 @@ func set_lookup_table_name(ltn : StringName) -> void:
 # ------------------------------------------------------------------------------
 func _ready() -> void:
 	set_hide_stairs(hide_stairs)
+	
+	if _rsw.visible:
+		_rsw.visible = false
+	
 	_rvc_north.pressed.connect(_on_rvc_surface_pressed.bind(Crawl.SURFACE.North))
 	_rvc_south.pressed.connect(_on_rvc_surface_pressed.bind(Crawl.SURFACE.South))
 	_rvc_east.pressed.connect(_on_rvc_surface_pressed.bind(Crawl.SURFACE.East))
@@ -133,6 +139,8 @@ func _UpdateLookupTable() -> void:
 	for ctrl in [_rvc_north, _rvc_south, _rvc_east, _rvc_west, _rvc_ceiling, _rvc_ground]:
 		if ctrl == null: continue
 		ctrl.lookup_table_name = lookup_table_name
+	if _rsw != null:
+		_rsw.lookup_table_name = lookup_table_name
 
 func _UpdateCellSurfaceState(ctrl : Control, btn : Button, surface : Crawl.SURFACE) -> void:
 	var map_valid : bool = (map != null and map.has_cell(map_position))
@@ -173,8 +181,32 @@ func _on_map_cell_changed(cell_position : Vector3i) -> void:
 
 func _on_rvc_surface_pressed(surface : Crawl.SURFACE) -> void:
 	if map == null or not map.has_cell(map_position): return
+	if _rsw == null or _rsw.visible: return
 	var resource_name : StringName = map.get_cell_surface_resource(map_position, surface)
-	surface_resource_pressed.emit(surface, resource_name)
+	if not _rsw.item_selected.is_connected(_on_level_item_selected.bind(surface)):
+		_rsw.item_selected.connect(_on_level_item_selected.bind(surface))
+	if not _rsw.canceled.is_connected(_on_level_item_selection_canceled.bind(surface)):
+		_rsw.canceled.connect(_on_level_item_selection_canceled.bind(surface))
+	_rsw.resource_position = Vector3.ZERO
+	match surface:
+		Crawl.SURFACE.Ground:
+			_rsw.section_name = &"ground"
+			_rsw.camera_pitch_degrees = 80.0
+			_rsw.light_angle_degrees = -90.0
+		Crawl.SURFACE.Ceiling:
+			_rsw.section_name = &"ceiling"
+			_rsw.camera_pitch_degrees = -80.0
+			_rsw.resource_position = Vector3(0.0, 4.4, 0.0)
+			_rsw.light_angle_degrees = 90.0
+		_:
+			_rsw.section_name = &"wall"
+			_rsw.camera_pitch_degrees = 0.0
+			_rsw.camera_zoom = 4
+			_rsw.light_angle_degrees = 0.0
+	_rsw.activate_entry_by_resource(resource_name)
+	_rsw.popup_centered()
+	#var resource_name : StringName = map.get_cell_surface_resource(map_position, surface)
+	#surface_resource_pressed.emit(surface, resource_name)
 
 func _on_btn_surface_blocking_pressed(surface : Crawl.SURFACE) -> void:
 	if map == null: return
@@ -182,4 +214,14 @@ func _on_btn_surface_blocking_pressed(surface : Crawl.SURFACE) -> void:
 
 func _on_btn_stairs_toggled() -> void:
 	stair_state_toggled.emit()
+
+func _on_level_item_selected(_section_name : StringName, resource_name : StringName, surface : Crawl.SURFACE) -> void:
+	surface_resource_selected.emit(surface, resource_name)
+	_on_level_item_selection_canceled(surface)
+
+func _on_level_item_selection_canceled(surface : Crawl.SURFACE) -> void:
+	if _rsw.item_selected.is_connected(_on_level_item_selected.bind(surface)):
+		_rsw.item_selected.disconnect(_on_level_item_selected.bind(surface))
+	if _rsw.canceled.is_connected(_on_level_item_selection_canceled.bind(surface)):
+		_rsw.canceled.disconnect(_on_level_item_selection_canceled.bind(surface))
 

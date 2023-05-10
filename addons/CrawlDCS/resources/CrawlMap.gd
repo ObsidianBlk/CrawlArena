@@ -47,6 +47,7 @@ const ENTITY_SEARCH_SCHEMA : Dictionary = {
 # ------------------------------------------------------------------------------
 # "Export" Variables
 # ------------------------------------------------------------------------------
+var _id : StringName = &""
 var _name : String = ""
 var _author : String = ""
 var _world_env : StringName = &""
@@ -74,6 +75,8 @@ var _default_surface : Dictionary = {
 
 func _get(property : StringName) -> Variant:
 	match property:
+		&"id":
+			return _id
 		&"name":
 			return _name
 		&"author":
@@ -91,6 +94,10 @@ func _get(property : StringName) -> Variant:
 func _set(property : StringName, value : Variant) -> bool:
 	var success : bool = false
 	match property:
+		&"id":
+			if typeof(value) == TYPE_STRING_NAME and _id == &"":
+				_id = value
+				success = true
 		&"name":
 			if typeof(value) == TYPE_STRING:
 				_name = value
@@ -141,6 +148,11 @@ func _get_property_list() -> Array:
 			name = "Crawl Map",
 			type = TYPE_NIL,
 			usage = PROPERTY_USAGE_CATEGORY
+		},
+		{
+			name = "id",
+			type = TYPE_STRING_NAME,
+			usage = PROPERTY_USAGE_STORAGE
 		},
 		{
 			name = "name",

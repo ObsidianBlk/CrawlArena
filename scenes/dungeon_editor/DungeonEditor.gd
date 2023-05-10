@@ -21,20 +21,18 @@ var _dig_direction : int = 1 # 0 = Down | 1 = Foreward | 2 = Up
 @onready var _dungeon_viewport : SubViewport = %DungeonViewport
 @onready var _entity_container : Node3D = %EntityContainer
 
-@onready var _active_cell_state : Control = %ActiveCellState
+@onready var _btn_request_save_map : Button = %RequestSaveMap
+@onready var _edit_map_name : LineEdit = %Edit_MapName
 
-@onready var _rsw_level : Window = %RSW_Level
+
+@onready var _active_cell_state : Control = %ActiveCellState
 
 # ------------------------------------------------------------------------------
 # Override Methods
 # ------------------------------------------------------------------------------
 func _ready() -> void:
 	_crawl_view_3d.cell_size = CELL_SIZE
-	
-	_active_cell_state.lookup_table_name = &"level_geometry"
-	_active_cell_state.surface_resource_pressed.connect(_on_active_cell_state_surface_resource_pressed)
-	
-	_rsw_level.lookup_table_name = &"level_geometry"
+	_active_cell_state.lookup_table_name = &"level_geometry"	
 	_CreateDungeon()
 	
 
@@ -111,6 +109,7 @@ func _CreateDungeon() -> void:
 	_ClearDungeon()
 	
 	_map = CrawlMap.new()
+	_map.id = UUID.v7()
 	_map.add_resource(&"default")
 	_map.add_cell(Vector3i.ZERO)
 	
@@ -151,6 +150,19 @@ func _on_request_new_map_pressed() -> void:
 	#   If the map is NOT dirty, then just create a new dungeon.
 	_CreateDungeon()
 
+func _on_request_load_map_pressed() -> void:
+	pass
+
+func _on_request_save_map_pressed() -> void:
+	if _map == null: return
+	if _edit_map_name.text.is_empty():
+		# TODO: Show dialog that states that a map name is missing
+		return
+	var err : int = DungeonDatabase.save_dungeon(_map)
+	if err != OK:
+		# TODO: Show dialog box stating there was a failure to save map.
+		printerr("Failed to save the dungeon map. Error code ", err)
+
 func _on_map_cell_count_changed(_pos : Vector3i) -> void:
 	var bounds : AABB = _map.get_aabb()
 	if bounds.size.x < 0 or bounds.size.y < 0: return
@@ -162,8 +174,15 @@ func _on_editor_entity_position_changed(_from : Vector3i, to : Vector3i) -> void
 	_active_cell_state.map_position = to
 	_crawl_view_3d.focus_position = to
 
-func _on_dig_state_direction_changed(direction : int):
+func _on_dig_state_direction_changed(direction : int) -> void:
 	_dig_direction = direction
+
+func _on_active_cell_surface_resource_selected(surface : Crawl.SURFACE, resource_name : StringName) -> void:
+	if _map == null: return
+	var mrid : int = _map.get_resource_id(resource_name)
+	if mrid < 0 and resource_name != &"":
+		mrid = _map.add_resource(resource_name)
+	_map.set_cell_surface_resource(_editor_entity.position, surface, mrid,true)
 
 func _on_active_cell_stair_state_toggled() -> void:
 	if _map == null or _editor_entity == null: return
@@ -171,47 +190,14 @@ func _on_active_cell_stair_state_toggled() -> void:
 	var pos : Vector3i = _editor_entity.position
 	_map.set_cell_stairs(pos, not _map.is_cell_stairs(pos))
 
-func _on_active_cell_surface_blocking_toggled(surface : Crawl.SURFACE):
+func _on_active_cell_surface_blocking_toggled(surface : Crawl.SURFACE) -> void:
 	if _map == null or _editor_entity == null: return
 	if not _map.has_cell(_editor_entity.position): return
 	var pos : Vector3i = _editor_entity.position
 	var is_blocking : bool = _map.is_cell_surface_blocking(pos, surface)
 	_map.set_cell_surface_blocking(pos, surface, not is_blocking, true)
 
-func _on_active_cell_state_surface_resource_pressed(surface : Crawl.SURFACE, current_resource : StringName) -> void:
-	if _rsw_level.visible: return
-	if not _rsw_level.item_selected.is_connected(_on_level_item_selected.bind(surface)):
-		_rsw_level.item_selected.connect(_on_level_item_selected.bind(surface))
-	if not _rsw_level.canceled.is_connected(_on_level_item_selection_canceled.bind(surface)):
-		_rsw_level.canceled.connect(_on_level_item_selection_canceled.bind(surface))
-	_rsw_level.resource_position = Vector3.ZERO
-	match surface:
-		Crawl.SURFACE.Ground:
-			_rsw_level.section_name = &"ground"
-			_rsw_level.camera_pitch_degrees = 80.0
-			_rsw_level.light_angle_degrees = -90.0
-		Crawl.SURFACE.Ceiling:
-			_rsw_level.section_name = &"ceiling"
-			_rsw_level.camera_pitch_degrees = -80.0
-			_rsw_level.resource_position = Vector3(0.0, 4.4, 0.0)
-			_rsw_level.light_angle_degrees = 90.0
-		_:
-			_rsw_level.section_name = &"wall"
-			_rsw_level.camera_pitch_degrees = 0.0
-			_rsw_level.camera_zoom = 4
-			_rsw_level.light_angle_degrees = 0.0
-	_rsw_level.popup_centered()
-
-func _on_level_item_selected(section_name : StringName, resource_name : StringName, surface : Crawl.SURFACE) -> void:
-	if _map == null: return
-	var mrid : int = _map.get_resource_id(resource_name)
-	if mrid < 0 and resource_name != &"":
-		mrid = _map.add_resource(resource_name)
-	_map.set_cell_surface_resource(_editor_entity.position, surface, mrid,true)
-	_on_level_item_selection_canceled.call_deferred(surface)
-
-func _on_level_item_selection_canceled(surface : Crawl.SURFACE) -> void:
-	if _rsw_level.item_selected.is_connected(_on_level_item_selected.bind(surface)):
-		_rsw_level.item_selected.disconnect(_on_level_item_selected.bind(surface))
-	if _rsw_level.canceled.is_connected(_on_level_item_selection_canceled.bind(surface)):
-		_rsw_level.canceled.disconnect(_on_level_item_selection_canceled.bind(surface))
+func _on_edit_map_name_text_changed(new_text : String) -> void:
+	if _btn_request_save_map == null: return
+	_btn_request_save_map.disabled = new_text.is_empty()
+	_map.name = new_text

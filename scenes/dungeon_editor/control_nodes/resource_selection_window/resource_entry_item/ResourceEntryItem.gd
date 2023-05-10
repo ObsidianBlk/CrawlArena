@@ -64,6 +64,7 @@ func set_description(d : String) -> void:
 func _ready() -> void:
 	set_entry_name(entry_name)
 	set_description(description)
+	_UpdateTheme()
 
 func _notification(what : int) -> void:
 	match what:

@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3 uid="uid://dlnthjlobn6wo"]
+[gd_scene load_steps=8 format=3 uid="uid://dlnthjlobn6wo"]
 
 [ext_resource type="PackedScene" uid="uid://cu1mxbdrdfj27" path="res://scenes/dungeon_editor/control_nodes/resource_view_3d_control/ResourceView3DControl.tscn" id="1_5jjkv"]
 [ext_resource type="Script" path="res://scenes/dungeon_editor/control_nodes/map_cell_control/MapCellControl.gd" id="1_57c8y"]
@@ -6,6 +6,7 @@
 [ext_resource type="Texture2D" uid="uid://buc85vyi17caq" path="res://assets/dungeon_editor/icons/icon_large_compass.svg" id="2_i4ylu"]
 [ext_resource type="Texture2D" uid="uid://bla3u3m3258lj" path="res://assets/dungeon_editor/icons/icon_large_CeilingGround.svg" id="3_8akcw"]
 [ext_resource type="Texture2D" uid="uid://divihn5g5svcs" path="res://assets/dungeon_editor/icons/add_stairs.svg" id="4_gjklv"]
+[ext_resource type="PackedScene" uid="uid://bqw3jxo1pmbcv" path="res://scenes/dungeon_editor/control_nodes/resource_selection_window/ResourceSelectionWindow.tscn" id="7_qmju4"]
 
 [node name="MapCellControl" type="CenterContainer"]
 anchors_preset = 15
@@ -44,7 +45,6 @@ expand_icon = true
 unique_name_in_owner = true
 layout_mode = 2
 resource_section = &"wall"
-light_angle_degrees = 0.0
 
 [node name="Control2" type="Control" parent="AspectRatioContainer/Layout"]
 custom_minimum_size = Vector2(32, 0)
@@ -90,7 +90,6 @@ expand_icon = true
 unique_name_in_owner = true
 layout_mode = 2
 resource_section = &"wall"
-light_angle_degrees = 0.0
 
 [node name="Compass" type="TextureRect" parent="AspectRatioContainer/Layout"]
 layout_mode = 2
@@ -109,7 +108,6 @@ size_flags_vertical = 3
 unique_name_in_owner = true
 layout_mode = 2
 resource_section = &"wall"
-light_angle_degrees = 0.0
 
 [node name="EastBlocking" type="Button" parent="AspectRatioContainer/Layout/East"]
 unique_name_in_owner = true
@@ -140,7 +138,6 @@ size_flags_vertical = 3
 unique_name_in_owner = true
 layout_mode = 2
 resource_section = &"wall"
-light_angle_degrees = 0.0
 
 [node name="SouthBlocking" type="Button" parent="AspectRatioContainer/Layout/South"]
 unique_name_in_owner = true
@@ -177,3 +174,7 @@ layout_mode = 2
 icon = ExtResource("1_qxdil")
 icon_alignment = 1
 expand_icon = true
+
+[node name="RSW" parent="." instance=ExtResource("7_qmju4")]
+unique_name_in_owner = true
+visible = false

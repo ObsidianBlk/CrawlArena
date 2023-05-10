@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://scenes/dungeon_editor/control_nodes/resource_view_3d_control/ResourceView3DControl.gd" id="1_35pcw"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_et40g"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_htdh3"]
 content_margin_left = 4.0
 content_margin_top = 4.0
 content_margin_right = 4.0
@@ -31,7 +31,7 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(32, 32)
 layout_mode = 2
 mouse_filter = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_et40g")
+theme_override_styles/panel = SubResource("StyleBoxFlat_htdh3")
 
 [node name="CView" type="SubViewportContainer" parent="CPanel"]
 layout_mode = 2

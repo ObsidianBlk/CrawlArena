@@ -19,7 +19,7 @@ const DEFAULT_THEME_TYPE : StringName = &"ResourceSelectionWindow"
 # Export Variables
 # ------------------------------------------------------------------------------
 @export_category("Resource Selection Window")
-@export var allow_none : bool = true
+@export var allow_none : bool = true:										set = set_allow_none
 @export_group("View")
 @export var camera_height : float = 1.0:									set = set_camera_height
 @export_range(-90.0, 90.0, 0.1) var camera_pitch_degrees : float = 0.0:		set = set_camera_pitch_degrees
@@ -70,6 +70,7 @@ func set_camera_zoom(z : float) -> void:
 func set_light_angle_degrees(d : float) -> void:
 	if d >= -90.0 and d <= 90.0:
 		light_angle_degrees = d
+		if Engine.is_editor_hint(): return
 		if _resource_view != null:
 			_resource_view.light_angle_degrees = light_angle_degrees
 
@@ -130,6 +131,7 @@ func _UpdateChildThemeTypeVariations(variation : StringName) -> void:
 			entry.theme_type_variation = variation
 
 func _UpdateCameraPlacement() -> void:
+	if Engine.is_editor_hint(): return
 	if _resource_view == null: return
 	_resource_view.camera_height = camera_height
 	_resource_view.camera_pitch_degrees = camera_pitch_degrees
@@ -180,6 +182,9 @@ func _UpdateResourceList() -> void:
 # ------------------------------------------------------------------------------
 # Public Methods
 # ------------------------------------------------------------------------------
+func entry_count() -> int:
+	return _entries.size()
+
 func has_active_entry() -> bool:
 	return _active_entry >= 0
 
@@ -192,6 +197,25 @@ func clear_active_entry() -> void:
 			entry.set_active(false)
 			_resource_view.resource_name = &""
 			break
+
+func activate_entry_by_index(idx : int) -> void:
+	if not (idx >= 0 and idx < _entries.size()): return
+	if _active_entry == idx: return
+	for eidx in range(_entries.size()):
+		_entries[eidx].set_active(eidx == idx)
+	_active_entry = idx
+
+func activate_entry_by_resource(resource_name : StringName) -> void:
+	# TODO: Technically cannot promise _entries[eidx].entry_name is the same
+	#   as a resource_name.
+	if _entries.size() <= 0: return
+	for eidx in range(_entries.size()):
+		if _entries[eidx].entry_name == resource_name:
+			_active_entry = eidx
+			_entries[eidx].set_active(true)
+		else:
+			_entries[eidx].set_active(false)
+
 
 func set_entry_metadata(idx : int, metadata : Variant) -> void:
 	if idx >= 0 and idx < _entries.size():
@@ -211,6 +235,9 @@ func _on_visibility_changed() -> void:
 
 func _on_entry_active(idx : int, resource_name : StringName) -> void:
 	_resource_view.resource_name = resource_name
+	for eidx in range(_entries.size()):
+		if eidx == idx: continue
+		_entries[eidx].set_active(false)
 	_active_entry = idx
 	item_active.emit(idx)
 
