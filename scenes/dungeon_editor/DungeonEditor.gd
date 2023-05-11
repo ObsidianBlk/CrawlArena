@@ -24,6 +24,7 @@ var _dig_direction : int = 1 # 0 = Down | 1 = Foreward | 2 = Up
 @onready var _btn_request_save_map : Button = %RequestSaveMap
 @onready var _edit_map_name : LineEdit = %Edit_MapName
 
+@onready var dungeon_io_window : Window = %DungeonIOWindow
 
 @onready var _active_cell_state : Control = %ActiveCellState
 
@@ -151,7 +152,9 @@ func _on_request_new_map_pressed() -> void:
 	_CreateDungeon()
 
 func _on_request_load_map_pressed() -> void:
-	pass
+	if dungeon_io_window == null: return
+	if dungeon_io_window.visible: return
+	dungeon_io_window.popup_centered()
 
 func _on_request_save_map_pressed() -> void:
 	if _map == null: return
@@ -162,6 +165,18 @@ func _on_request_save_map_pressed() -> void:
 	if err != OK:
 		# TODO: Show dialog box stating there was a failure to save map.
 		printerr("Failed to save the dungeon map. Error code ", err)
+
+func _on_dungeon_io_window_dungeon_loaded(map : CrawlMap) -> void:
+	if map == null: return
+	# TODO 1: Clear current dungeon!
+	# TODO 2: rework _CreateDungeon in such a way as it creates a dungeon and
+	#   passes that dungeon to a new method called _ConnectDungeon
+	# TODO 3: Call _ConnectDungeon with the given map!
+	print("Given a dungeon with ID ", map.id)
+
+func _on_dungeon_io_window_dungeon_deleted(id : StringName) -> void:
+	if _map != null and _map.id == id:
+		_CreateDungeon()
 
 func _on_map_cell_count_changed(_pos : Vector3i) -> void:
 	var bounds : AABB = _map.get_aabb()

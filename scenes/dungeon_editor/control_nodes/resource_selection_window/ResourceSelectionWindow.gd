@@ -123,9 +123,9 @@ func _UpdateChildThemeTypeVariations(variation : StringName) -> void:
 	if _resource_view != null:
 		if _resource_view.theme_type_variation != variation:
 			_resource_view.theme_type_variation = variation
-	if _cpanel != null:
-		if _cpanel.theme_type_variation != variation:
-			_cpanel.theme_type_variation = variation
+#	if _cpanel != null:
+#		if _cpanel.theme_type_variation != variation:
+#			_cpanel.theme_type_variation = variation
 	for entry in _entries:
 		if entry.theme_type_variation != variation:
 			entry.theme_type_variation = variation

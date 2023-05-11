@@ -90,6 +90,7 @@ func set_entry(id : StringName, filepath : String, dungeon_name : String) -> voi
 	var entry_idx : int = _GetIndexFromID(id)
 	if entry_idx >= 0:
 		_dungeon_list[entry_idx]["name"] = dungeon_name
+		_dungeon_list[entry_idx]["filepath"] = filepath
 	else:
 		_dungeon_list.append({
 			"id":id,

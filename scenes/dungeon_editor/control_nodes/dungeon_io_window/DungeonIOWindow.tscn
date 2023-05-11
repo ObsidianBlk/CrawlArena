@@ -1,0 +1,75 @@
+[gd_scene load_steps=3 format=3 uid="uid://bdh0pu73313xe"]
+
+[ext_resource type="Theme" uid="uid://17e15ml35qoo" path="res://scenes/dungeon_editor/DungeonEditor.theme" id="1_8orj6"]
+[ext_resource type="Script" path="res://scenes/dungeon_editor/control_nodes/dungeon_io_window/DungeonIOWindow.gd" id="2_7nccs"]
+
+[node name="DungeonIOWindow" type="Window"]
+title = "Load Dungeon"
+size = Vector2i(384, 768)
+transient = true
+exclusive = true
+popup_window = true
+theme = ExtResource("1_8orj6")
+script = ExtResource("2_7nccs")
+
+[node name="CPanel" type="PanelContainer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="Layout" type="VBoxContainer" parent="CPanel"]
+layout_mode = 2
+
+[node name="ItemList" type="ItemList" parent="CPanel/Layout"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Buttons" type="PanelContainer" parent="CPanel/Layout"]
+layout_mode = 2
+theme_type_variation = &"GroupPanelContainer"
+
+[node name="Layout" type="GridContainer" parent="CPanel/Layout/Buttons"]
+layout_mode = 2
+columns = 3
+
+[node name="Left" type="MarginContainer" parent="CPanel/Layout/Buttons/Layout"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="BtnLoad" type="Button" parent="CPanel/Layout/Buttons/Layout/Left"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 0
+disabled = true
+text = "Load"
+
+[node name="Center" type="MarginContainer" parent="CPanel/Layout/Buttons/Layout"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="BtnDelete" type="Button" parent="CPanel/Layout/Buttons/Layout/Center"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
+disabled = true
+text = "Delete"
+
+[node name="Right" type="MarginContainer" parent="CPanel/Layout/Buttons/Layout"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="BtnCancel" type="Button" parent="CPanel/Layout/Buttons/Layout/Right"]
+layout_mode = 2
+size_flags_horizontal = 8
+text = "Cancel"
+
+[connection signal="item_activated" from="CPanel/Layout/ItemList" to="." method="_on_item_list_item_activated"]
+[connection signal="item_selected" from="CPanel/Layout/ItemList" to="." method="_on_item_list_item_selected"]
+[connection signal="pressed" from="CPanel/Layout/Buttons/Layout/Left/BtnLoad" to="." method="_on_btn_load_pressed"]
+[connection signal="pressed" from="CPanel/Layout/Buttons/Layout/Center/BtnDelete" to="." method="_on_btn_delete_pressed"]
+[connection signal="pressed" from="CPanel/Layout/Buttons/Layout/Right/BtnCancel" to="." method="_on_btn_cancel_pressed"]
