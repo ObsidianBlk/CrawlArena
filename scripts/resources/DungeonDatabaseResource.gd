@@ -49,7 +49,7 @@ func _get_property_list() -> Array:
 func _DungeonFileArrayValue(dfa : Array) -> bool:
 	if dfa.size() <= 0: return true
 	for entry in dfa:
-		if not DSV.verify(entry, DUNGEON_FILE_ENTRY_SCHEMA):
+		if DSV.verify(entry, DUNGEON_FILE_ENTRY_SCHEMA) != OK:
 			return false
 	return true
 

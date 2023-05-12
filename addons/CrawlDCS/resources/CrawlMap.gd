@@ -378,6 +378,7 @@ func set_default_surface_resource_id(surface : Crawl.SURFACE, rid : int) -> void
 	_default_surface[surface] = rid
 
 func add_entity(entity : CrawlEntity) -> void:
+	if entity == null: return # A safety check.
 	if entity.type == &"" or entity.uuid == &"":
 		return
 	

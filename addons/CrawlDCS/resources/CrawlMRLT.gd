@@ -68,6 +68,7 @@ func _get_property_list() -> Array:
 		}
 	]
 
+
 # ------------------------------------------------------------------------------
 # Public Methods
 # ------------------------------------------------------------------------------
@@ -113,7 +114,7 @@ func get_meta_resource_descriptions(section : StringName) -> Array:
 	if not section in _data: return []
 	var rdesc : Array = []
 	for key in _data[section]:
-		var item : Dictionary = {"name":key, "description":""}
+		var item : Dictionary = {"name":key, "section":section, "description":""}
 		if "description" in _data[section][key]:
 			item["description"] = _data[section][key]["description"]
 			rdesc.append(item)

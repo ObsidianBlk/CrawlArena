@@ -37,7 +37,7 @@ func _ready() -> void:
 	_CreateDungeon()
 	
 
-func _input(event : InputEvent) -> void:
+func _unhandled_input(event : InputEvent) -> void:
 	if _editor_entity == null: return
 	if event.is_action_pressed("foreward", false, true):
 		_editor_entity.move(&"foreward", true)
@@ -81,9 +81,18 @@ func _input(event : InputEvent) -> void:
 		_dig_mode = not _dig_mode
 		accept_event()
 
+
 # ------------------------------------------------------------------------------
 # Private Methods
 # ------------------------------------------------------------------------------
+func _EntityTypeParts(type : StringName) -> PackedStringArray:
+	var parts : PackedStringArray = type.split(":")
+	if parts.size() > 2:
+		return PackedStringArray([])
+	if parts.size() == 1:
+		return PackedStringArray([&"unique", parts[0]])
+	return parts
+
 func _ClearDungeon() -> void:
 	_active_cell_state.map = null
 	_crawl_view_3d.map = null
@@ -106,40 +115,59 @@ func _ClearDungeon() -> void:
 			_editor_entity.position_changed.disconnect(_on_editor_entity_position_changed)
 		_editor_entity = null
 
-func _CreateDungeon() -> void:
-	_ClearDungeon()
+func _ConnectDungeon(map : CrawlMap) -> void:
+	if _map != null:
+		printerr("Failed to connect dungeon map. Any active map must be cleared first.")
+		return
 	
-	_map = CrawlMap.new()
-	_map.id = UUID.v7()
-	_map.add_resource(&"default")
-	_map.add_cell(Vector3i.ZERO)
+	_map = map
+	if not _map.cell_added.is_connected(_on_map_cell_count_changed):
+		_map.cell_added.connect(_on_map_cell_count_changed)
+	if not _map.cell_removed.is_connected(_on_map_cell_count_changed):
+		_map.cell_removed.connect(_on_map_cell_count_changed)
 	
-	_editor_entity = CrawlEntity.new()
-	_editor_entity.type = &"editor"
-	_editor_entity.uuid = UUID.v7()
-	
-	_map.add_entity(_editor_entity)
-	
-	_map.cell_added.connect(_on_map_cell_count_changed)
-	_map.cell_removed.connect(_on_map_cell_count_changed)
-	_editor_entity.position_changed.connect(_on_editor_entity_position_changed)
+	var elt : CrawlMRLT = Crawl.get_lookup_table(&"entities")
+	if elt != null:
+		var entities = _map.get_entities()
+		for entity in entities:
+			var tparts : PackedStringArray = _EntityTypeParts(entity.type)
+			if tparts.size() != 2: continue
+			var entity_node = elt.load_meta_resource(tparts[0], tparts[1], true)
+			if is_instance_of(entity_node, CrawlEntityNode3D):
+				if entity.type == &"editor":
+					if _editor_entity != null: continue # Already have one... skip!
+					_editor_entity = entity
+				entity_node.cell_size = CELL_SIZE
+				entity_node.entity = entity
+				_entity_container.add_child(entity_node)
 	
 	_active_cell_state.map = _map
 	_crawl_view_3d.map = _map
 	_crawl_mini_map.map = _map
-	_crawl_mini_map.focus_entity_uuid = _editor_entity.uuid
-	
-	var elt : CrawlMRLT = Crawl.get_lookup_table(&"entities")
-	if elt != null:
-		var view : Node3D = elt.load_meta_resource(&"unique", &"editor", true)
-		if view != null:
-			view.cell_size = CELL_SIZE
-			view.entity = _editor_entity
-			_entity_container.add_child(view)
-	
 	_on_map_cell_count_changed(Vector3i.ZERO)
-	_on_editor_entity_position_changed(Vector3i.ZERO, _editor_entity.position)
 	
+	if _editor_entity != null:
+		if not _editor_entity.position_changed.is_connected(_on_editor_entity_position_changed):
+			_editor_entity.position_changed.connect(_on_editor_entity_position_changed)
+		_crawl_mini_map.focus_entity_uuid = _editor_entity.uuid
+		_on_editor_entity_position_changed(Vector3i.ZERO, _editor_entity.position)
+
+
+func _CreateDungeon() -> void:
+	_ClearDungeon()
+	
+	var map : CrawlMap = CrawlMap.new()
+	map.id = UUID.v7()
+	map.add_resource(&"default")
+	map.add_cell(Vector3i.ZERO)
+	
+	var entity : CrawlEntity = CrawlEntity.new()
+	entity.type = &"editor"
+	entity.uuid = UUID.v7()
+	
+	map.add_entity(entity)
+	
+	_ConnectDungeon(map)
 
 # ------------------------------------------------------------------------------
 # Handler Methods
@@ -168,11 +196,8 @@ func _on_request_save_map_pressed() -> void:
 
 func _on_dungeon_io_window_dungeon_loaded(map : CrawlMap) -> void:
 	if map == null: return
-	# TODO 1: Clear current dungeon!
-	# TODO 2: rework _CreateDungeon in such a way as it creates a dungeon and
-	#   passes that dungeon to a new method called _ConnectDungeon
-	# TODO 3: Call _ConnectDungeon with the given map!
-	print("Given a dungeon with ID ", map.id)
+	_ClearDungeon()
+	_ConnectDungeon(map)
 
 func _on_dungeon_io_window_dungeon_deleted(id : StringName) -> void:
 	if _map != null and _map.id == id:
