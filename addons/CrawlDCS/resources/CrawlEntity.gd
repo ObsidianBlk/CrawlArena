@@ -44,6 +44,7 @@ var _mapref : WeakRef = weakref(null)
 func set_uuid(id : StringName) -> void:
 	if uuid == &"" and id != &"":
 		uuid = id
+		emit_changed()
 
 func set_type(t : StringName) -> void:
 	if type == &"" and t != &"":
@@ -52,23 +53,27 @@ func set_type(t : StringName) -> void:
 		if not (count >= 1 and count <= 2): return
 		if count == 2 and parts[1].is_empty(): return
 		type = t
+		emit_changed()
 
 func set_entity_name(n : String) -> void:
 	if n != entity_name:
 		entity_name = n
 		name_changed.emit(entity_name)
+		emit_changed()
 
 func set_position(pos : Vector3i) -> void:
 	if pos != position:
 		var from : Vector3i = position
 		position = pos
 		position_changed.emit(from, position)
+		emit_changed()
 
 func set_facing(f : Crawl.SURFACE) -> void:
 	if f != facing:
 		var old : Crawl.SURFACE = facing
 		facing = f
 		facing_changed.emit(old, facing)
+		emit_changed()
 
 # ------------------------------------------------------------------------------
 # Override Methods
@@ -197,6 +202,7 @@ func set_meta_value(key : String, value : Variant) -> void:
 	if key.is_empty(): return
 	meta[key] = value
 	meta_value_changed.emit(key)
+	emit_changed()
 
 func get_meta_value(key : String, default : Variant = null) -> Variant:
 	if key in meta:
@@ -213,6 +219,7 @@ func erase_meta_key(key : String) -> void:
 	if not key in meta: return
 	meta.erase(key)
 	meta_value_removed.emit(key)
+	emit_changed()
 
 func set_blocking(surface : Crawl.SURFACE, enable : bool) -> void:
 	var i : int = Crawl.SURFACE.values().find(surface)
@@ -220,9 +227,11 @@ func set_blocking(surface : Crawl.SURFACE, enable : bool) -> void:
 		blocking = blocking | (1 << i)
 	else:
 		blocking = blocking & (~(1 << i))
+	emit_changed()
 
 func set_block_all(enable : bool) -> void:
 	blocking = Crawl.ALL_SURFACES if enable else 0
+	emit_changed()
 
 func is_blocking(surface : Crawl.SURFACE) -> bool:
 	var i : int = Crawl.SURFACE.values().find(surface)

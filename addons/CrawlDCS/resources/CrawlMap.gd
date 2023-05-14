@@ -97,23 +97,28 @@ func _set(property : StringName, value : Variant) -> bool:
 		&"id":
 			if typeof(value) == TYPE_STRING_NAME and _id == &"":
 				_id = value
+				emit_changed()
 				success = true
 		&"name":
 			if typeof(value) == TYPE_STRING:
 				_name = value
+				emit_changed()
 				success = true
 		&"author":
 			if typeof(value) == TYPE_STRING:
 				_author = value
+				emit_changed()
 				success = true
 		&"world_env":
 			if typeof(value) == TYPE_STRING_NAME:
 				_world_env = value
+				emit_changed()
 				success = true
 		&"grid":
 			if typeof(value) == TYPE_DICTIONARY:
 				if DSV.verify(value, GRID_SCHEMA) == OK:
 					_grid = value
+					emit_changed()
 					success = true
 				else:
 					printerr("Failed to load grid.")
@@ -125,6 +130,7 @@ func _set(property : StringName, value : Variant) -> bool:
 					for key in _resources.keys():
 						if _resources[key] > _next_rid:
 							_next_rid = _resources[key] + 1
+					emit_changed()
 					success = true
 				else:
 					printerr("Failed to load resources.")
@@ -136,6 +142,7 @@ func _set(property : StringName, value : Variant) -> bool:
 					for uuid in _entities.keys():
 						_entities[uuid]._SetMap(self)
 						entity_added.emit(_entities[uuid])
+					emit_changed()
 					success = true
 				else:
 					printerr("Failed to load Entities.")
@@ -269,6 +276,7 @@ func _SetCellSurface(position : Vector3i, surface : Crawl.SURFACE, data : Dictio
 	
 	if changed:
 		cell_changed.emit(position)
+		emit_changed()
 	
 	if bi_directional:
 		var pos : Vector3i = _CalcNeighborFrom(position, surface)
@@ -325,6 +333,7 @@ func add_resource(resource : StringName) -> int:
 		return ERR_ALREADY_IN_USE
 	_resources[resource] = _next_rid
 	_next_rid += 1
+	emit_changed()
 	return OK
 
 func has_resource(resource : StringName) -> bool:
@@ -359,8 +368,10 @@ func clear_unused_resources() -> void:
 				highest_rid = rid + 1
 	_resources = nr
 	_next_rid = highest_rid
+	emit_changed()
 
 func set_world_environment(env : StringName) -> void:
+	emit_changed()
 	_world_env = env
 
 func get_world_environment() -> StringName:
@@ -385,13 +396,19 @@ func add_entity(entity : CrawlEntity) -> void:
 	if not entity.uuid in _entities:
 		_entities[entity.uuid] = entity
 		entity._SetMap(self)
+		if not entity.changed.is_connected(_on_entity_changed):
+			entity.changed.connect(_on_entity_changed)
 		entity_added.emit(entity)
+		emit_changed()
 
 func remove_entity(entity : CrawlEntity) -> void:
 	if not entity.uuid in _entities: return
 	_entities.erase(entity.uuid)
 	entity._SetMap(null)
+	if entity.changed.is_connected(_on_entity_changed):
+		entity.changed.disconnect(_on_entity_changed)
 	entity_removed.emit(entity)
+	emit_changed()
 
 func remove_entity_by_uuid(uuid : StringName) -> void:
 	if not uuid in _entities: return
@@ -443,8 +460,10 @@ func clear_entities_outside_map() -> void:
 		for entity in _entities[type]:
 			if not entity.position in _grid:
 				removal.append(entity)
-	for entity in removal:
-		remove_entity(entity)
+	if removal.size() > 0:
+		for entity in removal:
+			remove_entity(entity)
+		emit_changed()
 
 func add_cell(position : Vector3i, open_to_adjacent : bool = false) -> int:
 	if position in _grid:
@@ -458,6 +477,7 @@ func add_cell(position : Vector3i, open_to_adjacent : bool = false) -> int:
 				dig(position, surface)
 	else:
 		cell_changed.emit(position)
+	emit_changed()
 	return OK
 
 func has_cell(position : Vector3i) -> bool:
@@ -474,12 +494,14 @@ func copy_cell(from_position : Vector3i, to_position : Vector3i) -> int:
 			_grid[to_position] = _CloneCell(_grid[from_position])
 			cell_added.emit(to_position)
 		cell_changed.emit(to_position)
+		emit_changed()
 	return OK
 
 func remove_cell(position : Vector3i) -> void:
 	if not position in _grid: return
 	_grid.erase(position)
 	cell_removed.emit(position)
+	emit_changed()
 
 func set_cell_stairs(position : Vector3i, has_stairs : bool) -> void:
 	if not position in _grid:
@@ -487,6 +509,7 @@ func set_cell_stairs(position : Vector3i, has_stairs : bool) -> void:
 		return
 	_grid[position][&"stair"] = has_stairs
 	cell_changed.emit(position)
+	emit_changed()
 
 func clear_cell_stairs(position : Vector3i) -> void:
 	if not position in _grid:
@@ -495,6 +518,7 @@ func clear_cell_stairs(position : Vector3i) -> void:
 	if &"stair" in _grid[position]:
 		_grid[position].erase(&"stair")
 		cell_changed.emit(position)
+		emit_changed()
 
 func is_cell_stairs(position : Vector3i) -> bool:
 	if not position in _grid: return false
@@ -543,6 +567,7 @@ func set_cell_surfaces_to_defaults(position : Vector3i) -> void:
 		_grid[position][&"rid"][5] = _default_surface[Crawl.SURFACE.Ceiling]
 	
 	cell_changed.emit(position)
+	emit_changed()
 
 func set_cell_surface_blocking(position : Vector3i, surface : Crawl.SURFACE, blocking : bool, bi_directional : bool = false) -> void:
 	if not position in _grid:
@@ -696,8 +721,5 @@ func dig_room(position : Vector3i, size : Vector3i) -> void:
 # ------------------------------------------------------------------------------
 # Handler Methods
 # ------------------------------------------------------------------------------
-#func _on_focus_entity_position_changed(from : Vector3i, to : Vector3i) -> void:
-#	focus_position_changed.emit(to)
-#
-#func _on_focus_entity_facing_changed(from : Crawl.SURFACE, to : Crawl.SURFACE) -> void:
-#	focus_facing_changed.emit(to)
+func _on_entity_changed() -> void:
+	emit_changed() # The map is considered changed when an entity is changed.
