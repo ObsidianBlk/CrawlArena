@@ -135,7 +135,7 @@ unique_name_in_owner = true
 own_world_3d = true
 world_3d = SubResource("World3D_2vqry")
 handle_input_locally = false
-size = Vector2i(1508, 1029)
+size = Vector2i(1484, 1029)
 render_target_update_mode = 4
 
 [node name="CrawlView3D" type="Node3D" parent="Layout/Primary/Control/DungeonView/DungeonViewport"]
@@ -181,10 +181,47 @@ theme_type_variation = &"Toolbar"
 [node name="Layout" type="VBoxContainer" parent="Layout/Primary/Sidebar"]
 layout_mode = 2
 
-[node name="ActiveCellState" parent="Layout/Primary/Sidebar/Layout" instance=ExtResource("6_1clgy")]
+[node name="Label" type="Label" parent="Layout/Primary/Sidebar/Layout"]
+layout_mode = 2
+text = "Cell Styling"
+
+[node name="CPanel" type="PanelContainer" parent="Layout/Primary/Sidebar/Layout"]
+layout_mode = 2
+
+[node name="MapCellStyler" parent="Layout/Primary/Sidebar/Layout/CPanel" instance=ExtResource("6_1clgy")]
 unique_name_in_owner = true
 layout_mode = 2
 preview_size = 64
+hide_stairs = true
+
+[node name="Label2" type="Label" parent="Layout/Primary/Sidebar/Layout"]
+layout_mode = 2
+text = "Active Cell"
+
+[node name="TabContainer" type="TabContainer" parent="Layout/Primary/Sidebar/Layout"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Layout" type="MarginContainer" parent="Layout/Primary/Sidebar/Layout/TabContainer"]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="ActiveCellState" parent="Layout/Primary/Sidebar/Layout/TabContainer/Layout" instance=ExtResource("6_1clgy")]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 0
+preview_size = 64
+
+[node name="Entities" type="MarginContainer" parent="Layout/Primary/Sidebar/Layout/TabContainer"]
+visible = false
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
 
 [connection signal="dungeon_deleted" from="DungeonIOWindow" to="." method="_on_dungeon_io_window_dungeon_deleted"]
 [connection signal="dungeon_loaded" from="DungeonIOWindow" to="." method="_on_dungeon_io_window_dungeon_loaded"]
@@ -193,6 +230,6 @@ preview_size = 64
 [connection signal="pressed" from="Layout/Toolbar/Layout/Buttons/RequestSaveMap" to="." method="_on_request_save_map_pressed"]
 [connection signal="text_changed" from="Layout/Toolbar/Layout/DungeonInfo/Edit_MapName" to="." method="_on_edit_map_name_text_changed"]
 [connection signal="direction_changed" from="Layout/Primary/ZInfoBar/Layout/DigState" to="." method="_on_dig_state_direction_changed"]
-[connection signal="stair_state_toggled" from="Layout/Primary/Sidebar/Layout/ActiveCellState" to="." method="_on_active_cell_stair_state_toggled"]
-[connection signal="surface_blocking_toggled" from="Layout/Primary/Sidebar/Layout/ActiveCellState" to="." method="_on_active_cell_surface_blocking_toggled"]
-[connection signal="surface_resource_selected" from="Layout/Primary/Sidebar/Layout/ActiveCellState" to="." method="_on_active_cell_surface_resource_selected"]
+[connection signal="stair_state_toggled" from="Layout/Primary/Sidebar/Layout/TabContainer/Layout/ActiveCellState" to="." method="_on_active_cell_stair_state_toggled"]
+[connection signal="surface_blocking_toggled" from="Layout/Primary/Sidebar/Layout/TabContainer/Layout/ActiveCellState" to="." method="_on_active_cell_surface_blocking_toggled"]
+[connection signal="surface_resource_selected" from="Layout/Primary/Sidebar/Layout/TabContainer/Layout/ActiveCellState" to="." method="_on_active_cell_surface_resource_selected"]

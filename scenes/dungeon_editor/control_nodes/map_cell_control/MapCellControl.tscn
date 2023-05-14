@@ -147,7 +147,12 @@ icon = ExtResource("1_qxdil")
 icon_alignment = 1
 expand_icon = true
 
-[node name="StairToggle" type="Button" parent="AspectRatioContainer/Layout"]
+[node name="StairToggleContainer" type="MarginContainer" parent="AspectRatioContainer/Layout"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="StairToggle" type="Button" parent="AspectRatioContainer/Layout/StairToggleContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 icon = ExtResource("4_gjklv")

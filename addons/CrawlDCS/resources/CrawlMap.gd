@@ -547,6 +547,36 @@ func set_cell_surface(position : Vector3i, surface : Crawl.SURFACE, blocking : b
 	
 	_SetCellSurface(position, surface, data, bi_directional)
 
+func set_cell_surface_from_map(map : CrawlMap, srcPosition : Vector3i, dstPosition : Vector3i, options : Dictionary = {}, bi_directional : bool = false) -> void:
+	if map == null: return
+	if not map.has_cell(srcPosition): return
+	if not has_cell(dstPosition): return
+	
+	var set_if_src_empty : bool = true
+	if "set_if_src_empty" in options and typeof(options["set_if_src_empty"]) == TYPE_BOOL:
+		set_if_src_empty = options["set_if_src_empty"]
+	
+	var set_if_dst_empty : bool = true
+	if "set_if_dst_empty" in options and typeof(options["set_if_dst_empty"]) == TYPE_BOOL:
+		set_if_dst_empty = options["set_if_dst_empty"]
+
+	var ignore_blocking : bool = false
+	if "ignore_blocking" in options and typeof(options["ignore_blocking"]) == TYPE_BOOL:
+		ignore_blocking = options["ignore_blocking"]
+
+	for surface in [Crawl.SURFACE.North, Crawl.SURFACE.South, Crawl.SURFACE.East, Crawl.SURFACE.West, Crawl.SURFACE.Ceiling, Crawl.Surface.Ground]:
+		var src_resource_name : StringName = map.get_cell_surface_resource(srcPosition, surface)
+		var dst_resource_name : StringName = get_cell_surface_resource(dstPosition, surface)
+
+		var set_resource : bool = (src_resource_name != &"" or set_if_src_empty) and (dst_resource_name != &"" or set_if_dst_empty)
+		if set_resource:
+			set_cell_surface_resource(dstPosition, surface, src_resource_name, bi_directional)
+		
+		if ignore_blocking: continue
+		var src_blocking : bool = map.is_cell_surface_blocking(srcPosition, surface)
+		set_cell_surface_blocking(dstPosition, surface, src_blocking, bi_directional)
+
+
 func set_cell_surfaces_to_defaults(position : Vector3i) -> void:
 	if not position in _grid:
 		printerr("CrawlMap Error: No cell at position ", position)
@@ -589,9 +619,12 @@ func set_cell_surface_resource(position : Vector3i, surface : Crawl.SURFACE, res
 		if resource_id in _resources:
 			data[&"resource_id"] = _resources[resource_id]
 		else:
-			var rid : int = _next_rid
-			_resources[StringName(resource_id)] = rid
-			_next_rid += 1
+			var resource : StringName = StringName(resource_id)
+			var rid : int = -1
+			if resource != &"":
+				rid = _next_rid
+				_resources[resource] = rid
+				_next_rid += 1
 			data[&"resource_id"] = rid
 	
 	if not data.is_empty():
