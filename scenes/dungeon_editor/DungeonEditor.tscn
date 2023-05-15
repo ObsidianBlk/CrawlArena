@@ -1,4 +1,4 @@
-[gd_scene load_steps=16 format=3 uid="uid://pxet627daewv"]
+[gd_scene load_steps=17 format=3 uid="uid://pxet627daewv"]
 
 [ext_resource type="Script" path="res://scenes/dungeon_editor/DungeonEditor.gd" id="1_1jgi3"]
 [ext_resource type="Theme" uid="uid://17e15ml35qoo" path="res://scenes/dungeon_editor/DungeonEditor.theme" id="1_5o3nj"]
@@ -13,6 +13,7 @@
 [ext_resource type="Texture2D" uid="uid://dtgr2hjpbanug" path="res://assets/dungeon_editor/icons/ui/info.svg" id="5_e6e5m"]
 [ext_resource type="PackedScene" uid="uid://dlnthjlobn6wo" path="res://scenes/dungeon_editor/control_nodes/map_cell_control/MapCellControl.tscn" id="6_1clgy"]
 [ext_resource type="Texture2D" uid="uid://cshj7xn2p57f" path="res://assets/dungeon_editor/icons/ui/arrow_up.svg" id="10_owjt7"]
+[ext_resource type="PackedScene" uid="uid://rc7b5jigvmbx" path="res://scenes/dungeon_editor/ui/style_control/StyleControl.tscn" id="13_kaui7"]
 
 [sub_resource type="Environment" id="Environment_v3143"]
 background_mode = 1
@@ -188,11 +189,16 @@ text = "Cell Styling"
 [node name="CPanel" type="PanelContainer" parent="Layout/Primary/Sidebar/Layout"]
 layout_mode = 2
 
-[node name="MapCellStyler" parent="Layout/Primary/Sidebar/Layout/CPanel" instance=ExtResource("6_1clgy")]
+[node name="Layout" type="VBoxContainer" parent="Layout/Primary/Sidebar/Layout/CPanel"]
+layout_mode = 2
+
+[node name="StyleControl" parent="Layout/Primary/Sidebar/Layout/CPanel/Layout" instance=ExtResource("13_kaui7")]
 unique_name_in_owner = true
 layout_mode = 2
-preview_size = 64
-hide_stairs = true
+
+[node name="BtnStyleActiveCell" type="Button" parent="Layout/Primary/Sidebar/Layout/CPanel/Layout"]
+layout_mode = 2
+text = "Style Active Cell"
 
 [node name="Label2" type="Label" parent="Layout/Primary/Sidebar/Layout"]
 layout_mode = 2
@@ -223,6 +229,9 @@ theme_override_constants/margin_top = 8
 theme_override_constants/margin_right = 8
 theme_override_constants/margin_bottom = 8
 
+[node name="AcceptDialog" type="AcceptDialog" parent="."]
+unique_name_in_owner = true
+
 [connection signal="dungeon_deleted" from="DungeonIOWindow" to="." method="_on_dungeon_io_window_dungeon_deleted"]
 [connection signal="dungeon_loaded" from="DungeonIOWindow" to="." method="_on_dungeon_io_window_dungeon_loaded"]
 [connection signal="pressed" from="Layout/Toolbar/Layout/Buttons/RequestNewMap" to="." method="_on_request_new_map_pressed"]
@@ -230,6 +239,7 @@ theme_override_constants/margin_bottom = 8
 [connection signal="pressed" from="Layout/Toolbar/Layout/Buttons/RequestSaveMap" to="." method="_on_request_save_map_pressed"]
 [connection signal="text_changed" from="Layout/Toolbar/Layout/DungeonInfo/Edit_MapName" to="." method="_on_edit_map_name_text_changed"]
 [connection signal="direction_changed" from="Layout/Primary/ZInfoBar/Layout/DigState" to="." method="_on_dig_state_direction_changed"]
+[connection signal="pressed" from="Layout/Primary/Sidebar/Layout/CPanel/Layout/BtnStyleActiveCell" to="." method="_on_btn_style_active_cell_pressed"]
 [connection signal="stair_state_toggled" from="Layout/Primary/Sidebar/Layout/TabContainer/Layout/ActiveCellState" to="." method="_on_active_cell_stair_state_toggled"]
 [connection signal="surface_blocking_toggled" from="Layout/Primary/Sidebar/Layout/TabContainer/Layout/ActiveCellState" to="." method="_on_active_cell_surface_blocking_toggled"]
 [connection signal="surface_resource_selected" from="Layout/Primary/Sidebar/Layout/TabContainer/Layout/ActiveCellState" to="." method="_on_active_cell_surface_resource_selected"]

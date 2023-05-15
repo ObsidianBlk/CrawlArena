@@ -228,7 +228,7 @@ func _CloneCell(cell : Dictionary, ncell : Dictionary = {}) -> Dictionary:
 	ncell[&"visited"] = cell[&"visited"]
 	ncell[&"rid"] = []
 	for rid in cell[&"rid"]:
-		ncell[&"rid"] = rid
+		ncell[&"rid"].append(rid)
 	if &"stair" in cell:
 		ncell[&"stair"] = cell[&"stair"]
 	if &"climbable" in cell:
@@ -564,7 +564,7 @@ func set_cell_surface_from_map(map : CrawlMap, srcPosition : Vector3i, dstPositi
 	if "ignore_blocking" in options and typeof(options["ignore_blocking"]) == TYPE_BOOL:
 		ignore_blocking = options["ignore_blocking"]
 
-	for surface in [Crawl.SURFACE.North, Crawl.SURFACE.South, Crawl.SURFACE.East, Crawl.SURFACE.West, Crawl.SURFACE.Ceiling, Crawl.Surface.Ground]:
+	for surface in [Crawl.SURFACE.North, Crawl.SURFACE.South, Crawl.SURFACE.East, Crawl.SURFACE.West, Crawl.SURFACE.Ceiling, Crawl.SURFACE.Ground]:
 		var src_resource_name : StringName = map.get_cell_surface_resource(srcPosition, surface)
 		var dst_resource_name : StringName = get_cell_surface_resource(dstPosition, surface)
 

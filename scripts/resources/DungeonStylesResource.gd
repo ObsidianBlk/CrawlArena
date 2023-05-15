@@ -114,6 +114,14 @@ func _GetTrackingPosition() -> Vector3i:
 func count() -> void:
 	return _styles.size()
 
+func init(default_resource : StringName = &"default") -> void:
+	if _map != null: return
+	_map = CrawlMap.new()
+	_map.add_resource(default_resource)
+
+func get_map() -> CrawlMap:
+	return _map
+
 func get_styles() -> Array:
 	return _styles.keys()
 
@@ -128,9 +136,11 @@ func add_style(style_name : String) -> int:
 	
 	var te : CrawlEntity = _GetTrackingEntity()
 	if te == null:
-		if not _map.has_cell(Vector3i.ZERO):
-			_map.add_cell(Vector3i.ZERO)
+		var position : Vector3i = _available_cells.pop_front()
+		if not _map.has_cell(position):
+			_map.add_cell(position)
 		te = get_tracking_entity() # This sneakily makes one if none exists.
+		te.position = position
 	else:
 		if te.position == _available_cells[0]:
 			if _available_cells[0] == Vector3i.ZERO:
@@ -168,6 +178,38 @@ func get_tracking_entity() -> CrawlEntity:
 		_map.add_entity(entity)
 		emit_changed()
 	return entity
+
+func get_style_position(style_name : String) -> Vector3i:
+	if not style_name in _styles: return INVALID_TRACKING_POSITION
+	return _styles[style_name]
+
+func get_active_style() -> String:
+	var position : Vector3i = _GetTrackingPosition()
+	if position == INVALID_TRACKING_POSITION:
+		return ""
+	var style_name = _styles.find_key(position)
+	if typeof(style_name) == TYPE_STRING:
+		return style_name
+	return ""
+
+func set_active_style(style_name : String) -> void:
+	if _map == null: return
+	if not style_name in _styles: return
+	var te : CrawlEntity = _GetTrackingEntity()
+	if te == null: return
+	if te.position != _styles[style_name]:
+		te.position = _styles[style_name]
+
+func set_surface_at(position : Vector3i, surface : Crawl.SURFACE, resource_name : StringName, blocking: bool) -> void:
+	if _map == null: return
+	if not _map.has_cell(position): return
+	_map.set_cell_surface(position, surface, blocking, resource_name, false)
+
+func set_surface(surface : Crawl.SURFACE, resource_name : StringName, blocking : bool) -> void:
+	var position : Vector3i = _GetTrackingPosition()
+	if position == INVALID_TRACKING_POSITION:
+		return
+	_map.set_cell_surface(position, surface, blocking, resource_name, false)
 
 func get_surface_resource(surface : Crawl.SURFACE) -> StringName:
 	var position : Vector3i = _GetTrackingPosition()

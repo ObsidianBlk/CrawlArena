@@ -25,8 +25,10 @@ var _dig_direction : int = 1 # 0 = Down | 1 = Foreward | 2 = Up
 @onready var _edit_map_name : LineEdit = %Edit_MapName
 
 @onready var dungeon_io_window : Window = %DungeonIOWindow
+@onready var _accept_dialog : AcceptDialog = %AcceptDialog
 
 @onready var _active_cell_state : Control = %ActiveCellState
+@onready var _style_control : Control = %StyleControl
 
 # ------------------------------------------------------------------------------
 # Override Methods
@@ -93,6 +95,18 @@ func _EntityTypeParts(type : StringName) -> PackedStringArray:
 		return PackedStringArray([&"unique", parts[0]])
 	return parts
 
+func _UpdateElevation() -> void:
+	var bounds : AABB = _map.get_aabb()
+	if bounds.size.x < 0 or bounds.size.y < 0: return
+	_z_elevation_bar.min_z_level = bounds.position.y
+	_z_elevation_bar.max_z_level = bounds.end.y - 1
+
+func _ShowAcceptDialog(title : String, text : String) -> void:
+	if _accept_dialog.visible : return
+	_accept_dialog.title = title
+	_accept_dialog.dialog_text = text
+	_accept_dialog.popup_centered()
+
 func _ClearDungeon() -> void:
 	_active_cell_state.map = null
 	_crawl_view_3d.map = null
@@ -104,10 +118,10 @@ func _ClearDungeon() -> void:
 		child.queue_free()
 
 	if _map != null:
-		if _map.cell_added.is_connected(_on_map_cell_count_changed):
-			_map.cell_added.disconnect(_on_map_cell_count_changed)
-		if _map.cell_removed.is_connected(_on_map_cell_count_changed):
-			_map.cell_removed.disconnect(_on_map_cell_count_changed)
+		if _map.cell_added.is_connected(_on_map_cell_added):
+			_map.cell_added.disconnect(_on_map_cell_added)
+		if _map.cell_removed.is_connected(_on_map_cell_removed):
+			_map.cell_removed.disconnect(_on_map_cell_removed)
 		_map = null
 	
 	if _editor_entity != null:
@@ -121,11 +135,12 @@ func _ConnectDungeon(map : CrawlMap) -> void:
 		return
 	
 	_map = map
-	if not _map.cell_added.is_connected(_on_map_cell_count_changed):
-		_map.cell_added.connect(_on_map_cell_count_changed)
-	if not _map.cell_removed.is_connected(_on_map_cell_count_changed):
-		_map.cell_removed.connect(_on_map_cell_count_changed)
+	if not _map.cell_added.is_connected(_on_map_cell_added):
+		_map.cell_added.connect(_on_map_cell_added)
+	if not _map.cell_removed.is_connected(_on_map_cell_removed):
+		_map.cell_removed.connect(_on_map_cell_removed)
 	
+	_edit_map_name.text = _map.name
 	var elt : CrawlMRLT = Crawl.get_lookup_table(&"entities")
 	if elt != null:
 		var entities = _map.get_entities()
@@ -144,7 +159,7 @@ func _ConnectDungeon(map : CrawlMap) -> void:
 	_active_cell_state.map = _map
 	_crawl_view_3d.map = _map
 	_crawl_mini_map.map = _map
-	_on_map_cell_count_changed(Vector3i.ZERO)
+	_UpdateElevation()
 	
 	if _editor_entity != null:
 		if not _editor_entity.position_changed.is_connected(_on_editor_entity_position_changed):
@@ -187,12 +202,25 @@ func _on_request_load_map_pressed() -> void:
 func _on_request_save_map_pressed() -> void:
 	if _map == null: return
 	if _edit_map_name.text.is_empty():
-		# TODO: Show dialog that states that a map name is missing
+		_ShowAcceptDialog(
+			"Dungeon Name Missing",
+			"Cannot save dungeon without a name."
+		)
 		return
 	var err : int = DungeonDatabase.save_dungeon(_map)
 	if err != OK:
-		# TODO: Show dialog box stating there was a failure to save map.
+		_ShowAcceptDialog(
+			"Dungeon Save Failed",
+			"Failed to save the dungeon."
+		)
+		# TODO: Lookup error codes that could be returned and
+		#   display a more informative message.
 		printerr("Failed to save the dungeon map. Error code ", err)
+	else:
+		_ShowAcceptDialog(
+			"Dungeon Saved",
+			"Dungeon successfully saved."
+		)
 
 func _on_dungeon_io_window_dungeon_loaded(map : CrawlMap) -> void:
 	if map == null: return
@@ -203,11 +231,20 @@ func _on_dungeon_io_window_dungeon_deleted(id : StringName) -> void:
 	if _map != null and _map.id == id:
 		_CreateDungeon()
 
-func _on_map_cell_count_changed(_pos : Vector3i) -> void:
-	var bounds : AABB = _map.get_aabb()
-	if bounds.size.x < 0 or bounds.size.y < 0: return
-	_z_elevation_bar.min_z_level = bounds.position.y
-	_z_elevation_bar.max_z_level = bounds.end.y - 1
+func _on_map_cell_added(map_position : Vector3i) -> void:
+	_style_control.copy_style_to_map(
+		_map, map_position,
+		{
+			"set_if_src_empty":true,
+			"set_if_dst_empty":false,
+			"ignore_blocking":true
+		},
+		false
+	)
+	_UpdateElevation()
+
+func _on_map_cell_removed(_map_position : Vector3i) -> void:
+	_UpdateElevation()
 
 func _on_editor_entity_position_changed(_from : Vector3i, to : Vector3i) -> void:
 	_z_elevation_bar.z_level = to.y
@@ -241,3 +278,15 @@ func _on_edit_map_name_text_changed(new_text : String) -> void:
 	if _btn_request_save_map == null: return
 	_btn_request_save_map.disabled = new_text.is_empty()
 	_map.name = new_text
+
+func _on_btn_style_active_cell_pressed():
+	if _map == null or _editor_entity == null: return
+	_style_control.copy_style_to_map(
+		_map, _editor_entity.position,
+		{
+			"set_if_src_empty":true,
+			"set_if_dst_empty":false,
+			"ignore_blocking":true
+		},
+		false
+	)

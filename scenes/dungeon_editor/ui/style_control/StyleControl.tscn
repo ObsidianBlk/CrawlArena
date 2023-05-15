@@ -1,0 +1,85 @@
+[gd_scene load_steps=4 format=3 uid="uid://rc7b5jigvmbx"]
+
+[ext_resource type="Script" path="res://scenes/dungeon_editor/ui/style_control/StyleControl.gd" id="1_53vl4"]
+[ext_resource type="PackedScene" uid="uid://dlnthjlobn6wo" path="res://scenes/dungeon_editor/control_nodes/map_cell_control/MapCellControl.tscn" id="1_gwo1n"]
+[ext_resource type="Texture2D" uid="uid://ceq5e02od7tjg" path="res://assets/dungeon_editor/icons/ui/add.svg" id="2_7bgah"]
+
+[node name="StyleControl" type="CenterContainer"]
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("1_53vl4")
+
+[node name="Layout" type="VBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="MCCStyles" parent="Layout" instance=ExtResource("1_gwo1n")]
+unique_name_in_owner = true
+layout_mode = 2
+preview_size = 64
+hide_stairs = true
+lookup_table_name = &"level_geometry"
+
+[node name="StyleSelection" type="HBoxContainer" parent="Layout"]
+layout_mode = 2
+
+[node name="OptionStyles" type="OptionButton" parent="Layout/StyleSelection"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="BtnRequestAddStyle" type="Button" parent="Layout/StyleSelection"]
+layout_mode = 2
+tooltip_text = "Create new style from selected style."
+icon = ExtResource("2_7bgah")
+icon_alignment = 1
+
+[node name="StyleNameWindow" type="Window" parent="."]
+unique_name_in_owner = true
+initial_position = 2
+title = "Enter Style Name"
+size = Vector2i(384, 100)
+visible = false
+wrap_controls = true
+transient = true
+exclusive = true
+popup_window = true
+
+[node name="CPanel" type="PanelContainer" parent="StyleNameWindow"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Layout" type="VBoxContainer" parent="StyleNameWindow/CPanel"]
+layout_mode = 2
+
+[node name="Line_StyleName" type="LineEdit" parent="StyleNameWindow/CPanel/Layout"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Style Name"
+
+[node name="Options" type="HBoxContainer" parent="StyleNameWindow/CPanel/Layout"]
+layout_mode = 2
+
+[node name="BtnStyleNameOK" type="Button" parent="StyleNameWindow/CPanel/Layout/Options"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "OK"
+
+[node name="Spacer" type="Control" parent="StyleNameWindow/CPanel/Layout/Options"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="BtnStyleNameCancel" type="Button" parent="StyleNameWindow/CPanel/Layout/Options"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Cancel"
+
+[connection signal="surface_blocking_toggled" from="Layout/MCCStyles" to="." method="_on_mcc_styles_surface_blocking_toggled"]
+[connection signal="surface_resource_selected" from="Layout/MCCStyles" to="." method="_on_mcc_styles_surface_resource_selected"]
+[connection signal="item_selected" from="Layout/StyleSelection/OptionStyles" to="." method="_on_option_styles_item_selected"]
+[connection signal="pressed" from="Layout/StyleSelection/BtnRequestAddStyle" to="." method="_on_btn_request_add_style_pressed"]
+[connection signal="pressed" from="StyleNameWindow/CPanel/Layout/Options/BtnStyleNameOK" to="." method="_on_btn_style_name_ok_pressed"]
+[connection signal="pressed" from="StyleNameWindow/CPanel/Layout/Options/BtnStyleNameCancel" to="." method="_on_btn_style_name_cancel_pressed"]
