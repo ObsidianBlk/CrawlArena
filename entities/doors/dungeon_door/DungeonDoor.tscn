@@ -1,0 +1,22 @@
+[gd_scene load_steps=3 format=3 uid="uid://cuueq6qrs356p"]
+
+[ext_resource type="PackedScene" uid="uid://bqocpthtm75rq" path="res://assets/models/Dungeon_01/Objects/Doors/DungeonDoorFrame.glb" id="1_546sp"]
+[ext_resource type="PackedScene" uid="uid://2l3y7xwuccv6" path="res://assets/models/Dungeon_01/Objects/Doors/DungeonDoor.glb" id="2_px725"]
+
+[node name="DungeonDoor" type="Node3D"]
+
+[node name="Body" type="Node3D" parent="."]
+
+[node name="DungeonDoorFrame" parent="Body" instance=ExtResource("1_546sp")]
+
+[node name="DoorLeft" type="Node3D" parent="Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.68961, 0, 0)
+
+[node name="DungeonDoor" parent="Body/DoorLeft" instance=ExtResource("2_px725")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.68961, 0, 0)
+
+[node name="DoorRight" type="Node3D" parent="Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.69, 0, 0)
+
+[node name="DungeonDoor" parent="Body/DoorRight" instance=ExtResource("2_px725")]
+transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, -1.69, 0, 0)

@@ -3,13 +3,13 @@
 importer="scene"
 importer_version=1
 type="PackedScene"
-uid="uid://b3j5a2fglfj85"
-path="res://.godot/imported/Cobble_Blood_01.glb-3127390e49265b8402bf715c137fb3c7.scn"
+uid="uid://2l3y7xwuccv6"
+path="res://.godot/imported/DungeonDoor.glb-3dd26c5e525a351fc9880b78d8052e70.scn"
 
 [deps]
 
-source_file="res://assets/models/Dungeon_01/Ground/Cobble_Blood_01.glb"
-dest_files=["res://.godot/imported/Cobble_Blood_01.glb-3127390e49265b8402bf715c137fb3c7.scn"]
+source_file="res://assets/models/Dungeon_01/Objects/Doors/DungeonDoor.glb"
+dest_files=["res://.godot/imported/DungeonDoor.glb-3dd26c5e525a351fc9880b78d8052e70.scn"]
 
 [params]
 
@@ -30,9 +30,9 @@ animation/remove_immutable_tracks=true
 import_script/path=""
 _subresources={
 "materials": {
-"Cobble_Blood_01": {
+"DungeonDoor": {
 "use_external/enabled": true,
-"use_external/path": "res://assets/models/Dungeon_01/Materials/Cobble_Blood_01.tres"
+"use_external/path": "res://assets/models/Dungeon_01/Materials/DungeonDoor.tres"
 }
 }
 }
