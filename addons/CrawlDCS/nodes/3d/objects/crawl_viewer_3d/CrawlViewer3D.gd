@@ -65,7 +65,6 @@ func set_camera_offset(o : float) -> void:
 # Override Methods
 # ------------------------------------------------------------------------------
 func _ready() -> void:
-	use_entity_direct_update(true)
 	_UpdateCameraPositioning()
 	_body.position.y = body_ground_offset
 	_UpdateViewerPassiveMode()

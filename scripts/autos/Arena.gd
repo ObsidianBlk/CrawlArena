@@ -42,6 +42,10 @@ func _ready() -> void:
 			"editor":{
 				"src":"res://addons/CrawlDCS/nodes/3d/objects/crawl_viewer_3d/CrawlViewer3D.tscn",
 				"description":"Dungeon Editor Node."
+			},
+			"viewer":{
+				"src":"res://addons/CrawlDCS/nodes/3d/objects/crawl_viewer_3d/CrawlViewer3D.tscn",
+				"description":"Dungeon Viewer Node."
 			}
 		}
 	})

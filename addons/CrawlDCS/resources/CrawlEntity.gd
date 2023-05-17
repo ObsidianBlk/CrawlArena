@@ -22,6 +22,11 @@ signal schedule_ended(data)
 
 
 # ------------------------------------------------------------------------------
+# Constants
+# ------------------------------------------------------------------------------
+const MAX_TRANSLATION_QUEUE_SIZE : int = 4
+
+# ------------------------------------------------------------------------------
 # Export Variables
 # ------------------------------------------------------------------------------
 @export var uuid : StringName = &"":									set = set_uuid
@@ -37,6 +42,8 @@ signal schedule_ended(data)
 # Variables
 # ------------------------------------------------------------------------------
 var _mapref : WeakRef = weakref(null)
+var _translation_locked : bool = false
+var _queue : Array = []
 
 # ------------------------------------------------------------------------------
 # Setters
@@ -90,6 +97,10 @@ func _SetMap(map : CrawlMap) -> void:
 	else:
 		assigned_to_map.emit()
 
+func _AddToQueue(f : Callable) -> void:
+	if _queue.size() < MAX_TRANSLATION_QUEUE_SIZE:
+		_queue.append(f)
+
 func _DirectionNameToFacing(dir : StringName) -> Crawl.SURFACE:
 	var d_facing : Crawl.SURFACE = Crawl.SURFACE.Ground
 	match dir:
@@ -135,7 +146,6 @@ func _Move(dir : Crawl.SURFACE, ignore_map : bool) -> int:
 	
 	if _mapref.get_ref() == null or ignore_map:
 		position = neighbor_position
-		position_changed.emit(pold, position)
 		return OK
 	
 	var move_allowed : bool = _CanMove(dir)
@@ -143,7 +153,6 @@ func _Move(dir : Crawl.SURFACE, ignore_map : bool) -> int:
 	if not move_allowed:
 		if stairs_ahead == &"up":
 			position = neighbor_position + Crawl.surface_to_direction_vector(Crawl.SURFACE.Ceiling)
-			position_changed.emit(pold, position)
 			return OK
 		return ERR_UNAVAILABLE
 	
@@ -151,7 +160,6 @@ func _Move(dir : Crawl.SURFACE, ignore_map : bool) -> int:
 		position = neighbor_position + Crawl.surface_to_direction_vector(Crawl.SURFACE.Ground)
 	else:
 		position = neighbor_position
-	position_changed.emit(pold, position)
 	return OK
 
 func _StairsAhead(surface : Crawl.SURFACE) -> StringName:
@@ -197,6 +205,25 @@ func clone() -> CrawlEntity:
 
 func get_map() -> CrawlMap:
 	return _mapref.get_ref()
+
+func lock_translation(lock : bool) -> void:
+	_translation_locked = lock
+
+func is_translation_locked() -> bool:
+	return _translation_locked
+
+func translation_queue_size() -> int:
+	return _queue.size()
+
+func process_translation_queue() -> int:
+	if _translation_locked: return -1
+	if _queue.size() > 0:
+		var next : Callable = _queue.pop_front()
+		next.call()
+	return _queue.size()
+
+func flush_translation_queue() -> void:
+	_queue.clear()
 
 func set_meta_value(key : String, value : Variant) -> void:
 	if key.is_empty(): return
@@ -265,22 +292,35 @@ func is_subtype(sub_type : StringName) -> bool:
 	return type.ends_with(":%s"%[sub_type])
 
 func can_move(dir : StringName, ignore_entities : bool = false) -> bool:
+	if _translation_locked: return false
 	var d_facing : Crawl.SURFACE = _DirectionNameToFacing(dir)
 	return _CanMove(d_facing, ignore_entities)
 
 func move(dir : StringName, ignore_map : bool = false) -> int:
+	if _translation_locked:
+		_AddToQueue(move.bind(dir, ignore_map))
+		return OK
+	
 	var d_facing : Crawl.SURFACE = _DirectionNameToFacing(dir)
 	return _Move(d_facing, ignore_map)
 
-func turn_left() -> void:
+func turn_left() -> int:
+	if _translation_locked:
+		_AddToQueue(turn_left)
+		return OK
+	
 	var ofacing : Crawl.SURFACE = facing
 	facing = Crawl.surface_90deg(facing, 1)
-	facing_changed.emit(ofacing, facing)
+	return OK
 
-func turn_right() -> void:
+func turn_right() -> int:
+	if _translation_locked:
+		_AddToQueue(turn_right)
+		return OK
+	
 	var ofacing : Crawl.SURFACE = facing
 	facing = Crawl.surface_90deg(facing, -1)
-	facing_changed.emit(ofacing, facing)
+	return OK
 
 func get_entities(options : Dictionary = {}) -> Array:
 	if _mapref.get_ref() == null: return []

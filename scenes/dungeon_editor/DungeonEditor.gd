@@ -1,6 +1,14 @@
 extends Control
 
 
+# ------------------------------------------------------------------------------
+# Signals
+# ------------------------------------------------------------------------------
+signal focus_changed(focus_position)
+
+# ------------------------------------------------------------------------------
+# Constants
+# ------------------------------------------------------------------------------
 const CELL_SIZE : float = 4.4
 
 # ------------------------------------------------------------------------------
@@ -129,6 +137,24 @@ func _ClearDungeon() -> void:
 			_editor_entity.position_changed.disconnect(_on_editor_entity_position_changed)
 		_editor_entity = null
 
+func _ConnectDungeonEntity(entity : CrawlEntity) -> void:
+	var elt : CrawlMRLT = Crawl.get_lookup_table(&"entities")
+	if elt == null: return
+	
+	var tparts : PackedStringArray = _EntityTypeParts(entity.type)
+	if tparts.size() != 2: return
+	var entity_node = elt.load_meta_resource(tparts[0], tparts[1], true)
+	if is_instance_of(entity_node, CrawlEntityNode3D):
+		if entity.type == &"editor":
+			if _editor_entity != null: return # Already have one... skip!
+			_editor_entity = entity
+		else:
+			if not focus_changed.is_connected(entity_node.set_focus_position):
+				focus_changed.connect(entity_node.set_focus_position)
+		entity_node.cell_size = CELL_SIZE
+		entity_node.entity = entity
+		_entity_container.add_child(entity_node)
+
 func _ConnectDungeon(map : CrawlMap) -> void:
 	if _map != null:
 		printerr("Failed to connect dungeon map. Any active map must be cleared first.")
@@ -141,20 +167,9 @@ func _ConnectDungeon(map : CrawlMap) -> void:
 		_map.cell_removed.connect(_on_map_cell_removed)
 	
 	_edit_map_name.text = _map.name
-	var elt : CrawlMRLT = Crawl.get_lookup_table(&"entities")
-	if elt != null:
-		var entities = _map.get_entities()
-		for entity in entities:
-			var tparts : PackedStringArray = _EntityTypeParts(entity.type)
-			if tparts.size() != 2: continue
-			var entity_node = elt.load_meta_resource(tparts[0], tparts[1], true)
-			if is_instance_of(entity_node, CrawlEntityNode3D):
-				if entity.type == &"editor":
-					if _editor_entity != null: continue # Already have one... skip!
-					_editor_entity = entity
-				entity_node.cell_size = CELL_SIZE
-				entity_node.entity = entity
-				_entity_container.add_child(entity_node)
+	var entities = _map.get_entities()
+	for entity in entities:
+		_ConnectDungeonEntity(entity)
 	
 	_active_cell_state.map = _map
 	_crawl_view_3d.map = _map
@@ -250,6 +265,7 @@ func _on_editor_entity_position_changed(_from : Vector3i, to : Vector3i) -> void
 	_z_elevation_bar.z_level = to.y
 	_active_cell_state.map_position = to
 	_crawl_view_3d.focus_position = to
+	focus_changed.emit(to)
 
 func _on_dig_state_direction_changed(direction : int) -> void:
 	_dig_direction = direction
