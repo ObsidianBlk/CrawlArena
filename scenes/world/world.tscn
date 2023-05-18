@@ -1,8 +1,10 @@
-[gd_scene load_steps=4 format=3 uid="uid://ctfy82xfjs772"]
+[gd_scene load_steps=6 format=3 uid="uid://ctfy82xfjs772"]
 
 [ext_resource type="Script" path="res://scenes/world/world.gd" id="1_p63h6"]
 [ext_resource type="Script" path="res://addons/Obblk_TAPI4G/nodes/ot4g_oauth.gd" id="2_4i84v"]
 [ext_resource type="Script" path="res://addons/Obblk_TAPI4G/nodes/ot4g_irc.gd" id="3_mur0n"]
+[ext_resource type="Script" path="res://scripts/nodes/UI.gd" id="4_cuie3"]
+[ext_resource type="PackedScene" uid="uid://c8lcbgdli5iw1" path="res://scenes/world/UI/main_menu/MainMenu.tscn" id="5_eq1y4"]
 
 [node name="World" type="Node2D"]
 script = ExtResource("1_p63h6")
@@ -13,3 +15,19 @@ script = ExtResource("2_4i84v")
 [node name="OT4G_IRC" type="Node" parent="OT4G_OAuth"]
 script = ExtResource("3_mur0n")
 initial_channel = "obsidianblk"
+
+[node name="DEWindow" type="Window" parent="."]
+unique_name_in_owner = true
+title = "Dungeon Editor"
+visible = false
+wrap_controls = true
+exclusive = true
+
+[node name="UI" type="CanvasLayer" parent="."]
+unique_name_in_owner = true
+script = ExtResource("4_cuie3")
+initial_menu = &"MainMenu"
+
+[node name="MainMenu" parent="UI" instance=ExtResource("5_eq1y4")]
+
+[connection signal="action_requested" from="UI" to="." method="_on_ui_action_requested"]
