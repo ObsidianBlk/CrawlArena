@@ -4,6 +4,7 @@
 [ext_resource type="Script" path="res://scenes/dungeon_editor/control_nodes/dungeon_io_window/DungeonIOWindow.gd" id="2_7nccs"]
 
 [node name="DungeonIOWindow" type="Window"]
+gui_embed_subwindows = true
 title = "Load Dungeon"
 size = Vector2i(384, 768)
 transient = true

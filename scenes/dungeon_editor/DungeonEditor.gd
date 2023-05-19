@@ -4,6 +4,7 @@ extends Control
 # ------------------------------------------------------------------------------
 # Signals
 # ------------------------------------------------------------------------------
+signal action_requested(action, payload)
 signal focus_changed(focus_position)
 
 # ------------------------------------------------------------------------------
@@ -38,6 +39,10 @@ var _dig_direction : int = 1 # 0 = Down | 1 = Foreward | 2 = Up
 @onready var _active_cell_state : Control = %ActiveCellState
 @onready var _style_control : Control = %StyleControl
 
+@onready var _exit_menu : Popup = %ExitMenu
+@onready var _btn_resume : Button = %BtnResume
+
+
 # ------------------------------------------------------------------------------
 # Override Methods
 # ------------------------------------------------------------------------------
@@ -49,6 +54,14 @@ func _ready() -> void:
 
 func _unhandled_input(event : InputEvent) -> void:
 	if _editor_entity == null: return
+	if _exit_menu != null and _exit_menu.visible == true: return
+	
+	if event.is_action_pressed("ui_cancel", false, true):
+		if _exit_menu == null: return
+		_exit_menu.popup_centered()
+		_btn_resume.grab_focus()
+		accept_event()
+	
 	if event.is_action_pressed("foreward", false, true):
 		_editor_entity.move(&"foreward", true)
 		accept_event()
@@ -306,3 +319,12 @@ func _on_btn_style_active_cell_pressed():
 		},
 		false
 	)
+
+func _on_btn_resume_pressed():
+	_exit_menu.visible = false
+
+func _on_btn_quit_editor_pressed():
+	action_requested.emit(&"close", null)
+
+func _on_btn_quit_desktop_pressed():
+	action_requested.emit(&"quit_app", null)
