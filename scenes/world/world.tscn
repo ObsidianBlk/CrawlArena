@@ -18,13 +18,18 @@ initial_channel = "obsidianblk"
 
 [node name="DEWindow" type="Window" parent="."]
 unique_name_in_owner = true
+gui_embed_subwindows = true
 title = "Dungeon Editor"
 visible = false
 wrap_controls = true
 exclusive = true
 
+[node name="Canvas" type="CanvasLayer" parent="."]
+unique_name_in_owner = true
+
 [node name="UI" type="CanvasLayer" parent="."]
 unique_name_in_owner = true
+layer = 100
 script = ExtResource("4_cuie3")
 initial_menu = &"MainMenu"
 
