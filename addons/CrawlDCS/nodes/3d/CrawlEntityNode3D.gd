@@ -292,18 +292,18 @@ func keep_hidden(enabled : bool) -> void:
 
 func hide_within_range(dist : int) -> void:
 	_hide_distance = max(-1, dist)
-	if entity == null: return
-#	if _hide_distance < 0:
-#		if entity.map_focus_position_changed.is_connected(_on_ce_focus_position_changed):
-#			entity.map_focus_position_changed.disconnect(_on_ce_focus_position_changed)
-#	else:
-#		if not entity.map_focus_position_changed.is_connected(_on_ce_focus_position_changed):
-#			entity.map_focus_position_changed.connect(_on_ce_focus_position_changed)
+	_CheckEntityVisible(_focus_position)
 
 func set_focus_position(focus : Vector3i) -> void:
 	if focus != _focus_position:
 		_focus_position = focus
 		_CheckEntityVisible(_focus_position)
+
+func enable_instant_movement(enable : bool) -> void:
+	_instant_movement = enable
+
+func is_instant_movement_enabled() -> bool:
+	return _instant_movement
 
 # ------------------------------------------------------------------------------
 # Handler Methods
@@ -339,9 +339,8 @@ func _on_tween_completed(surface : Crawl.SURFACE, target_position : Vector3) -> 
 	if body != null:
 		body.rotation.y = _SurfaceToAngle(surface)
 	position = Vector3(target_position)
-	# TODO: Handle map visibility... or not
-	#if entity != null:
-	#	_CheckEntityVisible(entity.get_map_focus_position())
+	if entity != null:
+		_CheckEntityVisible(_focus_position)
 	transition_complete.emit()
 	entity.lock_translation(false)
 

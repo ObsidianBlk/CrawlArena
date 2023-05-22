@@ -41,11 +41,12 @@ func _ready() -> void:
 		"unique":{
 			"editor":{
 				"src":"res://addons/CrawlDCS/nodes/3d/objects/crawl_viewer_3d/CrawlViewer3D.tscn",
-				"description":"Dungeon Editor Node."
+				"description":"Dungeon Editor"
 			},
-			"viewer":{
-				"src":"res://addons/CrawlDCS/nodes/3d/objects/crawl_viewer_3d/CrawlViewer3D.tscn",
-				"description":"Dungeon Viewer Node."
+			"player":{
+				"src":"res://entities/player/Player.tscn",
+				"description":"Dungeon Player",
+				"ui":""
 			}
 		}
 	})

@@ -1,0 +1,32 @@
+[gd_scene load_steps=5 format=3 uid="uid://lvvoqqpfrqpf"]
+
+[ext_resource type="Script" path="res://entities/player/Player.gd" id="1_rdgfc"]
+[ext_resource type="Shader" path="res://entities/player/Player.gdshader" id="2_1xyyw"]
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_3uwim"]
+radius = 0.25
+height = 1.8
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_jiewf"]
+render_priority = 0
+shader = ExtResource("2_1xyyw")
+shader_parameter/src_color = Color(1, 1, 1, 1)
+
+[node name="Player" type="Node3D"]
+script = ExtResource("1_rdgfc")
+body_node_path = NodePath("Body")
+
+[node name="Body" type="Node3D" parent="."]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+instance_shader_parameters/color = Color(1, 1, 1, 1)
+instance_shader_parameters/threshold = 0.05
+mesh = SubResource("CapsuleMesh_3uwim")
+surface_material_override/0 = SubResource("ShaderMaterial_jiewf")
+
+[node name="Gimble" type="Node3D" parent="Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.8, 0)
+
+[node name="Camera3D" type="Camera3D" parent="Body/Gimble"]
+transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, 0, 0)

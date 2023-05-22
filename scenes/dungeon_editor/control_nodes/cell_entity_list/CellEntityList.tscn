@@ -1,0 +1,78 @@
+[gd_scene load_steps=8 format=3 uid="uid://cbbtjay2durtb"]
+
+[ext_resource type="Texture2D" uid="uid://ceq5e02od7tjg" path="res://assets/dungeon_editor/icons/ui/add.svg" id="1_yiesn"]
+[ext_resource type="Texture2D" uid="uid://cshj7xn2p57f" path="res://assets/dungeon_editor/icons/ui/arrow_up.svg" id="2_hffl1"]
+[ext_resource type="Texture2D" uid="uid://bjbjcki4kwexh" path="res://assets/dungeon_editor/icons/ui/arrow_right.svg" id="3_743c5"]
+[ext_resource type="Texture2D" uid="uid://bxd78g7ptptrc" path="res://assets/dungeon_editor/icons/ui/arrow_down.svg" id="4_0jmc5"]
+[ext_resource type="Texture2D" uid="uid://dj20skrol12ue" path="res://assets/dungeon_editor/icons/ui/arrow_left.svg" id="5_yvklx"]
+[ext_resource type="Texture2D" uid="uid://dtgr2hjpbanug" path="res://assets/dungeon_editor/icons/ui/info.svg" id="6_bb8xt"]
+[ext_resource type="Texture2D" uid="uid://dj4xe8xgy2djf" path="res://assets/dungeon_editor/icons/ui/delete.svg" id="7_f18cc"]
+
+[node name="CellEntityList" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Layout" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Toolbar" type="HBoxContainer" parent="Layout"]
+layout_mode = 2
+
+[node name="BtnAddEntity" type="Button" parent="Layout/Toolbar"]
+layout_mode = 2
+tooltip_text = "Add Entity to Cell"
+icon = ExtResource("1_yiesn")
+icon_alignment = 1
+
+[node name="VSeparator" type="VSeparator" parent="Layout/Toolbar"]
+layout_mode = 2
+
+[node name="OpFacing" type="OptionButton" parent="Layout/Toolbar"]
+layout_mode = 2
+item_count = 4
+selected = 0
+popup/item_0/text = ""
+popup/item_0/icon = ExtResource("2_hffl1")
+popup/item_0/id = 1
+popup/item_1/text = ""
+popup/item_1/icon = ExtResource("3_743c5")
+popup/item_1/id = 2
+popup/item_2/text = ""
+popup/item_2/icon = ExtResource("4_0jmc5")
+popup/item_2/id = 4
+popup/item_3/text = ""
+popup/item_3/icon = ExtResource("5_yvklx")
+popup/item_3/id = 8
+
+[node name="LineEdit" type="LineEdit" parent="Layout/Toolbar"]
+custom_minimum_size = Vector2(128, 0)
+layout_mode = 2
+placeholder_text = "Entity Name"
+
+[node name="BtnEntitySettings" type="Button" parent="Layout/Toolbar"]
+layout_mode = 2
+tooltip_text = "Edit entity advanced settings"
+icon = ExtResource("6_bb8xt")
+icon_alignment = 1
+
+[node name="Spacer" type="Control" parent="Layout/Toolbar"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="BtnRemoveEntity" type="Button" parent="Layout/Toolbar"]
+layout_mode = 2
+tooltip_text = "Remove entity"
+icon = ExtResource("7_f18cc")
+icon_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="Layout"]
+layout_mode = 2

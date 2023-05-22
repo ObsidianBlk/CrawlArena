@@ -12,7 +12,8 @@ signal updated()
 const MRLT_META_DATA_SCHEMA : Dictionary = {
 	"!ONLY_DEF":false,
 	"src":{&"req":true, &"type":TYPE_STRING},
-	"description":{&"req":false, &"type":TYPE_STRING, &"allow_empty":true}
+	"description":{&"req":false, &"type":TYPE_STRING, &"allow_empty":true},
+	"ui":{&"req":false, &"type":TYPE_STRING}
 }
 
 const MRLT_SCHEMA : Dictionary = {
@@ -139,3 +140,17 @@ func load_meta_resource(section : StringName, mr_name : StringName, auto_instanc
 		return mr.instantiate()
 	
 	return mr
+
+func load_meta_resource_ui(section : StringName, mr_name : StringName) -> Control:
+	var data : Dictionary = get_meta_resource_data(section, mr_name)
+	if data.is_empty(): return null
+	if not "ui" in data: return null
+	
+	var ui = ResourceLoader.load(data["ui"])
+	if ui == null: return null
+	
+	if is_instance_of(ui, PackedScene):
+		var ctrl = ui.instantiate()
+		if is_instance_of(ctrl, Control):
+			return ctrl
+	return null
