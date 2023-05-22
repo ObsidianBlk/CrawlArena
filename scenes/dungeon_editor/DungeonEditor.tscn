@@ -1,4 +1,4 @@
-[gd_scene load_steps=17 format=3 uid="uid://pxet627daewv"]
+[gd_scene load_steps=18 format=3 uid="uid://pxet627daewv"]
 
 [ext_resource type="Script" path="res://scenes/dungeon_editor/DungeonEditor.gd" id="1_1jgi3"]
 [ext_resource type="Theme" uid="uid://17e15ml35qoo" path="res://scenes/dungeon_editor/DungeonEditor.theme" id="1_5o3nj"]
@@ -14,6 +14,7 @@
 [ext_resource type="PackedScene" uid="uid://dlnthjlobn6wo" path="res://scenes/dungeon_editor/control_nodes/map_cell_control/MapCellControl.tscn" id="6_1clgy"]
 [ext_resource type="Texture2D" uid="uid://cshj7xn2p57f" path="res://assets/dungeon_editor/icons/ui/arrow_up.svg" id="10_owjt7"]
 [ext_resource type="PackedScene" uid="uid://rc7b5jigvmbx" path="res://scenes/dungeon_editor/ui/style_control/StyleControl.tscn" id="13_kaui7"]
+[ext_resource type="PackedScene" uid="uid://cbbtjay2durtb" path="res://scenes/dungeon_editor/control_nodes/cell_entity_list/CellEntityList.tscn" id="15_bf0os"]
 
 [sub_resource type="Environment" id="Environment_v3143"]
 background_mode = 1
@@ -35,6 +36,41 @@ script = ExtResource("1_1jgi3")
 [node name="DungeonIOWindow" parent="." instance=ExtResource("3_omduv")]
 unique_name_in_owner = true
 visible = false
+
+[node name="AcceptDialog" type="AcceptDialog" parent="."]
+unique_name_in_owner = true
+
+[node name="ExitMenu" type="Popup" parent="."]
+unique_name_in_owner = true
+gui_embed_subwindows = true
+size = Vector2i(146, 117)
+
+[node name="Center" type="CenterContainer" parent="ExitMenu"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="CPanel" type="PanelContainer" parent="ExitMenu/Center"]
+layout_mode = 2
+theme_type_variation = &"Toolbar"
+
+[node name="VBC" type="VBoxContainer" parent="ExitMenu/Center/CPanel"]
+layout_mode = 2
+
+[node name="BtnResume" type="Button" parent="ExitMenu/Center/CPanel/VBC"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Resume"
+
+[node name="BtnQuitEditor" type="Button" parent="ExitMenu/Center/CPanel/VBC"]
+layout_mode = 2
+text = "Quit Editor"
+
+[node name="BtnQuitDesktop" type="Button" parent="ExitMenu/Center/CPanel/VBC"]
+layout_mode = 2
+text = "Quit to Desktop"
 
 [node name="Layout" type="VBoxContainer" parent="."]
 layout_mode = 1
@@ -229,11 +265,14 @@ theme_override_constants/margin_top = 8
 theme_override_constants/margin_right = 8
 theme_override_constants/margin_bottom = 8
 
-[node name="AcceptDialog" type="AcceptDialog" parent="."]
-unique_name_in_owner = true
+[node name="CellEntityList" parent="Layout/Primary/Sidebar/Layout/TabContainer/Entities" instance=ExtResource("15_bf0os")]
+layout_mode = 2
 
 [connection signal="dungeon_deleted" from="DungeonIOWindow" to="." method="_on_dungeon_io_window_dungeon_deleted"]
 [connection signal="dungeon_loaded" from="DungeonIOWindow" to="." method="_on_dungeon_io_window_dungeon_loaded"]
+[connection signal="pressed" from="ExitMenu/Center/CPanel/VBC/BtnResume" to="." method="_on_btn_resume_pressed"]
+[connection signal="pressed" from="ExitMenu/Center/CPanel/VBC/BtnQuitEditor" to="." method="_on_btn_quit_editor_pressed"]
+[connection signal="pressed" from="ExitMenu/Center/CPanel/VBC/BtnQuitDesktop" to="." method="_on_btn_quit_desktop_pressed"]
 [connection signal="pressed" from="Layout/Toolbar/Layout/Buttons/RequestNewMap" to="." method="_on_request_new_map_pressed"]
 [connection signal="pressed" from="Layout/Toolbar/Layout/Buttons/RequestLoadMap" to="." method="_on_request_load_map_pressed"]
 [connection signal="pressed" from="Layout/Toolbar/Layout/Buttons/RequestSaveMap" to="." method="_on_request_save_map_pressed"]
