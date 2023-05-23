@@ -1,7 +1,9 @@
-[gd_scene load_steps=8 format=3 uid="uid://cbbtjay2durtb"]
+[gd_scene load_steps=10 format=3 uid="uid://cbbtjay2durtb"]
 
+[ext_resource type="Script" path="res://scenes/dungeon_editor/control_nodes/cell_entity_list/CellEntityList.gd" id="1_l75ww"]
 [ext_resource type="Texture2D" uid="uid://ceq5e02od7tjg" path="res://assets/dungeon_editor/icons/ui/add.svg" id="1_yiesn"]
 [ext_resource type="Texture2D" uid="uid://cshj7xn2p57f" path="res://assets/dungeon_editor/icons/ui/arrow_up.svg" id="2_hffl1"]
+[ext_resource type="PackedScene" uid="uid://bqw3jxo1pmbcv" path="res://scenes/dungeon_editor/control_nodes/resource_selection_window/ResourceSelectionWindow.tscn" id="2_jfxpa"]
 [ext_resource type="Texture2D" uid="uid://bjbjcki4kwexh" path="res://assets/dungeon_editor/icons/ui/arrow_right.svg" id="3_743c5"]
 [ext_resource type="Texture2D" uid="uid://bxd78g7ptptrc" path="res://assets/dungeon_editor/icons/ui/arrow_down.svg" id="4_0jmc5"]
 [ext_resource type="Texture2D" uid="uid://dj20skrol12ue" path="res://assets/dungeon_editor/icons/ui/arrow_left.svg" id="5_yvklx"]
@@ -15,6 +17,10 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+script = ExtResource("1_l75ww")
+
+[node name="RSW" parent="." instance=ExtResource("2_jfxpa")]
+unique_name_in_owner = true
 
 [node name="Layout" type="VBoxContainer" parent="."]
 layout_mode = 1
@@ -37,6 +43,7 @@ icon_alignment = 1
 layout_mode = 2
 
 [node name="OpFacing" type="OptionButton" parent="Layout/Toolbar"]
+unique_name_in_owner = true
 layout_mode = 2
 item_count = 4
 selected = 0
@@ -53,7 +60,8 @@ popup/item_3/text = ""
 popup/item_3/icon = ExtResource("5_yvklx")
 popup/item_3/id = 8
 
-[node name="LineEdit" type="LineEdit" parent="Layout/Toolbar"]
+[node name="EditActiveEntityName" type="LineEdit" parent="Layout/Toolbar"]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(128, 0)
 layout_mode = 2
 placeholder_text = "Entity Name"
@@ -76,3 +84,14 @@ icon_alignment = 1
 
 [node name="HSeparator" type="HSeparator" parent="Layout"]
 layout_mode = 2
+
+[node name="CellEntityList" type="ItemList" parent="Layout"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+
+[connection signal="text_submitted" from="Layout/Toolbar/EditActiveEntityName" to="." method="_on_edit_active_entity_name_text_submitted"]
+[connection signal="pressed" from="Layout/Toolbar/BtnEntitySettings" to="." method="_on_btn_entity_settings_pressed"]
+[connection signal="pressed" from="Layout/Toolbar/BtnRemoveEntity" to="." method="_on_btn_remove_entity_pressed"]
+[connection signal="item_activated" from="Layout/CellEntityList" to="." method="_on_cell_entity_list_item_activated"]
+[connection signal="item_selected" from="Layout/CellEntityList" to="." method="_on_cell_entity_list_item_selected"]
