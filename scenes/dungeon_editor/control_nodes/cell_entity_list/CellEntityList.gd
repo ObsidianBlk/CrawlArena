@@ -1,6 +1,9 @@
 extends Control
 
-
+# ------------------------------------------------------------------------------
+# Signals
+# ------------------------------------------------------------------------------
+signal add_entity_requested(section_name, resource_name)
 
 # ------------------------------------------------------------------------------
 # Export Variables
@@ -8,7 +11,7 @@ extends Control
 @export_category("Cell Entity List")
 @export var map : CrawlMap = null:						set = set_map
 @export var map_position : Vector3i = Vector3i.ZERO:	set = set_map_position
-@export var lookup_table_name : StringName = &""
+@export var lookup_table_name : StringName = &"":		set = set_lookup_table_name
 
 
 # ------------------------------------------------------------------------------
@@ -25,7 +28,7 @@ var _ready_state : bool = false
 @onready var _btn_remove_entity : Button = $Layout/Toolbar/BtnRemoveEntity
 
 @onready var _cell_entity_list : ItemList = %CellEntityList
-@onready var _rsw : Control = %RSW
+@onready var _rsw : Window = %RSW
 
 
 # ------------------------------------------------------------------------------
@@ -34,12 +37,16 @@ var _ready_state : bool = false
 func set_map(m : CrawlMap) -> void:
 	if m != map:
 		if map != null:
-			# TODO: Disconnect needed signals, if any
-			pass
+			if map.entity_added.is_connected(_on_map_entity_added):
+				map.entity_added.disconnect(_on_map_entity_added)
+			if map.entity_removed.is_connected(_on_map_entity_removed):
+				map.entity_removed.disconnect(_on_map_entity_removed)
 		map = m
 		if map != null:
-			# TODO: Connect needed signals, if any
-			pass
+			if not map.entity_added.is_connected(_on_map_entity_added):
+				map.entity_added.connect(_on_map_entity_added)
+			if not map.entity_removed.is_connected(_on_map_entity_removed):
+				map.entity_removed.connect(_on_map_entity_removed)
 		_UpdateCellEntityList()
 
 func set_map_position(p : Vector3i) -> void:
@@ -85,6 +92,23 @@ func _ResetToolbar() -> void:
 	_edit_active_entity_name.text = ""
 	_edit_active_entity_name.editable = false
 
+func _AddEntityToCellEntityList(entity : CrawlEntity) -> void:
+	if entity.type == &"editor": return # Don't handle the "editor" type.
+	if _cell_entity_list == null or _GetEntityIndexFromUUID(entity.uuid) >= 0: return
+	var entity_data : Dictionary = _GetEntityTypeResourceData(entity.type)
+	var uisrc : String = "" if not "ui" in entity_data else entity_data["ui"]
+	if not ResourceLoader.exists(uisrc):
+		uisrc = ""
+	
+	var idx : int = _cell_entity_list.item_count
+	_cell_entity_list.add_item(entity.entity_name if entity.entity_name != &"" else entity.type)
+	_cell_entity_list.set_item_metadata(idx, {"uuid":entity.uuid, "ui": uisrc})
+
+func _RemoveEntityFromCellEntityList(entity : CrawlEntity) -> void:
+	var idx : int = _GetEntityIndexFromUUID(entity.uuid)
+	if idx < 0: return
+	_cell_entity_list.remove_item(idx)
+
 func _UpdateCellEntityList() -> void:
 	if map == null: return
 	if not map.has_cell(map_position): return
@@ -94,15 +118,15 @@ func _UpdateCellEntityList() -> void:
 	_cell_entity_list.clear()
 	var entities : Array = map.get_entities({"position":map_position})
 	for entity in entities:
-		if entity.type == &"editor": continue # Skip the editor
-		var entity_data : Dictionary = _GetEntityTypeResourceData(entity.type)
-		var uisrc : String = "" if not "ui" in entity_data else entity_data["ui"]
-		if not ResourceLoader.exists(uisrc):
-			uisrc = ""
-		
-		var idx : int = _cell_entity_list.item_count
-		_cell_entity_list.add_item(entity.name if entity.name != &"" else entity.type)
-		_cell_entity_list.set_item_metadata(idx, {"uuid":entity.uuid, "ui": uisrc})
+		_AddEntityToCellEntityList(entity)
+
+func _GetEntityIndexFromUUID(uuid : StringName) -> int:
+	if _cell_entity_list == null: return -1
+	for i in range(_cell_entity_list.item_count):
+		var meta : Dictionary = _cell_entity_list.get_item_metadata(i)
+		if meta.uuid == uuid:
+			return i
+	return -1
 
 func _GetSelectedEntityIdx() -> int:
 	if _cell_entity_list == null: return -1
@@ -117,6 +141,14 @@ func _OpenEntitySettings(idx : int) -> void:
 # ------------------------------------------------------------------------------
 # Handler Methods
 # ------------------------------------------------------------------------------
+func _on_map_entity_added(_entity : CrawlEntity) -> void:
+	if _entity.position == map_position:
+		_AddEntityToCellEntityList(_entity)
+
+func _on_map_entity_removed(_entity : CrawlEntity) -> void:
+	if _entity.position == map_position:
+		_RemoveEntityFromCellEntityList(_entity)
+
 func _on_cell_entity_list_item_selected(idx : int) -> void:
 	if map == null: return
 	var meta : Dictionary = _cell_entity_list.get_item_metadata(idx)
@@ -133,7 +165,7 @@ func _on_cell_entity_list_item_selected(idx : int) -> void:
 		_op_facing.select(op_idx)
 	
 	_edit_active_entity_name.editable = true
-	_edit_active_entity_name.text = entity.name
+	_edit_active_entity_name.text = entity.entity_name
 
 func _on_cell_entity_list_item_activated(idx : int) -> void:
 	_OpenEntitySettings(idx)
@@ -147,14 +179,17 @@ func _on_edit_active_entity_name_text_submitted(new_text : String) -> void:
 	var meta : Dictionary = _cell_entity_list.get_item_metadata(idx)
 	var entity : CrawlEntity = map.get_entity(meta.uuid)
 	if entity == null: return
-	entity.name = new_text
+	entity.entity_name = new_text
 	if new_text.is_empty():
 		_cell_entity_list.set_item_text(idx, entity.type)
 	else:
 		_cell_entity_list.set_item_text(idx, new_text)
 
 func _on_btn_add_entity_pressed() -> void:
-	pass
+	if _rsw == null: return
+	if _rsw.visible: return
+	_rsw.section_name = &""
+	_rsw.popup_centered()
 
 func _on_btn_remove_entity_pressed() -> void:
 	if map == null: return
@@ -169,3 +204,6 @@ func _on_btn_entity_settings_pressed() -> void:
 	var idx : int = _GetSelectedEntityIdx()
 	if idx >= 0:
 		_OpenEntitySettings(idx)
+
+func _on_rsw_item_selected(section_name : StringName, resource_name : StringName) -> void:
+	add_entity_requested.emit(section_name, resource_name)

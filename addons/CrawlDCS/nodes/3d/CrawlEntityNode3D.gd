@@ -116,6 +116,7 @@ func _process(_delta : float) -> void:
 					_entity_facing_changed.clear()
 					_Face(from, to)
 	_entity_changed_order.clear()
+	if entity == null: return
 	if entity.is_translation_locked() == false and entity.translation_queue_size() > 0:
 		entity.process_translation_queue()
 

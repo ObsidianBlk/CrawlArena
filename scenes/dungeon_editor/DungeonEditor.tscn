@@ -266,6 +266,7 @@ theme_override_constants/margin_right = 8
 theme_override_constants/margin_bottom = 8
 
 [node name="CellEntityList" parent="Layout/Primary/Sidebar/Layout/TabContainer/Entities" instance=ExtResource("15_bf0os")]
+unique_name_in_owner = true
 layout_mode = 2
 
 [connection signal="dungeon_deleted" from="DungeonIOWindow" to="." method="_on_dungeon_io_window_dungeon_deleted"]
@@ -282,3 +283,4 @@ layout_mode = 2
 [connection signal="stair_state_toggled" from="Layout/Primary/Sidebar/Layout/TabContainer/Layout/ActiveCellState" to="." method="_on_active_cell_stair_state_toggled"]
 [connection signal="surface_blocking_toggled" from="Layout/Primary/Sidebar/Layout/TabContainer/Layout/ActiveCellState" to="." method="_on_active_cell_surface_blocking_toggled"]
 [connection signal="surface_resource_selected" from="Layout/Primary/Sidebar/Layout/TabContainer/Layout/ActiveCellState" to="." method="_on_active_cell_surface_resource_selected"]
+[connection signal="add_entity_requested" from="Layout/Primary/Sidebar/Layout/TabContainer/Entities/CellEntityList" to="." method="_on_cell_entity_list_add_requested"]

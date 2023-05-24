@@ -38,6 +38,7 @@ var _dig_direction : int = 1 # 0 = Down | 1 = Foreward | 2 = Up
 
 @onready var _active_cell_state : Control = %ActiveCellState
 @onready var _style_control : Control = %StyleControl
+@onready var _cell_entity_list : Control = %CellEntityList
 
 @onready var _exit_menu : Popup = %ExitMenu
 @onready var _btn_resume : Button = %BtnResume
@@ -130,6 +131,7 @@ func _ShowAcceptDialog(title : String, text : String) -> void:
 
 func _ClearDungeon() -> void:
 	_active_cell_state.map = null
+	_cell_entity_list.map = null
 	_crawl_view_3d.map = null
 	_crawl_mini_map.map = null
 	_crawl_mini_map.focus_entity_uuid = &""
@@ -143,6 +145,8 @@ func _ClearDungeon() -> void:
 			_map.cell_added.disconnect(_on_map_cell_added)
 		if _map.cell_removed.is_connected(_on_map_cell_removed):
 			_map.cell_removed.disconnect(_on_map_cell_removed)
+		if _map.entity_added.is_connected(_on_map_entity_added):
+			_map.entity_added.disconnect(_on_map_entity_added)
 		_map = null
 	
 	if _editor_entity != null:
@@ -178,6 +182,8 @@ func _ConnectDungeon(map : CrawlMap) -> void:
 		_map.cell_added.connect(_on_map_cell_added)
 	if not _map.cell_removed.is_connected(_on_map_cell_removed):
 		_map.cell_removed.connect(_on_map_cell_removed)
+	if not _map.entity_added.is_connected(_on_map_entity_added):
+		_map.entity_added.connect(_on_map_entity_added)
 	
 	_edit_map_name.text = _map.name
 	var entities = _map.get_entities()
@@ -185,6 +191,7 @@ func _ConnectDungeon(map : CrawlMap) -> void:
 		_ConnectDungeonEntity(entity)
 	
 	_active_cell_state.map = _map
+	_cell_entity_list.map = _map
 	_crawl_view_3d.map = _map
 	_crawl_mini_map.map = _map
 	_UpdateElevation()
@@ -274,9 +281,37 @@ func _on_map_cell_added(map_position : Vector3i) -> void:
 func _on_map_cell_removed(_map_position : Vector3i) -> void:
 	_UpdateElevation()
 
+func _on_map_entity_added(entity : CrawlEntity) -> void:
+	if entity.type == &"": return
+	var parts : PackedStringArray = entity.type.split(":")
+	if parts.size() <= 0 or parts.size() > 2: return
+	var section_name : StringName = &"unique" if parts.size() == 1 else parts[0]
+	var resource_name : StringName = parts[1] if parts.size() == 2 else parts[0]
+	
+	var mrlt : CrawlMRLT = Crawl.get_lookup_table(&"entities")
+	if mrlt == null: return
+	if not mrlt.has_meta_resource(section_name, resource_name):
+		printerr("FAILED TO ADD ENTITY NODE: No entity node of type \"", entity.type, "\" found.")
+		return
+	var node = mrlt.load_meta_resource(section_name, resource_name, true)
+	if node == null:
+		printerr("FAILED TO INSTATIATE ENTITY NODE: No node instance for entity type \"", entity.type, "\".")
+		return
+	if not is_instance_of(node, CrawlEntityNode3D):
+		printerr("ENTITY NODE TYPE INVALID: Entity type \"", entity.type, "\" returned invalid node type.")
+		node.queue_free()
+		return
+		
+	node.entity = entity
+	if node.has_method("set_passive_mode"):
+		node.passive_mode = true
+	_entity_container.add_child(node)
+
+
 func _on_editor_entity_position_changed(_from : Vector3i, to : Vector3i) -> void:
 	_z_elevation_bar.z_level = to.y
 	_active_cell_state.map_position = to
+	_cell_entity_list.map_position = to
 	_crawl_view_3d.focus_position = to
 	focus_changed.emit(to)
 
@@ -319,6 +354,16 @@ func _on_btn_style_active_cell_pressed():
 		},
 		false
 	)
+
+func _on_cell_entity_list_add_requested(section_name : StringName, resource_name : StringName) -> void:
+	if _map == null or _editor_entity == null: return
+	var entity : CrawlEntity = CrawlEntity.new()
+	entity.uuid = UUID.v7()
+	entity.type = StringName("%s:%s"%[section_name, resource_name])
+	entity.position = _editor_entity.position
+	entity.facing = _editor_entity.facing
+	_map.add_entity(entity)
+	
 
 func _on_btn_resume_pressed():
 	_exit_menu.visible = false

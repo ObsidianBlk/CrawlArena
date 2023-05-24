@@ -53,19 +53,31 @@ camera_height = 2.2
 [node name="Buttons" type="HBoxContainer" parent="CPanel/VLayout"]
 layout_mode = 2
 
-[node name="Select" type="Button" parent="CPanel/VLayout/Buttons"]
+[node name="BtnBack" type="Button" parent="CPanel/VLayout/Buttons"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Back"
+
+[node name="Spacer" type="Control" parent="CPanel/VLayout/Buttons"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="BtnSelect" type="Button" parent="CPanel/VLayout/Buttons"]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Select"
 
-[node name="Control" type="Control" parent="CPanel/VLayout/Buttons"]
+[node name="Spacer2" type="Control" parent="CPanel/VLayout/Buttons"]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="Cancel" type="Button" parent="CPanel/VLayout/Buttons"]
+[node name="BtnCancel" type="Button" parent="CPanel/VLayout/Buttons"]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Cancel"
 
-[connection signal="pressed" from="CPanel/VLayout/Buttons/Select" to="." method="_on_select_pressed"]
-[connection signal="pressed" from="CPanel/VLayout/Buttons/Cancel" to="." method="_on_cancel_pressed"]
+[connection signal="pressed" from="CPanel/VLayout/Buttons/BtnBack" to="." method="_on_btn_back_pressed"]
+[connection signal="pressed" from="CPanel/VLayout/Buttons/BtnSelect" to="." method="_on_btn_select_pressed"]
+[connection signal="pressed" from="CPanel/VLayout/Buttons/BtnCancel" to="." method="_on_btn_cancel_pressed"]

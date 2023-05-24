@@ -69,7 +69,6 @@ func _get_property_list() -> Array:
 		}
 	]
 
-
 # ------------------------------------------------------------------------------
 # Public Methods
 # ------------------------------------------------------------------------------
@@ -120,6 +119,7 @@ func get_meta_resource_descriptions(section : StringName) -> Array:
 			item["description"] = _data[section][key]["description"]
 			rdesc.append(item)
 	return rdesc
+
 
 func get_meta_resource_data(section : StringName, mr_name : StringName) -> Dictionary:
 	if not section in _data: return {}
