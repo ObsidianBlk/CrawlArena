@@ -5,7 +5,8 @@ extends Control
 # ------------------------------------------------------------------------------
 # Signals
 # ------------------------------------------------------------------------------
-signal active()
+signal selected()
+signal activated()
 
 # ------------------------------------------------------------------------------
 # Constants
@@ -20,6 +21,7 @@ const THEME_STATE_ACTIVE : String = "active"
 const THEME_FONT_NAME : String = "item_name"
 const THEME_FONT_SIZE_NAME : String = "item_name_size"
 
+const DOUBLE_CLICK_DELAY : float = 0.2
 
 # ------------------------------------------------------------------------------
 # Export Variables
@@ -39,6 +41,8 @@ var _hover_active : bool = false
 var _focus_active : bool = false
 var _item_active : bool = false
 
+var _waiting_double_click : bool = false
+
 # ------------------------------------------------------------------------------
 # Onready Variables
 # ------------------------------------------------------------------------------
@@ -52,7 +56,7 @@ var _item_active : bool = false
 func set_entry_name(n : String) -> void:
 	entry_name = n
 	if _lbl_name != null:
-		_lbl_name.text = entry_name
+		_lbl_name.text = entry_name.capitalize()
 
 func set_description(d : String) -> void:
 	description = d
@@ -90,21 +94,27 @@ func _notification(what : int) -> void:
 func _gui_input(event : InputEvent) -> void:
 	if _hover_active and is_instance_of(event, InputEventMouseButton):
 		if event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
-			_item_active = not _item_active
-			_UpdateTheme()
-			if _item_active:
-				active.emit()
 			accept_event()
+			_OnClick()
 	elif _focus_active and event.is_action_pressed("ui_select"):
-		_item_active = not _item_active
-		_UpdateTheme()
-		if _item_active:
-			active.emit()
 		accept_event()
+		activated.emit()
 
 # ------------------------------------------------------------------------------
 # Private Methods
 # ------------------------------------------------------------------------------
+func _OnClick() -> void:
+	if _waiting_double_click:
+		_waiting_double_click = false
+		activated.emit()
+	else:
+		if not _item_active:
+			set_selected(true)
+			selected.emit()
+		_waiting_double_click = true
+		await get_tree().create_timer(DOUBLE_CLICK_DELAY, true).timeout
+		_waiting_double_click = false
+
 func _GetThemeType() -> StringName:
 	if theme_type_variation != &"":
 		return theme_type_variation
@@ -142,11 +152,11 @@ func _UpdateTheme() -> void:
 # ------------------------------------------------------------------------------
 # Public Methods
 # ------------------------------------------------------------------------------
-func is_active() -> bool:
+func is_selected() -> bool:
 	return _item_active
 
-func set_active(active : bool) -> void:
-	_item_active = active
+func set_selected(selected : bool) -> void:
+	_item_active = selected
 	_UpdateTheme()
 
 func set_meta_data(meta : Variant) -> void:

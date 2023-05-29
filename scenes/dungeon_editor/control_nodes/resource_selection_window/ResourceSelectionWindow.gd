@@ -45,6 +45,9 @@ var _active_entry : int = -1
 @onready var _list_container : Control = %ListContainer
 @onready var _cpanel : PanelContainer = $CPanel
 
+@onready var _lbl_group : Label = %LblGroup
+
+
 @onready var _btn_back : Button = %BtnBack
 @onready var _spacer : Control= %Spacer
 
@@ -128,6 +131,13 @@ func _notification(what : int) -> void:
 		NOTIFICATION_VISIBILITY_CHANGED:
 			pass
 
+func _unhandled_input(event : InputEvent) -> void:
+	if event.is_action_pressed("ui_cancel"):
+		if allow_section_browsing and section_name != &"":
+			section_name = &""
+		else:
+			visible = false
+
 # ------------------------------------------------------------------------------
 # Private Methods
 # ------------------------------------------------------------------------------
@@ -163,15 +173,11 @@ func _ClearResourceList() -> void:
 	_active_entry = -1
 	_resource_view.resource_name = &""
 
-func _BuildSectionList(mrlt : CrawlMRLT) -> void:
-	pass
-
-func _BuildResourceList(mrlt : CrawlMRLT) -> void:
-	pass
 
 func _UpdateResourceList() -> void:
 	if Engine.is_editor_hint(): return
 	_ClearResourceList()
+	
 	if _resource_view == null: return
 	_resource_view.lookup_table_name = lookup_table_name
 	_resource_view.resource_section = section_name
@@ -198,16 +204,22 @@ func _UpdateResourceList() -> void:
 			var idx : int = _entries.size()
 			_entries.append(entry)
 			_list_container.add_child(entry)
-			entry.active.connect(_on_entry_active.bind(
+			entry.selected.connect(_on_entry_selected.bind(
+				idx,
+				&"" if empty_resource_name else info["name"]
+			))
+			entry.activated.connect(_on_entry_activated.bind(
 				idx,
 				&"" if empty_resource_name else info["name"]
 			))
 	
 	if section_name == &"":
+		_lbl_group.text = "Select Group..."
 		var section_list : PackedStringArray = mrlt.get_section_list()
 		for section in section_list:
 			StoreEntry.call({"name":section, "description":section})
 	else:
+		_lbl_group.text = "%s:"%[section_name.capitalize()]
 		if allow_none:
 			StoreEntry.call({"name":&"Empty", "description":"Empty Selection"}, true)
 		
@@ -228,10 +240,10 @@ func has_active_entry() -> bool:
 func get_active_entry_index() -> int:
 	return _active_entry
 
-func clear_active_entry() -> void:
+func clear_selected_entry() -> void:
 	for entry in _entries:
-		if entry.is_active():
-			entry.set_active(false)
+		if entry.is_selected():
+			entry.set_selected(false)
 			_resource_view.resource_name = &""
 			break
 
@@ -253,9 +265,9 @@ func activate_entry_by_name(entry_name : StringName) -> void:
 	for eidx in range(_entries.size()):
 		if _entries[eidx].entry_name == entry_name:
 			_active_entry = eidx
-			_entries[eidx].set_active(true)
+			_entries[eidx].set_selected(true)
 		else:
-			_entries[eidx].set_active(false)
+			_entries[eidx].set_selected(false)
 
 func set_entry_metadata(idx : int, metadata : Variant) -> void:
 	if idx >= 0 and idx < _entries.size():
@@ -273,14 +285,26 @@ func _on_visibility_changed() -> void:
 	if visible:
 		_UpdateResourceList()
 
-func _on_entry_active(idx : int, entry_name : StringName) -> void:
+func _on_entry_selected(idx : int, entry_name : StringName) -> void:
 	if section_name != &"":
 		_resource_view.resource_name = entry_name
 	for eidx in range(_entries.size()):
 		if eidx == idx: continue
-		_entries[eidx].set_active(false)
+		_entries[eidx].set_selected(false)
 	_active_entry = idx
 	item_active.emit(idx)
+
+func _on_entry_activated(idx : int, entry_name : StringName) -> void:
+	if entry_name == &"": return
+	var keep_open : bool = false
+	if section_name != &"":
+		item_selected.emit(section_name, entry_name)
+	else:
+		section_name = entry_name
+		section_selected.emit(section_name)
+		keep_open = true
+	clear_selected_entry()
+	visible = keep_open
 
 func _on_btn_back_pressed() -> void:
 	section_name = &""
@@ -295,10 +319,10 @@ func _on_btn_select_pressed() -> void:
 		section_name = _entries[_active_entry].entry_name
 		section_selected.emit(section_name)
 		keep_open = true
-	clear_active_entry()
+	clear_selected_entry()
 	visible = keep_open
 
 func _on_btn_cancel_pressed() -> void:
-	clear_active_entry()
+	clear_selected_entry()
 	visible = false
 	canceled.emit()

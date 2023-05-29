@@ -1,0 +1,46 @@
+[gd_scene load_steps=8 format=3 uid="uid://bp11d0nkbnuov"]
+
+[ext_resource type="Script" path="res://scenes/dungeon/Dungeon.gd" id="1_cb8nv"]
+[ext_resource type="Script" path="res://addons/CrawlDCS/nodes/3d/CrawlView3D.gd" id="1_sel8c"]
+[ext_resource type="PackedScene" uid="uid://b3j5a2fglfj85" path="res://assets/models/Dungeon_01/Ground/Cobble_Blood_01.glb" id="3_ufvyu"]
+[ext_resource type="PackedScene" uid="uid://buim1ofqfmfhm" path="res://assets/models/Dungeon_01/Walls/Catacombs_0.glb" id="4_yle2f"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_xpasx"]
+sky_top_color = Color(0.529412, 0.529412, 0.529412, 1)
+
+[sub_resource type="Sky" id="Sky_1etk5"]
+sky_material = SubResource("ProceduralSkyMaterial_xpasx")
+
+[sub_resource type="Environment" id="Environment_ugtwu"]
+background_mode = 2
+sky = SubResource("Sky_1etk5")
+tonemap_mode = 3
+ssao_enabled = true
+ssil_enabled = true
+glow_enabled = true
+fog_enabled = true
+
+[node name="Dungeon" type="Node3D"]
+script = ExtResource("1_cb8nv")
+
+[node name="EntityContainer" type="Node3D" parent="."]
+unique_name_in_owner = true
+
+[node name="CrawlView3D" type="Node3D" parent="."]
+unique_name_in_owner = true
+script = ExtResource("1_sel8c")
+cell_size = 4.4
+lookup_table_name = &"level_geometry"
+
+[node name="Cobble_Blood_01" parent="." instance=ExtResource("3_ufvyu")]
+visible = false
+
+[node name="Catacombs_0" parent="." instance=ExtResource("4_yle2f")]
+visible = false
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_ugtwu")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0, 0)
+directional_shadow_max_distance = 1000.0

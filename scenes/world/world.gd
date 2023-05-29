@@ -4,6 +4,7 @@ extends Node2D
 # Contants
 # ------------------------------------------------------------------------------
 const DUNGEON_EDITOR : PackedScene = preload("res://scenes/dungeon_editor/DungeonEditor.tscn")
+const GAME : PackedScene = preload("res://scenes/game/Game.tscn")
 
 # ------------------------------------------------------------------------------
 # Variables
@@ -59,20 +60,15 @@ func _OpenDungeonEditor() -> void:
 		_active_node.action_requested.connect(_on_ui_action_requested)
 	_canvas.add_child(_active_node)
 
-
-
-#func _OpenDungeonEditor() -> void:
-#	if _de_window.visible: return
-#	var de : Control = DUNGEON_EDITOR.instantiate()
-#	if de == null:
-#		printerr("Failed to instantiate the dungeon editor.")
-#		return
-#
-#	_de_window.close_requested.connect(_on_close_de_window_requested, CONNECT_ONE_SHOT)
-#	_de_window.add_child(de)
-#	var screen_size : Vector2i = DisplayServer.screen_get_size()
-#	#_de_window.popup()
-#	_de_window.popup(Rect2i(Vector2i.ZERO, screen_size))
+func _OpenGame() -> void:
+	if _active_node != null: return
+	_active_node = GAME.instantiate()
+	if _active_node == null:
+		printerr("Failed to instantiate the Game.")
+		return
+	if _active_node.has_signal("action_requested"):
+		_active_node.action_requested.connect(_on_ui_action_requested)
+	_canvas.add_child(_active_node)
 
 # ------------------------------------------------------------------------------
 # Handler Methods
@@ -88,6 +84,9 @@ func _on_ui_action_requested(action_name : StringName, payload : Variant) -> voi
 	match action_name:
 		&"dungeon_editor":
 			_OpenDungeonEditor()
+			_ui.show_menu(&"")
+		&"start_game":
+			_OpenGame()
 			_ui.show_menu(&"")
 		&"close":
 			_CloseActiveNode(&"MainMenu")

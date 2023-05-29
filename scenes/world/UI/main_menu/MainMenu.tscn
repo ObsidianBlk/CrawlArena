@@ -34,9 +34,14 @@ layout_mode = 2
 layout_mode = 2
 text = "Dungeon Editor"
 
+[node name="BtnStartGame" type="Button" parent="Sidebar/CPanel/Layout"]
+layout_mode = 2
+text = "Start Game"
+
 [node name="BtnQuit" type="Button" parent="Sidebar/CPanel/Layout"]
 layout_mode = 2
 text = "Quit"
 
 [connection signal="pressed" from="Sidebar/CPanel/Layout/BtnDungeonEditor" to="." method="_on_btn_dungeon_editor_pressed"]
+[connection signal="pressed" from="Sidebar/CPanel/Layout/BtnStartGame" to="." method="_on_btn_start_game_pressed"]
 [connection signal="pressed" from="Sidebar/CPanel/Layout/BtnQuit" to="." method="_on_btn_quit_pressed"]

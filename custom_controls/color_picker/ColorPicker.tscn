@@ -1,0 +1,150 @@
+[gd_scene load_steps=2 format=3 uid="uid://djcikb4rxgrvt"]
+
+[ext_resource type="Script" path="res://custom_controls/color_picker/ColorPicker.gd" id="1_2wdhv"]
+
+[node name="ColorPicker" type="HBoxContainer"]
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("1_2wdhv")
+
+[node name="ColorAspectRatioed" type="AspectRatioContainer" parent="."]
+custom_minimum_size = Vector2(192, 192)
+layout_mode = 2
+
+[node name="ColorRect" type="ColorRect" parent="ColorAspectRatioed"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ColorControls" type="VBoxContainer" parent="."]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ColorType" type="TabContainer" parent="ColorControls"]
+layout_mode = 2
+use_hidden_tabs_for_min_size = true
+
+[node name="HSV" type="MarginContainer" parent="ColorControls/ColorType"]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="Grid" type="GridContainer" parent="ColorControls/ColorType/HSV"]
+layout_mode = 2
+size_flags_horizontal = 3
+columns = 2
+
+[node name="LblHue" type="Label" parent="ColorControls/ColorType/HSV/Grid"]
+layout_mode = 2
+text = "Hue:"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="SliderHue" type="HSlider" parent="ColorControls/ColorType/HSV/Grid"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(128, 0)
+layout_mode = 2
+size_flags_vertical = 4
+
+[node name="LblSaturation" type="Label" parent="ColorControls/ColorType/HSV/Grid"]
+layout_mode = 2
+text = "Saturation:"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="SliderSaturation" type="HSlider" parent="ColorControls/ColorType/HSV/Grid"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(128, 0)
+layout_mode = 2
+size_flags_vertical = 4
+
+[node name="LblLuminance" type="Label" parent="ColorControls/ColorType/HSV/Grid"]
+layout_mode = 2
+text = "Luminance:"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="SliderLuminance" type="HSlider" parent="ColorControls/ColorType/HSV/Grid"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(128, 0)
+layout_mode = 2
+size_flags_vertical = 4
+
+[node name="RGB" type="MarginContainer" parent="ColorControls/ColorType"]
+visible = false
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="Grid" type="GridContainer" parent="ColorControls/ColorType/RGB"]
+layout_mode = 2
+size_flags_horizontal = 3
+columns = 2
+
+[node name="LblR" type="Label" parent="ColorControls/ColorType/RGB/Grid"]
+layout_mode = 2
+text = "R:"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="SliderR" type="HSlider" parent="ColorControls/ColorType/RGB/Grid"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(128, 0)
+layout_mode = 2
+size_flags_vertical = 4
+max_value = 255.0
+
+[node name="LblG" type="Label" parent="ColorControls/ColorType/RGB/Grid"]
+layout_mode = 2
+text = "G:"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="SliderG" type="HSlider" parent="ColorControls/ColorType/RGB/Grid"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(128, 0)
+layout_mode = 2
+size_flags_vertical = 4
+max_value = 255.0
+
+[node name="LblB" type="Label" parent="ColorControls/ColorType/RGB/Grid"]
+layout_mode = 2
+text = "B:"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="SliderB" type="HSlider" parent="ColorControls/ColorType/RGB/Grid"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(128, 0)
+layout_mode = 2
+size_flags_vertical = 4
+max_value = 255.0
+
+[node name="HexValue" type="HBoxContainer" parent="ColorControls"]
+layout_mode = 2
+
+[node name="Spacer" type="Control" parent="ColorControls/HexValue"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="EditHex" type="LineEdit" parent="ColorControls/HexValue"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "FFFFFF"
+max_length = 6
+editable = false
+
+[node name="LblHex" type="Label" parent="ColorControls/HexValue"]
+layout_mode = 2
+text = ":Hex"
+
+[connection signal="value_changed" from="ColorControls/ColorType/HSV/Grid/SliderHue" to="." method="_on_slider_hue_value_changed"]
+[connection signal="value_changed" from="ColorControls/ColorType/HSV/Grid/SliderSaturation" to="." method="_on_slider_saturation_value_changed"]
+[connection signal="value_changed" from="ColorControls/ColorType/HSV/Grid/SliderLuminance" to="." method="_on_slider_luminance_value_changed"]
+[connection signal="value_changed" from="ColorControls/ColorType/RGB/Grid/SliderR" to="." method="_on_slider_r_value_changed"]
+[connection signal="value_changed" from="ColorControls/ColorType/RGB/Grid/SliderG" to="." method="_on_slider_g_value_changed"]
+[connection signal="value_changed" from="ColorControls/ColorType/RGB/Grid/SliderB" to="." method="_on_slider_b_value_changed"]

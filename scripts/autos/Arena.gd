@@ -46,7 +46,7 @@ func _ready() -> void:
 			"player":{
 				"src":"res://entities/player/Player.tscn",
 				"description":"Dungeon Player",
-				"ui":""
+				"ui":"res://entities/player/ui/PlayerEntityUI.tscn"
 			}
 		}
 	})

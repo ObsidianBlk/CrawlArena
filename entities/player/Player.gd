@@ -8,6 +8,12 @@ class_name Player
 signal passive_mode_changed(enabled)
 
 # ------------------------------------------------------------------------------
+# Constants
+# ------------------------------------------------------------------------------
+const META_KEY_COLOR : String = "color"
+const META_KEY_PID : String = "player_id"
+
+# ------------------------------------------------------------------------------
 # Export Variables
 # ------------------------------------------------------------------------------
 @export_category("Player")
@@ -97,12 +103,12 @@ func _on_player_entity_changed() -> void:
 	if entity == null: return
 	if not entity.meta_value_changed.is_connected(_on_player_entity_meta_value_changed):
 		entity.meta_value_changed.connect(_on_player_entity_meta_value_changed)
-	_on_player_entity_meta_value_changed("player_color")
+	_on_player_entity_meta_value_changed(META_KEY_COLOR)
 
 func _on_player_entity_meta_value_changed(key : String) -> void:
 	if entity == null or _mesh == null: return
 	match key:
-		"player_color":
+		META_KEY_COLOR:
 			var value = entity.get_meta_value(key, Color.WHITE)
 			if typeof(value) == TYPE_COLOR:
 				_mesh.set_instance_shader_parameter("color", value)

@@ -34,10 +34,22 @@ size_flags_vertical = 3
 custom_minimum_size = Vector2(256, 0)
 layout_mode = 2
 
-[node name="Scroll" type="ScrollContainer" parent="CPanel/VLayout/Primary/SelectionList"]
+[node name="VBC" type="VBoxContainer" parent="CPanel/VLayout/Primary/SelectionList"]
 layout_mode = 2
 
-[node name="ListContainer" type="VBoxContainer" parent="CPanel/VLayout/Primary/SelectionList/Scroll"]
+[node name="LblGroup" type="Label" parent="CPanel/VLayout/Primary/SelectionList/VBC"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Select Group..."
+
+[node name="HSeparator" type="HSeparator" parent="CPanel/VLayout/Primary/SelectionList/VBC"]
+layout_mode = 2
+
+[node name="Scroll" type="ScrollContainer" parent="CPanel/VLayout/Primary/SelectionList/VBC"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="ListContainer" type="VBoxContainer" parent="CPanel/VLayout/Primary/SelectionList/VBC/Scroll"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3

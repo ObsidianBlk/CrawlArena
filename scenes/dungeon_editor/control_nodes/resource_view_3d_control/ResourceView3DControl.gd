@@ -1,5 +1,7 @@
 @tool
+@icon("res://assets/dungeon_editor/icons/controls/resource_viewer_3d.svg")
 extends Control
+class_name ResourceView3DControl
 
 
 # ------------------------------------------------------------------------------

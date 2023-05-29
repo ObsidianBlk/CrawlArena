@@ -1,0 +1,33 @@
+[gd_scene load_steps=4 format=3 uid="uid://hjolrjx7a3q5"]
+
+[ext_resource type="Script" path="res://scenes/game/Game.gd" id="1_6c3ru"]
+[ext_resource type="PackedScene" uid="uid://bp11d0nkbnuov" path="res://scenes/dungeon/Dungeon.tscn" id="1_7ebhj"]
+[ext_resource type="Script" path="res://scripts/nodes/LocalPlayerCtrl.gd" id="2_a7ol7"]
+
+[node name="Game" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_6c3ru")
+
+[node name="TeamAView" type="SubViewportContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 22.0
+offset_top = 758.0
+offset_right = 452.0
+offset_bottom = 1060.0
+stretch = true
+
+[node name="SubViewport" type="SubViewport" parent="TeamAView"]
+size = Vector2i(430, 302)
+
+[node name="TeamADungeon" parent="TeamAView/SubViewport" instance=ExtResource("1_7ebhj")]
+unique_name_in_owner = true
+
+[node name="LocalPlayerCtrl" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("2_a7ol7")

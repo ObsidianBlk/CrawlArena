@@ -302,6 +302,7 @@ func _on_map_entity_added(entity : CrawlEntity) -> void:
 		node.queue_free()
 		return
 		
+	node.cell_size = CELL_SIZE
 	node.entity = entity
 	if node.has_method("set_passive_mode"):
 		node.passive_mode = true

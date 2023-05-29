@@ -268,6 +268,7 @@ theme_override_constants/margin_bottom = 8
 [node name="CellEntityList" parent="Layout/Primary/Sidebar/Layout/TabContainer/Entities" instance=ExtResource("15_bf0os")]
 unique_name_in_owner = true
 layout_mode = 2
+lookup_table_name = &"entities"
 
 [connection signal="dungeon_deleted" from="DungeonIOWindow" to="." method="_on_dungeon_io_window_dungeon_deleted"]
 [connection signal="dungeon_loaded" from="DungeonIOWindow" to="." method="_on_dungeon_io_window_dungeon_loaded"]

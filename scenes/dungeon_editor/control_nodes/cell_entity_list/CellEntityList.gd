@@ -27,6 +27,8 @@ var _ready_state : bool = false
 @onready var _btn_entity_settings : Button = $Layout/Toolbar/BtnEntitySettings
 @onready var _btn_remove_entity : Button = $Layout/Toolbar/BtnRemoveEntity
 
+@onready var _entity_ui_container : Control = %EntityUIContainer
+
 @onready var _cell_entity_list : ItemList = %CellEntityList
 @onready var _rsw : Window = %RSW
 
@@ -65,6 +67,8 @@ func set_lookup_table_name(ltn : StringName) -> void:
 # ------------------------------------------------------------------------------
 func _ready() -> void:
 	_ready_state = true
+	_entity_ui_container.visible = false
+	_cell_entity_list.visible = true
 
 # ------------------------------------------------------------------------------
 # Private Methods
@@ -116,6 +120,9 @@ func _UpdateCellEntityList() -> void:
 	_ResetToolbar()
 	
 	_cell_entity_list.clear()
+	if _entity_ui_container.visible:
+		_CloseEntitySettings()
+	
 	var entities : Array = map.get_entities({"position":map_position})
 	for entity in entities:
 		_AddEntityToCellEntityList(entity)
@@ -136,7 +143,31 @@ func _GetSelectedEntityIdx() -> int:
 	return -1
 
 func _OpenEntitySettings(idx : int) -> void:
-	pass
+	if _entity_ui_container == null or _entity_ui_container.visible: return
+	var meta : Dictionary = _cell_entity_list.get_item_metadata(idx)
+	if meta.ui.is_empty(): return # There's no ui to obtain
+	
+	var entity : CrawlEntity = map.get_entity(meta.uuid)
+	if entity == null: return
+	
+	var CUI = load(meta.ui)
+	if not is_instance_of(CUI, PackedScene): return
+	
+	var ui = CUI.instantiate()
+	if not is_instance_of(ui, Control): return
+	
+	_entity_ui_container.add_child(ui)
+	ui.entity = entity
+	_entity_ui_container.visible = true
+	_cell_entity_list.visible = false
+
+func _CloseEntitySettings() -> void:
+	if _entity_ui_container == null or not _entity_ui_container.visible: return
+	for child in _entity_ui_container.get_children():
+		_entity_ui_container.remove_child(child)
+		child.queue_free()
+	_entity_ui_container.visible = false
+	_cell_entity_list.visible = true
 
 # ------------------------------------------------------------------------------
 # Handler Methods
@@ -148,6 +179,8 @@ func _on_map_entity_added(_entity : CrawlEntity) -> void:
 func _on_map_entity_removed(_entity : CrawlEntity) -> void:
 	if _entity.position == map_position:
 		_RemoveEntityFromCellEntityList(_entity)
+		if _entity_ui_container.visible:
+			_CloseEntitySettings()
 
 func _on_cell_entity_list_item_selected(idx : int) -> void:
 	if map == null: return
@@ -203,7 +236,10 @@ func _on_btn_remove_entity_pressed() -> void:
 func _on_btn_entity_settings_pressed() -> void:
 	var idx : int = _GetSelectedEntityIdx()
 	if idx >= 0:
-		_OpenEntitySettings(idx)
+		if _entity_ui_container.visible:
+			_CloseEntitySettings()
+		else:
+			_OpenEntitySettings(idx)
 
 func _on_rsw_item_selected(section_name : StringName, resource_name : StringName) -> void:
 	add_entity_requested.emit(section_name, resource_name)
