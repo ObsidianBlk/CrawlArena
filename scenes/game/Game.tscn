@@ -1,8 +1,9 @@
-[gd_scene load_steps=4 format=3 uid="uid://hjolrjx7a3q5"]
+[gd_scene load_steps=5 format=3 uid="uid://hjolrjx7a3q5"]
 
 [ext_resource type="Script" path="res://scenes/game/Game.gd" id="1_6c3ru"]
 [ext_resource type="PackedScene" uid="uid://bp11d0nkbnuov" path="res://scenes/dungeon/Dungeon.tscn" id="1_7ebhj"]
 [ext_resource type="Script" path="res://scripts/nodes/LocalPlayerCtrl.gd" id="2_a7ol7"]
+[ext_resource type="Script" path="res://scripts/nodes/MsgPlayerCtrl.gd" id="4_3koai"]
 
 [node name="Game" type="Control"]
 layout_mode = 3
@@ -16,14 +17,16 @@ script = ExtResource("1_6c3ru")
 [node name="TeamAView" type="SubViewportContainer" parent="."]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 22.0
-offset_top = 758.0
-offset_right = 452.0
-offset_bottom = 1060.0
+offset_left = 302.0
+offset_top = 68.0
+offset_right = 1571.0
+offset_bottom = 808.0
 stretch = true
 
 [node name="SubViewport" type="SubViewport" parent="TeamAView"]
-size = Vector2i(430, 302)
+handle_input_locally = false
+size = Vector2i(1269, 740)
+render_target_update_mode = 4
 
 [node name="TeamADungeon" parent="TeamAView/SubViewport" instance=ExtResource("1_7ebhj")]
 unique_name_in_owner = true
@@ -31,3 +34,7 @@ unique_name_in_owner = true
 [node name="LocalPlayerCtrl" type="Node" parent="."]
 unique_name_in_owner = true
 script = ExtResource("2_a7ol7")
+
+[node name="MsgPlayerCtrl" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("4_3koai")

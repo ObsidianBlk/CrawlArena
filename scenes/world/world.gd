@@ -18,6 +18,7 @@ var _active_node : Node = null
 #@onready var _de_window : Window = %DEWindow
 @onready var _canvas : CanvasLayer = %Canvas
 @onready var _ui : UI = %UI
+@onready var _ot4g_irc = $OT4G_OAuth/OT4G_IRC
 
 
 # ------------------------------------------------------------------------------
@@ -33,8 +34,8 @@ func _ready() -> void:
 	var client_secret : String = file.get_line()
 	file.close()
 	
-	# await(ot4g_oauth.authenticate_async(client_id, client_secret))
-	# print("Twitch Authentication Complete")
+	await(ot4g_oauth.authenticate_async(client_id, client_secret))
+	print("Twitch Authentication Complete")
 
 
 # ------------------------------------------------------------------------------
@@ -93,3 +94,12 @@ func _on_ui_action_requested(action_name : StringName, payload : Variant) -> voi
 		&"quit_app":
 			get_tree().quit()
 
+
+func _on_ot4g_irc_message_received(msgctx : OT4G_IRC.MessageContext) -> void:
+	if _active_node == null: return
+	if _active_node.has_method("handle_message"):
+		_active_node.handle_message(msgctx)
+
+
+func _on_ot_4g_irc_channel_joined(channel_name):
+	print("Channel name: ", channel_name)

@@ -77,12 +77,11 @@ func _UpdateActivePlayer() -> void:
 	if map == null or not is_inside_tree(): return
 	var enodes : Array = get_tree().get_nodes_in_group("Player_%s"%[focus_pid])
 	for node in enodes:
-		if not node.is_ancestor_of(_entity_container): continue
+		if not _entity_container.is_ancestor_of(node): continue
 		if not is_instance_of(node, Player): continue
 		if node.entity == null:
 			printerr("WARNING: CrawlEntityNode3D instance without assigned CrawlEntity resource found.")
 			continue
-		
 		node.current = true
 		_active_player = node
 		if not _active_player.entity.position_changed.is_connected(_on_player_position_changed):

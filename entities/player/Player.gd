@@ -23,6 +23,12 @@ const META_KEY_PID : String = "player_id"
 @export var camera_height : float = 1.8:				set = set_camera_height
 @export var camera_offset : float = 1.4:				set = set_camera_offset
 
+
+# ------------------------------------------------------------------------------
+# Variables
+# ------------------------------------------------------------------------------
+var _group_name : StringName = &""
+
 # ------------------------------------------------------------------------------
 # Onready Variables
 # ------------------------------------------------------------------------------
@@ -96,6 +102,11 @@ func _UpdateViewerPassiveMode() -> void:
 # ------------------------------------------------------------------------------
 func _on_player_entity_changing() -> void:
 	if entity == null: return
+	
+	if _group_name != &"":
+		remove_from_group(_group_name)
+		_group_name = &""
+	
 	if entity.meta_value_changed.is_connected(_on_player_entity_meta_value_changed):
 		entity.meta_value_changed.disconnect(_on_player_entity_meta_value_changed)
 
@@ -103,6 +114,8 @@ func _on_player_entity_changed() -> void:
 	if entity == null: return
 	if not entity.meta_value_changed.is_connected(_on_player_entity_meta_value_changed):
 		entity.meta_value_changed.connect(_on_player_entity_meta_value_changed)
+	
+	_on_player_entity_meta_value_changed(META_KEY_PID)
 	_on_player_entity_meta_value_changed(META_KEY_COLOR)
 
 func _on_player_entity_meta_value_changed(key : String) -> void:
@@ -112,3 +125,10 @@ func _on_player_entity_meta_value_changed(key : String) -> void:
 			var value = entity.get_meta_value(key, Color.WHITE)
 			if typeof(value) == TYPE_COLOR:
 				_mesh.set_instance_shader_parameter("color", value)
+		META_KEY_PID:
+			var value = entity.get_meta_value(key, 0)
+			if _group_name != &"":
+				remove_from_group(_group_name)
+				_group_name = &""
+			_group_name = StringName("Player_%s"%[entity.get_meta_value(META_KEY_PID, 0)])
+			add_to_group(_group_name)

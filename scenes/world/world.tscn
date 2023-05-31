@@ -35,4 +35,6 @@ initial_menu = &"MainMenu"
 
 [node name="MainMenu" parent="UI" instance=ExtResource("5_eq1y4")]
 
+[connection signal="channel_joined" from="OT4G_OAuth/OT4G_IRC" to="." method="_on_ot_4g_irc_channel_joined"]
+[connection signal="message_received" from="OT4G_OAuth/OT4G_IRC" to="." method="_on_ot4g_irc_message_received"]
 [connection signal="action_requested" from="UI" to="." method="_on_ui_action_requested"]

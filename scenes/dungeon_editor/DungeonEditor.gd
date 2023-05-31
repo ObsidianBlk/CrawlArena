@@ -163,6 +163,7 @@ func _ConnectDungeonEntity(entity : CrawlEntity) -> void:
 	var entity_node = elt.load_meta_resource(tparts[0], tparts[1], true)
 	if is_instance_of(entity_node, CrawlEntityNode3D):
 		if entity.type == &"editor":
+			entity.set_block_all(false) # This is a bug fix. Shouldn't be needed anymore, but doesn't hurt.
 			if _editor_entity != null: return # Already have one... skip!
 			_editor_entity = entity
 		else:
@@ -214,6 +215,7 @@ func _CreateDungeon() -> void:
 	var entity : CrawlEntity = CrawlEntity.new()
 	entity.type = &"editor"
 	entity.uuid = UUID.v7()
+	entity.set_block_all(false)
 	
 	map.add_entity(entity)
 	
