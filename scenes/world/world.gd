@@ -15,6 +15,7 @@ var _active_node : Node = null
 # Onready Variables
 # ------------------------------------------------------------------------------
 @onready var ot4g_oauth : OT4G_OAuth = $OT4G_OAuth
+@onready var _settings_window : Window = %SettingsWindow
 #@onready var _de_window : Window = %DEWindow
 @onready var _canvas : CanvasLayer = %Canvas
 @onready var _ui : UI = %UI
@@ -25,17 +26,19 @@ var _active_node : Node = null
 # Override Methods
 # ------------------------------------------------------------------------------
 func _ready() -> void:
-	if not FileAccess.file_exists("./auth"):
-		printerr("Failed to find expected auth file.")
-		return
+	_settings_window.visible = false
 	
-	var file : FileAccess = FileAccess.open("./auth", FileAccess.READ)
-	var client_id : String = file.get_line()
-	var client_secret : String = file.get_line()
-	file.close()
-	
-	await(ot4g_oauth.authenticate_async(client_id, client_secret))
-	print("Twitch Authentication Complete")
+#	if not FileAccess.file_exists("./auth"):
+#		printerr("Failed to find expected auth file.")
+#		return
+#
+#	var file : FileAccess = FileAccess.open("./auth", FileAccess.READ)
+#	var client_id : String = file.get_line()
+#	var client_secret : String = file.get_line()
+#	file.close()
+#
+#	await(ot4g_oauth.authenticate_async(client_id, client_secret))
+#	print("Twitch Authentication Complete")
 
 
 # ------------------------------------------------------------------------------
@@ -89,6 +92,11 @@ func _on_ui_action_requested(action_name : StringName, payload : Variant) -> voi
 		&"start_game":
 			_OpenGame()
 			_ui.show_menu(&"")
+		&"system_settings":
+			if _settings_window.visible: return
+			_settings_window.popup_centered()
+		&"close_system_settings":
+			_settings_window.visible = false
 		&"close":
 			_CloseActiveNode(&"MainMenu")
 		&"quit_app":
@@ -103,3 +111,4 @@ func _on_ot4g_irc_message_received(msgctx : OT4G_IRC.MessageContext) -> void:
 
 func _on_ot_4g_irc_channel_joined(channel_name):
 	print("Channel name: ", channel_name)
+

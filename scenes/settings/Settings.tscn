@@ -1,0 +1,93 @@
+[gd_scene load_steps=3 format=3 uid="uid://g4e54aogvijf"]
+
+[ext_resource type="Script" path="res://scenes/settings/Settings.gd" id="1_3q2kg"]
+[ext_resource type="Texture2D" uid="uid://br6kw5pcg1mh3" path="res://assets/icons/eye_open.svg" id="1_d2kpn"]
+
+[node name="Settings" type="PanelContainer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_3q2kg")
+
+[node name="Layout" type="VBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="Tabs" type="TabContainer" parent="Layout"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Keyring" type="VBoxContainer" parent="Layout/Tabs"]
+layout_mode = 2
+
+[node name="TwitchRing" type="VBoxContainer" parent="Layout/Tabs/Keyring"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Layout/Tabs/Keyring/TwitchRing"]
+layout_mode = 2
+text = "TWITCH"
+
+[node name="HSeparator" type="HSeparator" parent="Layout/Tabs/Keyring/TwitchRing"]
+layout_mode = 2
+
+[node name="Grid" type="GridContainer" parent="Layout/Tabs/Keyring/TwitchRing"]
+layout_mode = 2
+columns = 2
+
+[node name="LblClientID" type="Label" parent="Layout/Tabs/Keyring/TwitchRing/Grid"]
+layout_mode = 2
+text = "Client ID: "
+
+[node name="TwitchClientID" type="HBoxContainer" parent="Layout/Tabs/Keyring/TwitchRing/Grid"]
+layout_mode = 2
+
+[node name="LineTwitchClientID" type="LineEdit" parent="Layout/Tabs/Keyring/TwitchRing/Grid/TwitchClientID"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(256, 0)
+layout_mode = 2
+secret = true
+
+[node name="BtnTwitchClientID" type="Button" parent="Layout/Tabs/Keyring/TwitchRing/Grid/TwitchClientID"]
+unique_name_in_owner = true
+layout_mode = 2
+icon = ExtResource("1_d2kpn")
+icon_alignment = 1
+
+[node name="LblSecret" type="Label" parent="Layout/Tabs/Keyring/TwitchRing/Grid"]
+layout_mode = 2
+text = "Secret:"
+
+[node name="TwitchSecret" type="HBoxContainer" parent="Layout/Tabs/Keyring/TwitchRing/Grid"]
+layout_mode = 2
+
+[node name="LineTwitchSecret" type="LineEdit" parent="Layout/Tabs/Keyring/TwitchRing/Grid/TwitchSecret"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(256, 0)
+layout_mode = 2
+secret = true
+
+[node name="BtnTwitchSecret" type="Button" parent="Layout/Tabs/Keyring/TwitchRing/Grid/TwitchSecret"]
+unique_name_in_owner = true
+layout_mode = 2
+icon = ExtResource("1_d2kpn")
+
+[node name="HBC" type="HBoxContainer" parent="Layout"]
+layout_mode = 2
+
+[node name="BtnDone" type="Button" parent="Layout/HBC"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Done"
+
+[node name="Spacer" type="Control" parent="Layout/HBC"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="BtnReset" type="Button" parent="Layout/HBC"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Reset"
+
+[connection signal="pressed" from="Layout/HBC/BtnDone" to="." method="_on_btn_done_pressed"]
+[connection signal="pressed" from="Layout/HBC/BtnReset" to="." method="_on_btn_reset_pressed"]

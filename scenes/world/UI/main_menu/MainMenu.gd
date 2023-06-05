@@ -12,3 +12,7 @@ func _on_btn_quit_pressed():
 
 func _on_btn_start_game_pressed():
 	send_action_request(&"start_game")
+
+
+func _on_btn_system_settings_pressed():
+	send_action_request(&"system_settings")

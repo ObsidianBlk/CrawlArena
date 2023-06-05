@@ -1,9 +1,11 @@
-[gd_scene load_steps=6 format=3 uid="uid://ctfy82xfjs772"]
+[gd_scene load_steps=8 format=3 uid="uid://ctfy82xfjs772"]
 
 [ext_resource type="Script" path="res://scenes/world/world.gd" id="1_p63h6"]
 [ext_resource type="Script" path="res://addons/Obblk_TAPI4G/nodes/ot4g_oauth.gd" id="2_4i84v"]
 [ext_resource type="Script" path="res://addons/Obblk_TAPI4G/nodes/ot4g_irc.gd" id="3_mur0n"]
 [ext_resource type="Script" path="res://scripts/nodes/UI.gd" id="4_cuie3"]
+[ext_resource type="PackedScene" uid="uid://g4e54aogvijf" path="res://scenes/settings/Settings.tscn" id="4_t48x7"]
+[ext_resource type="Theme" uid="uid://bdpjypsrtur3g" path="res://scenes/world/UI/CrawlArena.theme" id="5_b6u0a"]
 [ext_resource type="PackedScene" uid="uid://c8lcbgdli5iw1" path="res://scenes/world/UI/main_menu/MainMenu.tscn" id="5_eq1y4"]
 
 [node name="World" type="Node2D"]
@@ -16,13 +18,17 @@ script = ExtResource("2_4i84v")
 script = ExtResource("3_mur0n")
 initial_channel = "obsidianblk"
 
-[node name="DEWindow" type="Window" parent="."]
+[node name="SettingsWindow" type="Window" parent="."]
 unique_name_in_owner = true
 gui_embed_subwindows = true
 title = "Dungeon Editor"
+size = Vector2i(960, 540)
 visible = false
 wrap_controls = true
 exclusive = true
+
+[node name="Settings" parent="SettingsWindow" instance=ExtResource("4_t48x7")]
+theme = ExtResource("5_b6u0a")
 
 [node name="Canvas" type="CanvasLayer" parent="."]
 unique_name_in_owner = true
@@ -37,4 +43,5 @@ initial_menu = &"MainMenu"
 
 [connection signal="channel_joined" from="OT4G_OAuth/OT4G_IRC" to="." method="_on_ot_4g_irc_channel_joined"]
 [connection signal="message_received" from="OT4G_OAuth/OT4G_IRC" to="." method="_on_ot4g_irc_message_received"]
+[connection signal="action_requested" from="SettingsWindow/Settings" to="." method="_on_ui_action_requested"]
 [connection signal="action_requested" from="UI" to="." method="_on_ui_action_requested"]
