@@ -1,9 +1,10 @@
-[gd_scene load_steps=5 format=3 uid="uid://hjolrjx7a3q5"]
+[gd_scene load_steps=6 format=3 uid="uid://hjolrjx7a3q5"]
 
 [ext_resource type="Script" path="res://scenes/game/Game.gd" id="1_6c3ru"]
 [ext_resource type="PackedScene" uid="uid://bp11d0nkbnuov" path="res://scenes/dungeon/Dungeon.tscn" id="1_7ebhj"]
 [ext_resource type="Script" path="res://scripts/nodes/LocalPlayerCtrl.gd" id="2_a7ol7"]
 [ext_resource type="Script" path="res://scripts/nodes/MsgPlayerCtrl.gd" id="4_3koai"]
+[ext_resource type="Script" path="res://scripts/nodes/GameCommandParser.gd" id="4_77uwb"]
 
 [node name="Game" type="Control"]
 layout_mode = 3
@@ -17,24 +18,71 @@ script = ExtResource("1_6c3ru")
 [node name="TeamAView" type="SubViewportContainer" parent="."]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 302.0
-offset_top = 68.0
-offset_right = 1571.0
-offset_bottom = 808.0
+offset_left = 16.0
+offset_top = 76.0
+offset_right = 836.0
+offset_bottom = 816.0
 stretch = true
 
 [node name="SubViewport" type="SubViewport" parent="TeamAView"]
+own_world_3d = true
 handle_input_locally = false
-size = Vector2i(1269, 740)
+size = Vector2i(820, 740)
 render_target_update_mode = 4
 
 [node name="TeamADungeon" parent="TeamAView/SubViewport" instance=ExtResource("1_7ebhj")]
 unique_name_in_owner = true
+focus_pid = 2
+
+[node name="TeamBView" type="SubViewportContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 913.0
+offset_top = 76.0
+offset_right = 1733.0
+offset_bottom = 816.0
+stretch = true
+
+[node name="SubViewport" type="SubViewport" parent="TeamBView"]
+own_world_3d = true
+handle_input_locally = false
+size = Vector2i(820, 740)
+render_target_update_mode = 4
+
+[node name="TeamBDungeon" parent="TeamBView/SubViewport" instance=ExtResource("1_7ebhj")]
+unique_name_in_owner = true
+verbose = true
 
 [node name="LocalPlayerCtrl" type="Node" parent="."]
 unique_name_in_owner = true
 script = ExtResource("2_a7ol7")
 
+[node name="GameCommandParser" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("4_77uwb")
+
+[node name="LblPrep" type="Label" parent="."]
+unique_name_in_owner = true
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 23.0
+theme_override_font_sizes/font_size = 36
+text = "Prep Time: 0.0"
+
+[node name="LblUserActions" type="Label" parent="."]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 11.0
+offset_top = 1015.0
+offset_right = 543.0
+offset_bottom = 1068.0
+theme_override_font_sizes/font_size = 36
+text = "This is as good a place as any..."
+
 [node name="MsgPlayerCtrl" type="Node" parent="."]
 unique_name_in_owner = true
 script = ExtResource("4_3koai")
+
+[connection signal="start_requested" from="GameCommandParser" to="." method="_on_game_command_parser_start_requested"]
+[connection signal="user_joined_team" from="GameCommandParser" to="." method="_on_game_command_parser_user_joined_team"]
+[connection signal="user_left_team" from="GameCommandParser" to="." method="_on_game_command_parser_user_left_team"]

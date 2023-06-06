@@ -6,6 +6,7 @@ class_name Keyring
 # ------------------------------------------------------------------------------
 signal service_changed(service_name)
 signal cleared()
+signal dirtied()
 
 # ------------------------------------------------------------------------------
 # Constants
@@ -14,11 +15,24 @@ const KEYRING_TAG : String = "ARENA_KEYRING:1"
 const KEYRING_SERVICE_PREFIX : String = "@:"
 const KEYRING_KEYVALUE_PREFIX : String = "*:"
 
+const GENERIC_RING_SCHEMA : Dictionary = {
+	"!KEY_OF_TYPE_str":{
+		"type":TYPE_STRING,
+		"def":{
+			"type":TYPE_STRING,
+			"allow_empty":true
+		}
+	}
+}
+
 
 # ------------------------------------------------------------------------------
 # Variables
 # ------------------------------------------------------------------------------
 var _key_ring : Dictionary = {}
+var _dirty : bool = false
+
+var _registered_schemas : Dictionary = {}
 
 # ------------------------------------------------------------------------------
 # Private Methods
@@ -56,6 +70,7 @@ func _LoadRingEntry(file : FileAccess) -> Dictionary:
 		if keyval.length() <= KEYRING_KEYVALUE_PREFIX.length() or not keyval.begins_with(KEYRING_KEYVALUE_PREFIX):
 			printerr("Keyring load error. Key-value entry malformed for service \"", service, "\".")
 			return {}
+		keyval = keyval.right(keyval.length() - KEYRING_KEYVALUE_PREFIX.length())
 		var parts : PackedStringArray = keyval.split("=", false)
 		if parts.size() != 2:
 			printerr("Keyring load error. Key-value entry malformed for service \"", service, "\".")
@@ -76,6 +91,9 @@ func _LoadRingEntry(file : FileAccess) -> Dictionary:
 # ------------------------------------------------------------------------------
 # Public Methods
 # ------------------------------------------------------------------------------
+func is_dirty() -> bool:
+	return _dirty
+
 func clear() -> void:
 	_key_ring.clear()
 	cleared.emit()
@@ -103,6 +121,7 @@ func load(filepath : String, encrypt_passphrase : String = "") -> int:
 		file.close()
 		return ERR_INVALID_DECLARATION
 	
+	_dirty = false
 	_key_ring.clear()
 	var process : bool = true
 	while process:
@@ -136,7 +155,20 @@ func save(filepath : String, encrypt_passphrase : String = "") -> int:
 		for key in _key_ring[service].keys():
 			file.store_line("%s%s=%s"%[KEYRING_KEYVALUE_PREFIX, key, _key_ring[service][key]])
 	file.close()
+	_dirty = false
 	return OK
+
+func register_schema(service_name : String, schema : Dictionary) -> void:
+	if schema.is_empty():
+		printerr("Keyring service (", service_name, ") schema is empty.")
+		return
+	_registered_schemas[service_name] = schema
+
+func has_service(service_name : String) -> bool:
+	return service_name in _key_ring
+
+func get_services() -> PackedStringArray:
+	return PackedStringArray(_key_ring.keys())
 
 func get_service_keys(service_name : String) -> Dictionary:
 	var entry : Dictionary = {}
@@ -146,8 +178,16 @@ func get_service_keys(service_name : String) -> Dictionary:
 	return entry
 
 func set_service_keys(service_name : String, ring : Dictionary) -> int:
-	var res : int = DSV.verify(ring, {"!KEY_OF_TYPE_str":{"type":TYPE_STRING, "def":{"type":TYPE_STRING}}})
+	var schema : Dictionary = GENERIC_RING_SCHEMA
+	if service_name in _registered_schemas:
+		schema = _registered_schemas[service_name]
+	
+	var res : int = DSV.verify(ring, schema)
 	if res == OK:
 		_key_ring[service_name] = ring
+		var send_dirty : bool = not _dirty
+		_dirty = true
 		service_changed.emit(service_name)
+		if send_dirty:
+			dirtied.emit()
 	return res

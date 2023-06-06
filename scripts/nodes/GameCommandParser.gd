@@ -6,11 +6,16 @@ class_name GameCommandParser
 # Signals
 # --------------------------------------------------------------------------------------
 signal player_action_requested(pid, action_code)
+signal start_requested(user)
+signal user_joined_team(pid, username)
+signal user_left_team(pid, username)
+signal user_submitted_actions(pid, username)
+signal user_turn_active(pid, username)
 
 # --------------------------------------------------------------------------------------
 # Constants and ENUMs
 # --------------------------------------------------------------------------------------
-enum STATE {Prep=0, Command=1, Process=2}
+enum STATE {Idle=0, Prep=1, Command=2, Process=3}
 const ACTION_DELAY : float = 0.8
 
 # --------------------------------------------------------------------------------------
@@ -23,7 +28,7 @@ const ACTION_DELAY : float = 0.8
 # --------------------------------------------------------------------------------------
 # Variables
 # --------------------------------------------------------------------------------------
-var _players : Dictionary = {}
+var _users : Dictionary = {}
 var _teams : Dictionary = {
 	"A":{"list":[], "active_idx":0, "buffer":[]},
 	"B":{"list":[], "active_idx":0, "buffer":[]}
@@ -31,7 +36,7 @@ var _teams : Dictionary = {
 
 var _active_team : String = "A"
 
-var _game_state : STATE = STATE.Prep
+var _game_state : STATE = STATE.Idle
 
 # --------------------------------------------------------------------------------------
 # Private Methods
@@ -39,7 +44,7 @@ var _game_state : STATE = STATE.Prep
 func _RemoveUserFromTeam(user : OT4G_IRC.UserInfo, team : String) -> void:
 	var idx : int = _teams[team].list.find(user.username)
 	if idx < 0: return
-	_players.erase(user.username)
+	_users.erase(user.username)
 	_teams[team].list.remove_at(idx)
 	if _teams[team].active_idx >= idx:
 		if _teams[team].active_idx > idx:
@@ -48,30 +53,33 @@ func _RemoveUserFromTeam(user : OT4G_IRC.UserInfo, team : String) -> void:
 			_teams[team].active_idx = 0
 		# TODO: Announce to the next user/player that they are now the active player.
 	print("Removed \"", user.username, "\" from team \"", team, "\".")
+	user_left_team.emit(1 if team == "A" else 2, user.username)
 
-func _NextTeamPlayer(team : String) -> void:
+func _NextTeamUser(team : String) -> void:
 	_teams[team].active_idx += 1
 	if _teams[team].active_idx >= _teams[team].list.size():
 		_teams[team].active_idx = 0
 	var username : String = _teams[team].list[_teams[team].active_idx]
-	if not username in _players:
+	if not username in _users:
 		printerr("Failed to find user ", username)
 		return
-	# TODO: Instead return the user name of the next player so that both teams' players are announced
+	# TODO: Instead return the user name of the next user so that both teams' user are announced
 	#   in the same message
-	_players[username].user.mention("... it is now your turn!")
+	_users[username].user.mention("... it is now your turn!")
+	user_turn_active.emit(1 if team == "A" else 2, username)
 
 
 func _Handle_Join(user : OT4G_IRC.UserInfo, payload : String) -> void:
-	if user.username in _players:
-		user.mention("You've already joined. You're on team %s"%[_players[user.username]["team_id"]])
+	if user.username in _users:
+		user.mention("You've already joined. You're on team %s"%[_users[user.username]["team_id"]])
 		return
 	
 	var add_to_team : Callable = func(team : String) -> void:
-		_players[user.username] = {"team_id":team, "user":user}
+		_users[user.username] = {"team_id":team, "user":user}
 		_teams[team].list.append(user.username)
 		print("\"", user.username, "\" has joined team \"", team, "\"!")
 		user.mention("has been added to team %s!"%[team])
+		user_joined_team.emit(1 if team == "A" else 2, user.username)
 	
 	match payload.to_upper():
 		"A":
@@ -91,10 +99,25 @@ func _Handle_Leave(user : OT4G_IRC.UserInfo) -> void:
 	_RemoveUserFromTeam(user, "A")
 	_RemoveUserFromTeam(user, "B")
 
+func _Handle_Clear_Team(team : String) -> void:
+	_teams[team].list.clear()
+	_teams[team].buffer.clear()
+	_teams[team].active_idx = 0
+
+
+func _Handle_Team_Rand_Actions(team : String) -> void:
+	if _teams[team].buffer.size() > 0: return
+	var rand_ops : Array = ["w", "a", "s", "d", "q", "e"]
+	for i in range(max_actions_per_round):
+		var idx : int = randi_range(0, rand_ops.size() - 1)
+		_teams[team].buffer.append(rand_ops[idx])
 
 func _Handle_Actions(user : OT4G_IRC.UserInfo, payload : String) -> void:
-	var team : Dictionary = _teams[_active_team]
-	if not team.list[team.active_idx] == user.username: return
+	if not user.username in _users: return
+	var user_team : String = _users[user.username]["team_id"]
+	
+	var team : Dictionary = _teams[user_team]
+	if team.list[team.active_idx] != user.username: return
 	if team.buffer.size() > 0:
 		user.mention("you have already sent in your commands.")
 		return
@@ -106,14 +129,19 @@ func _Handle_Actions(user : OT4G_IRC.UserInfo, payload : String) -> void:
 		var act : String = ""
 		if i < payload.length():
 			act = payload.substr(i, 1)
+		else:
+			var rand_ops : Array = ["w", "a", "s", "d", "q", "e"]
+			var idx : int = randi_range(0, rand_ops.size() - 1)
+			act = rand_ops[idx]
 		team.buffer.append(act)
+	user_submitted_actions.emit(1 if user_team == "A" else 2, user.username)
 
 func _ProcessGame() -> void:
 	var team : Dictionary = _teams[_active_team]
 	if team.buffer.size() <= 0:
-		_NextTeamPlayer("A")
-		_NextTeamPlayer("B")
-		set_game_state(STATE.Command)
+		_NextTeamUser("A")
+		_NextTeamUser("B")
+		set_state(STATE.Command)
 		return
 	
 	var action : String = team.buffer.pop_front()
@@ -125,33 +153,49 @@ func _ProcessGame() -> void:
 # --------------------------------------------------------------------------------------
 # Public Methods
 # --------------------------------------------------------------------------------------
-func set_game_state(state : STATE) -> void:
+func set_state(state : STATE) -> void:
 	_game_state = state
+	if _game_state == STATE.Idle:
+		_Handle_Clear_Team("A")
+		_Handle_Clear_Team("B")
 	if _game_state == STATE.Process:
+		_Handle_Team_Rand_Actions("A")
+		_Handle_Team_Rand_Actions("B")
 		_ProcessGame()
 
+func get_user_count() -> int:
+	return _users.keys().size()
+
+func get_team_user_count(pid : int) -> int:
+	var team = "A" if pid == 1 else "B"
+	return _teams[team].list.size()
 
 func handle_message(msgctx : OT4G_IRC.MessageContext) -> void:
 	if not msgctx.message.begins_with(command_prefix): return
-	var parts : PackedStringArray = msgctx.message.split(":", true, 1)
-	var cmd = StringName(parts[0].strip_edges())
-	var payload = "" if parts.size() < 2 else parts[2].strip_edges()
+	var parts : PackedStringArray = msgctx.message.split(" ", true, 1)
+	
+	var cmd = StringName(parts[0].right(parts[0].length() - command_prefix.length()).strip_edges())
+	var payload : String = "" if parts.size() < 2 else parts[2].strip_edges()
 	
 	match _game_state:
+		STATE.Idle:
+			match cmd:
+				&"start_game":
+					start_requested.emit(msgctx.user)
 		STATE.Prep:
 			match cmd:
-				&"!join", &"!j":
+				&"join", &"j":
 					_Handle_Join(msgctx.user, payload)
-				&"!leave", &"!x":
+				&"leave", &"x":
 					_Handle_Leave(msgctx.user)
 		STATE.Command:
 			match cmd:
-				&"!leave", &"!x":
+				&"leave", &"x":
 					_Handle_Leave(msgctx.user)
-				&"!actions", &"!a":
+				&"actions", &"a":
 					_Handle_Actions(msgctx.user, payload)
 		STATE.Process:
 			match cmd:
-				&"!leave", &"!x":
+				&"leave", &"x":
 					_Handle_Leave(msgctx.user)
 

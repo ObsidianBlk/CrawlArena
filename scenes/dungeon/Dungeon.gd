@@ -18,6 +18,7 @@ const CELL_SIZE : float = 4.4
 @export_category("Dungeon")
 @export var map : CrawlMap = null:						set = set_map
 @export_range(1, 10) var focus_pid : int = 1:			set = set_focus_pid
+@export var verbose : bool = false
 
 # ------------------------------------------------------------------------------
 # Variables
@@ -74,14 +75,25 @@ func _ClearPlayerConnections() -> void:
 	_active_player = null
 
 func _UpdateActivePlayer() -> void:
+	if verbose:
+		print("Updating Active Player ID: ", focus_pid)
 	if map == null or not is_inside_tree(): return
+	if verbose:
+		print("Looking for player group, ", "Player_%s"%[focus_pid])
 	var enodes : Array = get_tree().get_nodes_in_group("Player_%s"%[focus_pid])
 	for node in enodes:
-		if not _entity_container.is_ancestor_of(node): continue
+		if verbose:
+			print("Checking Node: ", node)
+		if not _entity_container.is_ancestor_of(node):
+			if verbose:
+				print("Not Child")
+			continue
 		if not is_instance_of(node, Player): continue
 		if node.entity == null:
 			printerr("WARNING: CrawlEntityNode3D instance without assigned CrawlEntity resource found.")
 			continue
+		if verbose:
+			print("Target entity player_id: ", node.entity.get_meta_value("player_id", 0))
 		node.current = true
 		_active_player = node
 		if not _active_player.entity.position_changed.is_connected(_on_player_position_changed):

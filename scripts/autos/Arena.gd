@@ -6,10 +6,14 @@ extends Node
 const LOOKUPTABLE_LEVEL_GEOMETRY : StringName = &"level_geometry"
 const LOOKUPTABLE_ENTITIES : StringName = &"entities"
 
+const KEYRING_FILEPATH : String = "user://auth.keyring"
+const KEYRING_PASS_BASE : String = "CrawlArena::"
+
 # ------------------------------------------------------------------------------
 # Variables
 # ------------------------------------------------------------------------------
 var _keyring : Keyring = Keyring.new()
+var _keyring_passphrase : String = ""
 
 # ------------------------------------------------------------------------------
 # Override Methods
@@ -17,6 +21,12 @@ var _keyring : Keyring = Keyring.new()
 func _ready() -> void:
 	_DefineLevelResources()
 	_DefineEntityResources()
+	_keyring.register_schema("twitch", {
+		"client_id":{"req":true, "type":TYPE_STRING, "allow_empty":true},
+		"client_secret":{"req":true, "type":TYPE_STRING, "allow_empty":true}
+	})
+	
+	_keyring.load(KEYRING_FILEPATH, "%s%s"%[KEYRING_PASS_BASE, _keyring_passphrase])
 
 # ------------------------------------------------------------------------------
 # Private Methods
@@ -85,4 +95,8 @@ func _DefineEntityResources() -> void:
 # ------------------------------------------------------------------------------
 func get_keyring() -> Keyring:
 	return _keyring
+
+func save_keyring() -> int:
+	if not _keyring.is_dirty(): return OK
+	return _keyring.save(KEYRING_FILEPATH, "%s%s"%[KEYRING_PASS_BASE, _keyring_passphrase])
 

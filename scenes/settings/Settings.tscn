@@ -89,5 +89,7 @@ layout_mode = 2
 size_flags_horizontal = 3
 text = "Reset"
 
+[connection signal="text_changed" from="Layout/Tabs/Keyring/TwitchRing/Grid/TwitchClientID/LineTwitchClientID" to="." method="_on_line_changed" binds= ["twitch"]]
+[connection signal="text_changed" from="Layout/Tabs/Keyring/TwitchRing/Grid/TwitchSecret/LineTwitchSecret" to="." method="_on_line_changed" binds= ["twitch"]]
 [connection signal="pressed" from="Layout/HBC/BtnDone" to="." method="_on_btn_done_pressed"]
 [connection signal="pressed" from="Layout/HBC/BtnReset" to="." method="_on_btn_reset_pressed"]

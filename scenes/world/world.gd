@@ -36,14 +36,22 @@ func _ready() -> void:
 #	var client_id : String = file.get_line()
 #	var client_secret : String = file.get_line()
 #	file.close()
-#
-#	await(ot4g_oauth.authenticate_async(client_id, client_secret))
-#	print("Twitch Authentication Complete")
+	var kr : Keyring = Arena.get_keyring()
+	kr.service_changed.connect(_on_keyring_service_changed)
+	_AuthenticateTwitch()
 
 
 # ------------------------------------------------------------------------------
 # Private Methods
 # ------------------------------------------------------------------------------
+func _AuthenticateTwitch() -> void:
+	if ot4g_oauth.authenticated(): return
+	
+	var kr : Keyring = Arena.get_keyring()
+	if kr.has_service("twitch"):
+		var ring : Dictionary = kr.get_service_keys("twitch")
+		ot4g_oauth.authenticate_async(ring["client_id"], ring["client_secret"])
+
 func _CloseActiveNode(return_menu : StringName = &"") -> void:
 	if _active_node == null: return
 	_canvas.remove_child(_active_node)
@@ -77,12 +85,9 @@ func _OpenGame() -> void:
 # ------------------------------------------------------------------------------
 # Handler Methods
 # ------------------------------------------------------------------------------
-#func _on_close_de_window_requested() -> void:
-#	if not _de_window.visible: return
-#	_de_window.hide()
-#	for child in _de_window.get_children():
-#		_de_window.remove_child(child)
-#		child.queue_free()
+func _on_keyring_service_changed(service_name : String) -> void:
+	if service_name == "twitch":
+		_AuthenticateTwitch()
 
 func _on_ui_action_requested(action_name : StringName, payload : Variant) -> void:
 	match action_name:
@@ -109,6 +114,13 @@ func _on_ot4g_irc_message_received(msgctx : OT4G_IRC.MessageContext) -> void:
 		_active_node.handle_message(msgctx)
 
 
-func _on_ot_4g_irc_channel_joined(channel_name):
+func _on_ot_4g_irc_channel_joined(channel_name : StringName):
 	print("Channel name: ", channel_name)
 
+
+func _on_ot4g_oauth_user_token_authentication_completed() -> void:
+	print("Twitch Authentication Completed")
+
+
+func _on_ot4g_oauth_user_token_authentication_started():
+	print("Twitch Authentication Started...")

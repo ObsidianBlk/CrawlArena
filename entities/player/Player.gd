@@ -44,7 +44,7 @@ var _group_name : StringName = &""
 func set_current(c : bool) -> void:
 	if c != current:
 		current = c
-		if _camera != null and not passive_mode:
+		if _camera != null:
 			_camera.current = current
 
 func set_passive_move(p : bool) -> void:
