@@ -34,7 +34,7 @@ window/per_pixel_transparency/allowed=true
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/CrawlDCS/plugin.cfg", "res://addons/Obblk_TAPI4G/plugin.cfg")
+enabled=PackedStringArray("res://addons/CrawlDCS/plugin.cfg", "res://addons/Obblk_TAPI4G/plugin.cfg", "res://addons/Obblk_GSMC/plugin.cfg")
 
 [input]
 
