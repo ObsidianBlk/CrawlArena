@@ -8,7 +8,7 @@ var text : String = "":					set = set_text
 var service : String = "":				set = set_service
 var is_whisper : bool = false:			set = set_is_whisper
 var user : GSMCUser = null:				set = set_user
-var timestamp : int = 0
+var timestamp : float = 0.0:			set = set_timestamp
 
 # ------------------------------------------------------------------------------
 # Private Variables
@@ -61,8 +61,10 @@ func _init(service_name : String, usr : GSMCUser, text : String, info : Dictiona
 	if "meta" in info and typeof(info["meta"]) == TYPE_DICTIONARY:
 		for key in info["meta"].keys():
 			set_metadata(key, info["meta"][key])
+	if "send" in info and typeof(info["send"]) == TYPE_CALLABLE:
+		_cb["send"] = info["send"]
 
-	timestamp = int(Time.get_unix_time_from_system())	
+	timestamp = Time.get_unix_time_from_system()
 	_locked = true
 
 
@@ -83,3 +85,9 @@ func get_metadata(key : String) -> Variant:
 func has_metadata(key : String) -> bool:
 	return key in _meta
 
+func can_send() -> bool:
+	return "send" in _cb
+
+func send(msg : String) -> void:
+	if "send" in _cb:
+		_cb["send"].call(msg)
