@@ -94,10 +94,10 @@ func send(msg : String) -> void:
 
 func _to_string() -> String:
 	if not is_valid(): return "GSMCMessage Invalid"
-	#var dtd : Dictionary = Time.get_datetime_dict_from_unix_time(int(timestamp))
-	#var stime : String = "%s-%s-%s %s:%s:%s"%[dtd.year, dtd.month, dtd.day, dtd.hour, dtd.minute, dtd.second]
-	var stime : String = Time.get_date_string_from_unix_time(int(timestamp))
+	var dtd : Dictionary = Time.get_datetime_dict_from_unix_time(int(timestamp))
+	var stime : String = "%s-%s-%s %s:%s:%s"%[dtd.year, dtd.month, dtd.day, dtd.hour, dtd.minute, dtd.second]
+	#var stime : String = Time.get_date_string_from_unix_time(int(timestamp))
 	var username : String = "UNKNOWN" if user == null else user.username
 	var owner : String = "*" if user.is_owner else ""
-	return "[%s] %S%s@%s: %s"%[stime, owner, username, service, text]
+	return "[%s] %s%s@%s: %s"%[stime, owner, username, service, text]
 

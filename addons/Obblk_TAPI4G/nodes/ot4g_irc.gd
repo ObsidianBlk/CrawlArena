@@ -190,17 +190,19 @@ func _HandleMessage(msg : String, tags : Dictionary) -> void:
 			var usr : String = user_regex.search(psa[0]).get_string()
 			var channel : String = psa[2].right(-1)
 			var muser : GSMCUser = null
+			var uid : String = usr if not "user-id" in tags else tags["user-id"]
 			if GSMC.has_user(SERVICE_NAME, usr):
-				muser = GSMC.get_user(SERVICE_NAME, usr)
+				muser = GSMC.get_user(SERVICE_NAME, uid)
 			else:
-				muser = GSMC.store_user(SERVICE_NAME, usr, {
+				muser = GSMC.store_user(SERVICE_NAME, uid, {
 					"username":usr,
+					"owner":usr == initial_channel,
 					"meta":{"channel":channel},
 					"send":(func(msg : String): say(channel, msg)),
 					"reply":(func(msg : String): say(channel, msg, usr))
 				})
 			var mmsg : GSMCMessage = GSMC.store_message(
-				SERVICE_NAME, usr, psa[3].right(-1), {
+				SERVICE_NAME, uid, psa[3].right(-1), {
 					"whisper": psa[1] == "WHISPER",
 					"meta": tags,
 					"send": (

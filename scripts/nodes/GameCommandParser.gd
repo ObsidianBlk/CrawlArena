@@ -11,6 +11,7 @@ signal user_joined_team(pid, username)
 signal user_left_team(pid, username)
 signal user_submitted_actions(pid, username)
 signal user_turn_active(pid, username)
+signal action_processing_completed()
 
 # --------------------------------------------------------------------------------------
 # Constants and ENUMs
@@ -59,26 +60,28 @@ func _NextTeamUser(team : String) -> void:
 	_teams[team].active_idx += 1
 	if _teams[team].active_idx >= _teams[team].list.size():
 		_teams[team].active_idx = 0
-	var username : String = _teams[team].list[_teams[team].active_idx]
+
+func _AnnounceActiveTeamPlayer(team : String) -> void:
+	var idx : int = _teams[team].active_idx
+	if not (idx >= 0 and idx < _teams[team].list.size()): return
+	var username : String = _teams[team].list[idx]
 	if not username in _users:
 		printerr("Failed to find user ", username)
 		return
-	# TODO: Instead return the user name of the next user so that both teams' user are announced
-	#   in the same message
-	_users[username].user.mention("... it is now your turn!")
+	_users[username].user.send("%s... it is now your turn!"%[username])
 	user_turn_active.emit(1 if team == "A" else 2, username)
 
 
 func _Handle_Join(user : GSMCUser, payload : String) -> void:
 	if user.username in _users:
-		user.mention("You've already joined. You're on team %s"%[_users[user.username]["team_id"]])
+		user.reply("You've already joined. You're on team %s"%[_users[user.username]["team_id"]])
 		return
 	
 	var add_to_team : Callable = func(team : String) -> void:
 		_users[user.username] = {"team_id":team, "user":user}
 		_teams[team].list.append(user.username)
 		print("\"", user.username, "\" has joined team \"", team, "\"!")
-		user.mention("has been added to team %s!"%[team])
+		user.reply("has been added to team %s!"%[team])
 		user_joined_team.emit(1 if team == "A" else 2, user.username)
 	
 	match payload.to_upper():
@@ -119,7 +122,7 @@ func _Handle_Actions(user : GSMCUser, payload : String) -> void:
 	var team : Dictionary = _teams[user_team]
 	if team.list[team.active_idx] != user.username: return
 	if team.buffer.size() > 0:
-		user.mention("you have already sent in your commands.")
+		user.reply("you have already sent in your commands.")
 		return
 	
 	if payload.length() > max_actions_per_round:
@@ -141,7 +144,8 @@ func _ProcessGame() -> void:
 	if team.buffer.size() <= 0:
 		_NextTeamUser("A")
 		_NextTeamUser("B")
-		set_state(STATE.Command)
+		action_processing_completed.emit()
+		#set_state(STATE.Command)
 		return
 	
 	var action : String = team.buffer.pop_front()
@@ -158,6 +162,9 @@ func set_state(state : STATE) -> void:
 	if _game_state == STATE.Idle:
 		_Handle_Clear_Team("A")
 		_Handle_Clear_Team("B")
+	if _game_state == STATE.Command:
+		_AnnounceActiveTeamPlayer("A")
+		_AnnounceActiveTeamPlayer("B")
 	if _game_state == STATE.Process:
 		_Handle_Team_Rand_Actions("A")
 		_Handle_Team_Rand_Actions("B")
@@ -175,7 +182,7 @@ func handle_message(msgctx : GSMCMessage) -> void:
 	var parts : PackedStringArray = msgctx.text.split(" ", true, 1)
 	
 	var cmd = StringName(parts[0].right(parts[0].length() - command_prefix.length()).strip_edges())
-	var payload : String = "" if parts.size() < 2 else parts[2].strip_edges()
+	var payload : String = "" if parts.size() < 2 else parts[1].strip_edges()
 	
 	match _game_state:
 		STATE.Idle:
@@ -190,12 +197,16 @@ func handle_message(msgctx : GSMCMessage) -> void:
 					_Handle_Leave(msgctx.user)
 		STATE.Command:
 			match cmd:
+				&"join", &"j":
+					_Handle_Join(msgctx.user, payload)
 				&"leave", &"x":
 					_Handle_Leave(msgctx.user)
 				&"actions", &"a":
 					_Handle_Actions(msgctx.user, payload)
 		STATE.Process:
 			match cmd:
+				&"join", &"j":
+					_Handle_Join(msgctx.user, payload)
 				&"leave", &"x":
 					_Handle_Leave(msgctx.user)
 
