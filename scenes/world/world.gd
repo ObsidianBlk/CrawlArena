@@ -108,14 +108,11 @@ func _on_ui_action_requested(action_name : StringName, payload : Variant) -> voi
 			get_tree().quit()
 
 
-func _on_ot4g_irc_message_received(msgctx : OT4G_IRC.MessageContext) -> void:
+func _on_ot4g_irc_message_received(msgctx : GSMCMessage) -> void:
+	print(msgctx.to_string())
 	if _active_node == null: return
 	if _active_node.has_method("handle_message"):
 		_active_node.handle_message(msgctx)
-
-
-func _on_ot_4g_irc_channel_joined(channel_name : StringName):
-	print("Channel name: ", channel_name)
 
 
 func _on_ot4g_oauth_user_token_authentication_completed() -> void:

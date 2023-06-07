@@ -84,16 +84,16 @@ func _ProcessBuffer() -> void:
 # ------------------------------------------------------------------------------
 # Public Methods
 # ------------------------------------------------------------------------------
-func handle_message(msgctx : OT4G_IRC.MessageContext) -> void:
+func handle_message(msgctx : GSMCMessage) -> void:
 	if _cmd_buffer.size() > 0: return
-	if not msgctx.message.begins_with("!"): return
-	if msgctx.message.length() != 6: return
+	if not msgctx.text.begins_with("!"): return
+	if msgctx.text.length() != 6: return
 	
-	_cmd_buffer.append(msgctx.message.substr(1, 1))
-	_cmd_buffer.append(msgctx.message.substr(2, 1))
-	_cmd_buffer.append(msgctx.message.substr(3, 1))
-	_cmd_buffer.append(msgctx.message.substr(4, 1))
-	_cmd_buffer.append(msgctx.message.substr(5, 1))
+	_cmd_buffer.append(msgctx.text.substr(1, 1))
+	_cmd_buffer.append(msgctx.text.substr(2, 1))
+	_cmd_buffer.append(msgctx.text.substr(3, 1))
+	_cmd_buffer.append(msgctx.text.substr(4, 1))
+	_cmd_buffer.append(msgctx.text.substr(5, 1))
 	
-	msgctx.reply("Thank you... processing your commands now Master!")
+	msgctx.user.reply("Thank you... processing your commands now Master!")
 	_ProcessBuffer()

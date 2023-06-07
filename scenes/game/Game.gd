@@ -57,7 +57,7 @@ func _process(delta : float) -> void:
 # ------------------------------------------------------------------------------
 # Public Methods
 # ------------------------------------------------------------------------------
-func handle_message(msgctx : OT4G_IRC.MessageContext) -> void:
+func handle_message(msgctx : GSMCMessage) -> void:
 	#if _msg_player_ctrl == null: return
 	#_msg_player_ctrl.handle_message(msgctx)
 	if _game_command_parser == null: return
@@ -66,7 +66,7 @@ func handle_message(msgctx : OT4G_IRC.MessageContext) -> void:
 # ------------------------------------------------------------------------------
 # Handler Methods
 # ------------------------------------------------------------------------------
-func _on_game_command_parser_start_requested(user : OT4G_IRC.UserInfo) -> void:
+func _on_game_command_parser_start_requested(user : GSMCUser) -> void:
 	if user.username != "obsidianblk":
 		print("User ", user.username, " is not the master user!")
 		return

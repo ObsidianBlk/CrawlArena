@@ -19,102 +19,9 @@ signal unhandled_message(msg, tags)
 
 
 # ------------------------------------------------------------------------------
-# Sub-Classes
-# ------------------------------------------------------------------------------
-class UserInfo extends RefCounted:
-	var username : String = ""
-	var channel : String = ""
-	var meta : Dictionary = {
-		"user_id": "",
-		"display_name" : "",
-		"subscriber" : "0",
-		"mod" : "0",
-		"badges" : ""
-	}
-	
-	var _sendCB : Callable = func(msg : String) -> void: pass
-	var _mentionCB : Callable = func(msg : String) -> void: pass
-	
-	func _init(user : String, ch : String, tags : Dictionary, sendCB : Callable, mentionCB : Callable) -> void:
-		username = user
-		channel = ch
-		_sendCB = sendCB
-		_mentionCB = mentionCB
-		for key in meta.keys():
-			if key in tags:
-				meta[key] = tags[key]
-	
-	func get_id() -> String:
-		return meta["user_id"]
-	
-	func get_name(user_name : bool = false) -> String:
-		return username if user_name else meta["display_name"]
-	
-	func is_subscriber() -> bool:
-		return meta["subscriber"] == "1"
-	
-	func is_mod() -> bool:
-		return meta["mod"] == "1"
-	
-	func get_badges() -> Array:
-		var badges : Array = []
-		for b in meta["badges"].split(","):
-			var bi : PackedStringArray = b.split("/")
-			badges.append({"badge":bi[0], "version":bi[1]})
-		return badges
-	
-	func send(msg : String) -> void:
-		_sendCB.call(msg)
-	
-	func mention(msg : String) -> void:
-		_mentionCB.call(msg)
-
-
-
-class MessageContext extends RefCounted:
-	var message : String = ""
-	var channel : String = ""
-	var whisper : bool = false
-	var user : UserInfo = null
-	var meta : Dictionary = {
-		"id" : "",
-		"first-msg" : "0",
-		"emotes" : ""
-	}
-	
-	var _replyCB : Callable = func(msg : String) -> void: pass
-	
-	func _init(msg : String, ch : String, wspr : bool, usr : UserInfo, tags : Dictionary, replyCB : Callable) -> void:
-		message = msg
-		channel = ch
-		whisper = wspr
-		user = usr
-		_replyCB = replyCB
-		for key in meta.keys():
-			if key in tags:
-				meta[key] = tags[key]
-		
-	func get_id() -> String:
-		return meta["id"]
-	
-	func is_first_message() -> bool:
-		return meta["first-msg"] == "1"
-	
-	func get_emotes() -> Array:
-		var emotes : Array = []
-		for e in meta["emotes"].split(","):
-			# WARNING: This is making a lot of assumptions :D
-			var first : PackedStringArray = e.split(":")
-			var second : PackedStringArray = first[1].split("-")
-			emotes.append({"id":first[0], "start":second[0].to_int(), "end":second[1].to_int()})
-		return emotes
-	
-	func reply(msg : String) -> void:
-		_replyCB.call(msg)
-
-# ------------------------------------------------------------------------------
 # Constants
 # ------------------------------------------------------------------------------
+const SERVICE_NAME : String = "Twitch"
 const TWITCH_IRC_ADDRESS = "wss://irc-ws.chat.twitch.tv:443"
 
 const PING_MESSAGE : String = "PING :tmi.twitch.tv"
@@ -282,24 +189,26 @@ func _HandleMessage(msg : String, tags : Dictionary) -> void:
 		"PRIVMSG", "WHISPER":
 			var usr : String = user_regex.search(psa[0]).get_string()
 			var channel : String = psa[2].right(-1)
-			var ui : UserInfo = UserInfo.new(
-				usr, channel, tags,
-				(func(msg : String): say(channel, msg)),
-				(func(msg : String): say(channel, msg, usr))
-			)
-			var mctx : MessageContext = MessageContext.new(
-				psa[3].right(-1), channel, psa[1] == "WHISPER", ui, tags,
-				(func(msg : String):
-					if not "id" in tags: return
-					reply(tags["id"], usr, msg))
-			)
-			message_received.emit(mctx)
-#		"WHISPER":
-#			var usr : String = user_regex.search(psa[0]).get_string()
-#			var channel : String = psa[2].right(-1)
-#			var ui : UserInfo = UserInfo.new(usr, channel, tags)
-#			var mctx : MessageContext = MessageContext.new(psa[3].right(-1), channel, true, ui, tags)
-#			whisper_received.emit(mctx)
+			var muser : GSMCUser = null
+			if GSMC.has_user(SERVICE_NAME, usr):
+				muser = GSMC.get_user(SERVICE_NAME, usr)
+			else:
+				muser = GSMC.store_user(SERVICE_NAME, usr, {
+					"username":usr,
+					"meta":{"channel":channel},
+					"send":(func(msg : String): say(channel, msg)),
+					"reply":(func(msg : String): say(channel, msg, usr))
+				})
+			var mmsg : GSMCMessage = GSMC.store_message(
+				SERVICE_NAME, usr, psa[3].right(-1), {
+					"whisper": psa[1] == "WHISPER",
+					"meta": tags,
+					"send": (
+						func(msg : String):
+							if not "id" in tags: return
+							reply(tags["id"], usr, msg))
+				})
+			message_received.emit(mmsg)
 		"RECONNECT":
 			_reconnecting = true
 		"JOIN":

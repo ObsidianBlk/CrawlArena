@@ -41,7 +41,7 @@ var _game_state : STATE = STATE.Idle
 # --------------------------------------------------------------------------------------
 # Private Methods
 # --------------------------------------------------------------------------------------
-func _RemoveUserFromTeam(user : OT4G_IRC.UserInfo, team : String) -> void:
+func _RemoveUserFromTeam(user : GSMCUser, team : String) -> void:
 	var idx : int = _teams[team].list.find(user.username)
 	if idx < 0: return
 	_users.erase(user.username)
@@ -69,7 +69,7 @@ func _NextTeamUser(team : String) -> void:
 	user_turn_active.emit(1 if team == "A" else 2, username)
 
 
-func _Handle_Join(user : OT4G_IRC.UserInfo, payload : String) -> void:
+func _Handle_Join(user : GSMCUser, payload : String) -> void:
 	if user.username in _users:
 		user.mention("You've already joined. You're on team %s"%[_users[user.username]["team_id"]])
 		return
@@ -95,7 +95,7 @@ func _Handle_Join(user : OT4G_IRC.UserInfo, payload : String) -> void:
 				add_to_team.call("A" if randi_range(0, 1000) > 500 else "B")
 
 
-func _Handle_Leave(user : OT4G_IRC.UserInfo) -> void:
+func _Handle_Leave(user : GSMCUser) -> void:
 	_RemoveUserFromTeam(user, "A")
 	_RemoveUserFromTeam(user, "B")
 
@@ -112,7 +112,7 @@ func _Handle_Team_Rand_Actions(team : String) -> void:
 		var idx : int = randi_range(0, rand_ops.size() - 1)
 		_teams[team].buffer.append(rand_ops[idx])
 
-func _Handle_Actions(user : OT4G_IRC.UserInfo, payload : String) -> void:
+func _Handle_Actions(user : GSMCUser, payload : String) -> void:
 	if not user.username in _users: return
 	var user_team : String = _users[user.username]["team_id"]
 	
@@ -170,9 +170,9 @@ func get_team_user_count(pid : int) -> int:
 	var team = "A" if pid == 1 else "B"
 	return _teams[team].list.size()
 
-func handle_message(msgctx : OT4G_IRC.MessageContext) -> void:
-	if not msgctx.message.begins_with(command_prefix): return
-	var parts : PackedStringArray = msgctx.message.split(" ", true, 1)
+func handle_message(msgctx : GSMCMessage) -> void:
+	if not msgctx.text.begins_with(command_prefix): return
+	var parts : PackedStringArray = msgctx.text.split(" ", true, 1)
 	
 	var cmd = StringName(parts[0].right(parts[0].length() - command_prefix.length()).strip_edges())
 	var payload : String = "" if parts.size() < 2 else parts[2].strip_edges()

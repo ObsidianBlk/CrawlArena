@@ -43,7 +43,7 @@ func set_timestamp(t : int) -> void:
 # ------------------------------------------------------------------------------
 # Override Methods
 # ------------------------------------------------------------------------------
-func _init(service_name : String, usr : GSMCUser, text : String, info : Dictionary = {}) -> void:
+func _init(service_name : String, usr : GSMCUser, txt : String, info : Dictionary = {}) -> void:
 	if service_name.is_empty():
 		printerr("GSMCMessage Creation Error: Service property cannot be empty.")
 		_locked = true
@@ -54,7 +54,7 @@ func _init(service_name : String, usr : GSMCUser, text : String, info : Dictiona
 		return
 	service = service_name
 	user = usr
-	text = text
+	text = txt
 	
 	if "whisper" in info and typeof(info["whisper"]) == TYPE_BOOL:
 		is_whisper = info["whisper"]
@@ -91,3 +91,13 @@ func can_send() -> bool:
 func send(msg : String) -> void:
 	if "send" in _cb:
 		_cb["send"].call(msg)
+
+func _to_string() -> String:
+	if not is_valid(): return "GSMCMessage Invalid"
+	#var dtd : Dictionary = Time.get_datetime_dict_from_unix_time(int(timestamp))
+	#var stime : String = "%s-%s-%s %s:%s:%s"%[dtd.year, dtd.month, dtd.day, dtd.hour, dtd.minute, dtd.second]
+	var stime : String = Time.get_date_string_from_unix_time(int(timestamp))
+	var username : String = "UNKNOWN" if user == null else user.username
+	var owner : String = "*" if user.is_owner else ""
+	return "[%s] %S%s@%s: %s"%[stime, owner, username, service, text]
+
