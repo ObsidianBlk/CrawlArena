@@ -57,7 +57,8 @@ func _init(service_name : String, id : String, info : Dictionary = {}) -> void:
 	if "owner" in info and typeof(info["owner"]) == TYPE_BOOL:
 		is_owner = info["owner"]
 	if "meta" in info and typeof(info["meta"]) == TYPE_DICTIONARY:
-		_meta = info["meta"]
+		for key in info["meta"].keys():
+			set_metadata(key, info["meta"][key])
 	
 	for op in ["send", "reply", "whisper"]:
 		if op in info and typeof(info[op]) == TYPE_CALLABLE:
@@ -83,13 +84,22 @@ func get_metadata(key : String) -> Variant:
 func has_metadata(key : String) -> bool:
 	return key in _meta
 
+func can_send() -> bool:
+	return "send" in _cb
+
 func send(msg : String) -> void:
 	if "send" in _cb:
 		_cb["send"].call(msg)
 
+func can_reply() -> bool:
+	return "reply" in _cb
+
 func reply(msg : String) -> void:
 	if "reply" in _cb:
 		_cb["reply"].call(msg)
+
+func can_whisper() -> bool:
+	return "whisper" in _cb
 
 func whisper(msg : String) -> void:
 	if "whisper" in _cb:

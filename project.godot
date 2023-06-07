@@ -22,6 +22,7 @@ UUID="*res://addons/CrawlDCS/autoloads/UUID.gd"
 Crawl="*res://addons/CrawlDCS/autoloads/Crawl.gd"
 Arena="*res://scripts/autos/Arena.gd"
 DungeonDatabase="*res://scripts/autos/DungeonDatabase.gd"
+GSMC="*res://addons/Obblk_GSMC/autoloads/GSMC.gd"
 
 [display]
 
