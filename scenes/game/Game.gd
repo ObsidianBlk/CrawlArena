@@ -48,7 +48,7 @@ var _cmd_time_skipped : bool = false
 func _ready() -> void:
 	var map : CrawlMap = ResourceLoader.load("user://dungeons/871a756-Area052923.tres")
 	if is_instance_of(map, CrawlMap):
-		#_local_player_ctrl.map = map
+		_local_player_ctrl.map = map
 		_team_a_dungeon.map = map
 		_team_b_dungeon.map = map
 		_player_action_ctrl_a.map = map

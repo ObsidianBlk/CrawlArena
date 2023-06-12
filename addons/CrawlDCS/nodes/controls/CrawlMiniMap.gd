@@ -46,6 +46,7 @@ const DEFAULT_FONT_SIZE_COORD : int = 16
 @export var show_invisible_walls : bool = false:				set = set_show_invisible_walls
 @export var show_illusion_walls : bool = false:					set = set_show_illusion_walls
 #@export var entity_type_icons : Array[Texture] = []
+@export var show_mouse_cursor : bool = false:					set = set_show_mouse_cursor
 
 
 # ------------------------------------------------------------------------------
@@ -65,6 +66,8 @@ var _selectors_visible : bool = false
 var _entity_items : Dictionary = {}
 
 var _label : Label = null
+
+var _faux_map : CrawlMap = null
 
 # ------------------------------------------------------------------------------
 # Setters
@@ -129,11 +132,23 @@ func set_show_illusion_walls(s : bool) -> void:
 		show_illusion_walls = s
 		queue_redraw()
 
+func set_show_mouse_cursor(m : bool) -> void:
+	if m != show_mouse_cursor:
+		show_mouse_cursor = m
+		queue_redraw()
+
 # ------------------------------------------------------------------------------
 # Override Methods
 # ------------------------------------------------------------------------------
 func _ready() -> void:
-	if Engine.is_editor_hint(): return
+	if Engine.is_editor_hint():
+		_faux_map = CrawlMap.new()
+		_faux_map.add_cell(Vector3i.ZERO, true)
+		_faux_map.add_cell(Vector3i(1, 0, 0), true)
+		_faux_map.add_cell(Vector3i(-1, 0, 0), true)
+		_faux_map.add_cell(Vector3i(0, 0, 1), true)
+		_faux_map.add_cell(Vector3i(0, 0, -1), true)
+		return
 	
 	resized.connect(_on_resized)
 	theme_changed.connect(queue_redraw)
@@ -148,7 +163,10 @@ func _draw() -> void:
 	var bgstyle : StyleBox = _GetThemeStyleBox(THEME_STYLE_BACKGROUND)
 	draw_style_box(bgstyle, Rect2(Vector2.ZERO, canvas_size))
 	
-	if map == null: return
+	var map_obj : CrawlMap = map
+	if map == null:
+		if not Engine.is_editor_hint(): return
+		map_obj = _faux_map
 	var cell_count : Vector2 = _CalcCellCount()
 	
 	var ox = (canvas_size.x * 0.5) - (cell_size * 0.5)
@@ -172,21 +190,25 @@ func _draw() -> void:
 			var map_position : Vector3i = _origin + Vector3i(cx, 0, cy)
 			var screen_position : Vector2 = Vector2(ox - (cx * cell_size), oy - (cy * cell_size))
 			
+			# TODO: Can I make the canvas_region checks below a single IF statement HERE without
+			#  screwing the pooch?
+			
 			# Drawing area selector one cell at a time.
 			if _selectors_visible and _area_enabled and area_region.has_point(Vector2i(cx, cy)):
 				if canvas_region.encloses(Rect2(screen_position, Vector2(cell_size, cell_size))):
 					draw_rect(Rect2(screen_position, Vector2(cell_size, cell_size)), selection_color, false, 1.0)
 				
 			# Otherwise draw the cell as normal
-			elif map.has_cell(map_position):
+			elif map_obj.has_cell(map_position):
 				if canvas_region.encloses(Rect2(screen_position, Vector2(cell_size, cell_size))):
-					_DrawCell(map_position, screen_position)
-					if map.is_cell_stairs(map_position):
+					_DrawCell(map_obj, map_position, screen_position)
+					if map_obj.is_cell_stairs(map_position):
 						_DrawStairs(map_position, screen_position)
 			
 			# Draw mouse cursor if mouse in the scene...
-			if _selectors_visible and _mouse_entered and mouse_position == Vector2i(cx, cy):
-				draw_rect(Rect2(screen_position, Vector2(cell_size, cell_size)), selection_color, false, 1.0)
+			if show_mouse_cursor and _selectors_visible and _mouse_entered and mouse_position == Vector2i(cx, cy):
+				if canvas_region.encloses(Rect2(screen_position, Vector2(cell_size, cell_size))):
+					draw_rect(Rect2(screen_position, Vector2(cell_size, cell_size)), selection_color, false, 1.0)
 
 func _gui_input(event : InputEvent) -> void:
 	if not _mouse_entered: return
@@ -260,7 +282,7 @@ func _DrawStairs(map_position : Vector3i, screen_position : Vector2) -> void:
 	draw_line(start, start - Vector2(0, step_size.y), stairs_color, 1.0, true)
 
 
-func _DrawCell(map_position : Vector3i, screen_position : Vector2) -> void:
+func _DrawCell(map_obj : CrawlMap, map_position : Vector3i, screen_position : Vector2) -> void:
 	var cell_size_v : Vector2 = Vector2.ONE * cell_size
 	var inner_size : Vector2 = cell_size_v * 0.3
 	var runit : Vector2 = (cell_size_v - inner_size) * 0.5
@@ -268,12 +290,12 @@ func _DrawCell(map_position : Vector3i, screen_position : Vector2) -> void:
 	var ground_color : Color = _GetThemeColor(THEME_COLOR_GROUND)
 	var wall_solid_color : Color = _GetThemeColor(THEME_COLOR_SOLID_WALL)
 	
-	if map.is_cell_surface_blocking(map_position, Crawl.SURFACE.Ground):
+	if map_obj.is_cell_surface_blocking(map_position, Crawl.SURFACE.Ground):
 		draw_rect(Rect2(screen_position + runit, inner_size), ground_color)
 	else:
 		draw_rect(Rect2(screen_position + runit, inner_size), ground_color, false, 1.0)
 	
-	if map.is_cell_surface_blocking(map_position, Crawl.SURFACE.Ceiling):
+	if map_obj.is_cell_surface_blocking(map_position, Crawl.SURFACE.Ceiling):
 		var points : Array = [
 			Vector2(-cell_size_v.x * 0.5, -cell_size_v.y * 0.5),
 			Vector2(cell_size_v.x * 0.5, -cell_size_v.y * 0.5),
@@ -308,15 +330,15 @@ func _DrawCell(map_position : Vector3i, screen_position : Vector2) -> void:
 					pos + points[3].rotated(rad)
 				]), ground_color, 1.0, true)
 
-	_DrawWall(map_position, screen_position, Crawl.SURFACE.North)
-	_DrawWall(map_position, screen_position, Crawl.SURFACE.South)
-	_DrawWall(map_position, screen_position, Crawl.SURFACE.East)
-	_DrawWall(map_position, screen_position, Crawl.SURFACE.West)
+	_DrawWall(map_obj, map_position, screen_position, Crawl.SURFACE.North)
+	_DrawWall(map_obj, map_position, screen_position, Crawl.SURFACE.South)
+	_DrawWall(map_obj, map_position, screen_position, Crawl.SURFACE.East)
+	_DrawWall(map_obj, map_position, screen_position, Crawl.SURFACE.West)
 
 
-func _DrawWall(map_position : Vector3i, screen_position : Vector2, surface : Crawl.SURFACE) -> void:
-	var is_blocking : bool = map.is_cell_surface_blocking(map_position, surface)
-	var is_visible : bool = map.get_cell_surface_resource(map_position, surface) != &""
+func _DrawWall(map_obj : CrawlMap, map_position : Vector3i, screen_position : Vector2, surface : Crawl.SURFACE) -> void:
+	var is_blocking : bool = map_obj.is_cell_surface_blocking(map_position, surface)
+	var is_visible : bool = map_obj.get_cell_surface_resource(map_position, surface) != &""
 	var from : Vector2 = screen_position
 	var to : Vector2 = screen_position
 	match surface:
@@ -386,11 +408,6 @@ func _CalcCellCount() -> Vector2i:
 		floor(canvas_size.y / cell_size)
 	)
 	
-	if int(cell_count.x) % 2 == 0: # We don't want an even count of cells.
-		cell_count.x -= 1
-	if int(cell_count.y) % 2 == 0:
-		cell_count.y -= 1
-	
 	return Vector2i(cell_count)
 
 func _ScreenToMap(p : Vector2, adjust_by_focus : bool = false) -> Vector3i:
@@ -400,15 +417,13 @@ func _ScreenToMap(p : Vector2, adjust_by_focus : bool = false) -> Vector3i:
 		floor(canvas_size.y / cell_size)
 	)
 	var cell_range : Vector2i = Vector2i(floor(cell_count.x * 0.5), floor(cell_count.y * 0.5))
+	var adj : Vector2 = Vector2.ONE * cell_size * 0.5#(canvas_size - (cell_count * cell_size)) * 0.5
 	
-	# The mouse's map position. May not be needed :)
-	var pos : Vector2i = Vector2i(_last_mouse_position / cell_size) - cell_range
+	var pos : Vector2i = Vector2i((_last_mouse_position + adj) / cell_size) - cell_range
 	if map != null:
 		var map_pos : Vector3i = Vector3i(-pos.x, _origin.y, -pos.y)
 		if adjust_by_focus:
-			print("Map Pos: ", map_pos)
 			map_pos = map_pos - Vector3i(_origin.x, 0, _origin.z)
-			print("Adjusted Position: ", map_pos, " | Focus Pos: ", _origin)
 		return map_pos
 	return Vector3i(-pos.x, 0, -pos.y)
 
@@ -488,8 +503,8 @@ func _UpdateEntityIcon(uuid : StringName) -> void:
 		ico.visible = false
 		return
 	
-	var dx : int = entity.position.x - _origin.x
-	var dy : int = entity.position.z - _origin.z
+	var dx : int = _origin.x - entity.position.x
+	var dy : int = _origin.z - entity.position.z
 	if abs(dx) > cell_count.x or abs(dy) > cell_count.y:
 		ico.visible = false
 		return

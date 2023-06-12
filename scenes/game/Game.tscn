@@ -74,7 +74,7 @@ offset_bottom = 1055.0
 theme = ExtResource("5_te0lf")
 script = ExtResource("6_ayth5")
 cell_size = 32.0
-show_entity_types = Array[StringName]([&"Unique:Player"])
+show_entity_types = Array[StringName]([&"unique:player"])
 
 [node name="LblPlayerA" type="Label" parent="."]
 unique_name_in_owner = true

@@ -210,6 +210,7 @@ cell_size = 32.0
 focus_entity_icon = ExtResource("10_owjt7")
 show_invisible_walls = true
 show_illusion_walls = true
+show_mouse_cursor = true
 
 [node name="Sidebar" type="PanelContainer" parent="Layout/Primary"]
 layout_mode = 2
