@@ -2,12 +2,23 @@ extends Node
 
 
 # ------------------------------------------------------------------------------
+# Signals
+# ------------------------------------------------------------------------------
+signal user_stored(user)
+signal user_active(user)
+signal user_inactive(user)
+signal user_dropped(user)
+signal message_stored(message)
+
+
+# ------------------------------------------------------------------------------
 # Variables
 # ------------------------------------------------------------------------------
 var _users : Dictionary = {}
 
 var _user_message_buffer_size : int = 10
 var _user_idle_time : float = 3600.0 # This is 1 hour
+var _user_short_idle_time : float = 600.0 # This is 10 minutes
 var _user_idle_check_interval : float = 6.0
 var _idle_timer_active : bool = false
 
@@ -26,8 +37,12 @@ func _CleanUsers() -> void:
 	for service_name in _users.keys():
 		for uid in _users[service_name].keys():
 			if _users[service_name][uid]["user"].is_owner: continue
-			if now - _users[service_name][uid]["last_active"] >= _user_idle_time:
+			var idle_time = now - _users[service_name][uid]["last_active"]
+			var max_idle_time = _user_idle_time if _users[service_name][uid]["active"] else _user_short_idle_time
+			if idle_time >= max_idle_time:
+				var user : GSMCUser = _users[service_name][uid]["user"]
 				_users[service_name].erase(uid)
+				user_dropped.emit(user)
 		if _users[service_name].size() <= 0:
 			_users.erase(service_name)
 
@@ -77,6 +92,7 @@ func store_message(service_name : String, uid : String, text : String, info : Di
 	if _users[service_name][uid]["messages"].size() > _user_message_buffer_size:
 		_users[service_name][uid]["messages"].pop_front()
 	_users[service_name][uid]["last_active"] = Time.get_unix_time_from_system()
+	message_stored.emit(msg)
 	return msg
 
 func store_user(service_name : String, uid : String, info : Dictionary = {}) -> GSMCUser:
@@ -90,13 +106,27 @@ func store_user(service_name : String, uid : String, info : Dictionary = {}) -> 
 	_users[service_name][uid] = {
 		"user":user,
 		"messages":[],
+		"active":true,
 		"last_active": Time.get_unix_time_from_system()
 	}
+	user_stored.emit(user)
 	return user
 
 func has_user(service_name : String, uid : String) -> bool:
 	if not service_name in _users: return false
 	return uid in _users[service_name]
+
+func set_user_active(service_name : String, uid : String, active : bool = true) -> void:
+	if not has_user(service_name, uid): return
+	_users[service_name][uid]["active"] = active
+	if active:
+		user_active.emit(_users[service_name][uid]["user"])
+	else:
+		user_inactive.emit(_users[service_name][uid]["user"])
+
+func is_user_active(service_name : String, uid : String) -> bool:
+	if not has_user(service_name, uid): return false
+	return _users[service_name][uid]["active"]
 
 func is_user_stored(user : GSMCUser) -> bool:
 	if user == null: return false

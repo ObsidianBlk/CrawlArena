@@ -121,3 +121,10 @@ func _on_ot4g_oauth_user_token_authentication_completed() -> void:
 
 func _on_ot4g_oauth_user_token_authentication_started():
 	print("Twitch Authentication Started...")
+
+
+func _on_ot_4g_irc_channel_joined(username, channel_name):
+	print("Twitch user ", username, " has joined channel ", channel_name)
+
+func _on_ot_4g_irc_channel_left(username, channel_name):
+	print("Twitch user ", username, " has left channel ", channel_name)

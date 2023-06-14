@@ -12,7 +12,11 @@ signal irc_reconnecting()
 signal irc_unavailable()
 signal irc_disconnected()
 
-signal channel_joined(channel_name)
+signal channel_joined(username, channel_name)
+signal channel_left(username, channel_name)
+
+signal user_notice_sent(channel, msg, tags)
+
 signal message_received(msgctx)
 
 signal unhandled_message(msg, tags)
@@ -190,8 +194,8 @@ func _HandleMessage(msg : String, tags : Dictionary) -> void:
 			var usr : String = user_regex.search(psa[0]).get_string()
 			var channel : String = psa[2].right(-1)
 			var muser : GSMCUser = null
-			var uid : String = usr if not "user-id" in tags else tags["user-id"]
-			if GSMC.has_user(SERVICE_NAME, usr):
+			var uid : String = "%s:%s"%[usr, channel]
+			if GSMC.has_user(SERVICE_NAME, uid):
 				muser = GSMC.get_user(SERVICE_NAME, uid)
 			else:
 				muser = GSMC.store_user(SERVICE_NAME, uid, {
@@ -213,11 +217,29 @@ func _HandleMessage(msg : String, tags : Dictionary) -> void:
 			message_received.emit(mmsg)
 		"RECONNECT":
 			_reconnecting = true
-		"JOIN":
+		"JOIN", "PART":
+			var usr : String = user_regex.search(psa[0]).get_string()
 			var channels : PackedStringArray = psa[2].split(" ")
 			for channel in channels:
-				channel_joined.emit(channel.strip_edges().right(channel.length() - 1))
-		"USERSTATE", "ROOMSTATE":
+				var uid : String = "%s:%s"%[usr, channel]
+				if psa[1] == "JOIN":
+					GSMC.set_user_active(SERVICE_NAME, uid)
+					channel_joined.emit(usr, channel.strip_edges().right(channel.length() - 1))
+				else:
+					GSMC.set_user_active(SERVICE_NAME, uid, false)
+					channel_left.emit(usr, channel.strip_edges().right(channel.length() - 1))
+		"USERNOTICE":
+			var channels : PackedStringArray = psa[2].split(" ")
+			for channel in channels:
+				if not "login" in tags or not "msg-id" in tags: continue
+				var usr : String = tags["login"]
+				var uid : String = "%s:%s"%[usr, channel]
+				var state : String = tags["msg-id"]
+				if (state == "sub" or state == "resub") and GSMC.has_user(SERVICE_NAME, uid):
+					var user : GSMCUser = GSMC.get_user(SERVICE_NAME, uid)
+					user.set_meta("subscriber", "1")
+				user_notice_sent.emit(channel, psa[3], tags)
+		"ROOMSTATE":
 			pass
 		_:
 			unhandled_message.emit(msg, tags)

@@ -30,6 +30,7 @@ const ACTION_DELAY : float = 0.8
 # Variables
 # --------------------------------------------------------------------------------------
 var _users : Dictionary = {}
+var _idle_users : Dictionary = {}
 var _teams : Dictionary = {
 	"A":{"list":[], "active_idx":0, "buffer":[]},
 	"B":{"list":[], "active_idx":0, "buffer":[]}
@@ -40,12 +41,19 @@ var _active_team : String = "A"
 var _game_state : STATE = STATE.Idle
 
 # --------------------------------------------------------------------------------------
+# Override Methods
+# --------------------------------------------------------------------------------------
+func _ready() -> void:
+	GSMC.user_active.connect(_on_GSMC_user_active)
+	GSMC.user_inactive.connect(_on_GSMC_user_inactive)
+	GSMC.user_dropped.connect(_on_GSMC_user_dropped)
+
+# --------------------------------------------------------------------------------------
 # Private Methods
 # --------------------------------------------------------------------------------------
 func _RemoveUserFromTeam(user : GSMCUser, team : String) -> void:
-	var idx : int = _teams[team].list.find(user.username)
+	var idx : int = _teams[team].list.find(user.full_uid)
 	if idx < 0: return
-	_users.erase(user.username)
 	_teams[team].list.remove_at(idx)
 	if _teams[team].active_idx >= idx:
 		if _teams[team].active_idx > idx:
@@ -64,22 +72,23 @@ func _NextTeamUser(team : String) -> void:
 func _AnnounceActiveTeamPlayer(team : String) -> void:
 	var idx : int = _teams[team].active_idx
 	if not (idx >= 0 and idx < _teams[team].list.size()): return
-	var username : String = _teams[team].list[idx]
-	if not username in _users:
-		printerr("Failed to find user ", username)
+	var full_uid : String = _teams[team].list[idx]
+	if not full_uid in _users:
+		printerr("Failed to find user ", full_uid)
 		return
-	_users[username].user.send("%s... it is now your turn!"%[username])
+	var username : String = _users[full_uid].user.username
+	_users[full_uid].user.send("%s... it is now your turn!"%[username])
 	user_turn_active.emit(1 if team == "A" else 2, username)
 
 
 func _Handle_Join(user : GSMCUser, payload : String) -> void:
-	if user.username in _users:
-		user.reply("You've already joined. You're on team %s"%[_users[user.username]["team_id"]])
+	if user.full_uid in _users:
+		user.reply("You've already joined. You're on team %s"%[_users[user.full_uid]["team_id"]])
 		return
 	
 	var add_to_team : Callable = func(team : String) -> void:
-		_users[user.username] = {"team_id":team, "user":user}
-		_teams[team].list.append(user.username)
+		_users[user.full_uid] = {"team_id":team, "user":user}
+		_teams[team].list.append(user.full_uid)
 		print("\"", user.username, "\" has joined team \"", team, "\"!")
 		user.reply("has been added to team %s!"%[team])
 		user_joined_team.emit(1 if team == "A" else 2, user.username)
@@ -99,8 +108,10 @@ func _Handle_Join(user : GSMCUser, payload : String) -> void:
 
 
 func _Handle_Leave(user : GSMCUser) -> void:
-	_RemoveUserFromTeam(user, "A")
-	_RemoveUserFromTeam(user, "B")
+	if not user.full_uid in _users: return
+	var team : String = _users[user.full_uid]["team_id"]
+	_RemoveUserFromTeam(user, team)
+	_users.erase(user.full_uid)
 
 func _Handle_Clear_Team(team : String) -> void:
 	_teams[team].list.clear()
@@ -116,11 +127,11 @@ func _Handle_Team_Rand_Actions(team : String) -> void:
 		_teams[team].buffer.append(rand_ops[idx])
 
 func _Handle_Actions(user : GSMCUser, payload : String) -> void:
-	if not user.username in _users: return
-	var user_team : String = _users[user.username]["team_id"]
+	if not user.full_uid in _users: return
+	var user_team : String = _users[user.full_uid]["team_id"]
 	
 	var team : Dictionary = _teams[user_team]
-	if team.list[team.active_idx] != user.username: return
+	if team.list[team.active_idx] != user.full_uid: return
 	if team.buffer.size() > 0:
 		user.reply("you have already sent in your commands.")
 		return
@@ -209,4 +220,27 @@ func handle_message(msgctx : GSMCMessage) -> void:
 					_Handle_Join(msgctx.user, payload)
 				&"leave", &"x":
 					_Handle_Leave(msgctx.user)
+
+
+# --------------------------------------------------------------------------------------
+# Handler Methods
+# --------------------------------------------------------------------------------------
+func _on_GSMC_user_active(user : GSMCUser) -> void:
+	if not user.full_uid in _idle_users: return
+	var team : String = _idle_users[user.full_uid]["team_id"]
+	_idle_users.erase(user.full_uid)
+	_Handle_Join(user, team)
+
+func _on_GSMC_user_inactive(user : GSMCUser) -> void:
+	if not user.full_uid in _users: return
+	var team : String = _users[user.full_uid]["team_id"]
+	_RemoveUserFromTeam(user, team)
+	_users.erase(user.full_uid)
+	_idle_users[user.full_uid] = {"team_id":team, "user":user}
+
+func _on_GSMC_user_dropped(user : GSMCUser) -> void:
+	if user.full_uid in _idle_users:
+		_idle_users.erase(user.full_uid)
+	elif user.full_uid in _users:
+		_Handle_Leave(user)
 

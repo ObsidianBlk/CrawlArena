@@ -9,6 +9,7 @@ var uid : String = "":					set = set_uid
 var service : String = "":				set = set_service
 var username : String = "":				set = set_username
 var is_owner : bool = false:			set = set_is_owner
+var full_uid : String:					get = get_full_uid
 
 # ------------------------------------------------------------------------------
 # Private Variables
@@ -16,6 +17,7 @@ var is_owner : bool = false:			set = set_is_owner
 var _locked : bool = false
 var _meta : Dictionary = {}
 var _cb : Dictionary = {}
+var _full_uid : String = ""
 
 
 # ------------------------------------------------------------------------------
@@ -37,6 +39,9 @@ func set_is_owner(o : bool) -> void:
 	if not _locked:
 		is_owner = o
 
+func get_full_uid() -> String:
+	return _full_uid
+
 # ------------------------------------------------------------------------------
 # Override Methods
 # ------------------------------------------------------------------------------
@@ -52,6 +57,7 @@ func _init(service_name : String, id : String, info : Dictionary = {}) -> void:
 	service = service_name
 	uid = id
 	
+	_full_uid = "%s@%s"%[service, uid]
 	if "username" in info and typeof(info["username"]) == TYPE_STRING:
 		username = info["username"]
 	if "owner" in info and typeof(info["owner"]) == TYPE_BOOL:

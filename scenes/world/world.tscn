@@ -43,6 +43,8 @@ initial_menu = &"MainMenu"
 
 [connection signal="user_token_authentication_completed" from="OT4G_OAuth" to="." method="_on_ot4g_oauth_user_token_authentication_completed"]
 [connection signal="user_token_authentication_started" from="OT4G_OAuth" to="." method="_on_ot4g_oauth_user_token_authentication_started"]
+[connection signal="channel_joined" from="OT4G_OAuth/OT4G_IRC" to="." method="_on_ot_4g_irc_channel_joined"]
+[connection signal="channel_left" from="OT4G_OAuth/OT4G_IRC" to="." method="_on_ot_4g_irc_channel_left"]
 [connection signal="message_received" from="OT4G_OAuth/OT4G_IRC" to="." method="_on_ot4g_irc_message_received"]
 [connection signal="action_requested" from="SettingsWindow/Settings" to="." method="_on_ui_action_requested"]
 [connection signal="action_requested" from="UI" to="." method="_on_ui_action_requested"]
