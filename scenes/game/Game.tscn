@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3 uid="uid://hjolrjx7a3q5"]
+[gd_scene load_steps=10 format=3 uid="uid://hjolrjx7a3q5"]
 
 [ext_resource type="Script" path="res://scenes/game/Game.gd" id="1_6c3ru"]
 [ext_resource type="PackedScene" uid="uid://bp11d0nkbnuov" path="res://scenes/dungeon/Dungeon.tscn" id="1_7ebhj"]
@@ -8,6 +8,7 @@
 [ext_resource type="Theme" uid="uid://17e15ml35qoo" path="res://scenes/dungeon_editor/DungeonEditor.theme" id="5_te0lf"]
 [ext_resource type="Script" path="res://addons/CrawlDCS/nodes/controls/CrawlMiniMap.gd" id="6_ayth5"]
 [ext_resource type="Script" path="res://scripts/nodes/PlayerActionCtrl.gd" id="6_ewo1m"]
+[ext_resource type="Script" path="res://scenes/game/dungeon_view/DungeonView.gd" id="9_w8cs3"]
 
 [node name="Game" type="Control"]
 layout_mode = 3
@@ -127,6 +128,12 @@ script = ExtResource("6_ewo1m")
 unique_name_in_owner = true
 script = ExtResource("6_ewo1m")
 player_id = 2
+
+[node name="DungeonView" type="Control" parent="."]
+anchors_preset = 0
+offset_right = 487.0
+offset_bottom = 422.0
+script = ExtResource("9_w8cs3")
 
 [connection signal="action_processing_completed" from="GameCommandParser" to="." method="_on_game_command_parser_action_processing_completed"]
 [connection signal="player_action_requested" from="GameCommandParser" to="PlayerActionCtrlA" method="handle_action"]

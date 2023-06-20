@@ -46,7 +46,9 @@ var _cmd_time_skipped : bool = false
 # Override Methods
 # ------------------------------------------------------------------------------
 func _ready() -> void:
-	var map : CrawlMap = ResourceLoader.load("user://dungeons/871a756-Area052923.tres")
+	var map : CrawlMap = null
+	if ResourceLoader.exists("user://dungeons/871a756-Area052923.tres"):
+		map = ResourceLoader.load("user://dungeons/871a756-Area052923.tres")
 	if is_instance_of(map, CrawlMap):
 		_local_player_ctrl.map = map
 		_team_a_dungeon.map = map

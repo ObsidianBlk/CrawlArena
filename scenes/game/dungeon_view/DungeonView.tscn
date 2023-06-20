@@ -1,0 +1,34 @@
+[gd_scene load_steps=3 format=3 uid="uid://dhygjjq1xsnwv"]
+
+[ext_resource type="Script" path="res://scenes/game/dungeon_view/DungeonView.gd" id="2_44e12"]
+[ext_resource type="Script" path="res://scenes/dungeon/Dungeon.gd" id="2_rr02m"]
+
+[node name="DungeonView" type="MarginContainer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("2_44e12")
+
+[node name="DVBackPanel" type="PanelContainer" parent="."]
+layout_mode = 2
+theme_type_variation = &"dungeonviewbackpanel"
+
+[node name="CSubView" type="SubViewportContainer" parent="DVBackPanel"]
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+stretch = true
+
+[node name="SubViewport" type="SubViewport" parent="DVBackPanel/CSubView"]
+own_world_3d = true
+handle_input_locally = false
+size = Vector2i(1920, 1080)
+render_target_update_mode = 4
+
+[node name="DungeonScene" type="Node3D" parent="DVBackPanel/CSubView/SubViewport"]
+script = ExtResource("2_rr02m")
+
+[node name="DVFrontPanel" type="PanelContainer" parent="."]
+layout_mode = 2
+theme_type_variation = &"dungeonviewfrontpanel"
