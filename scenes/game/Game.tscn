@@ -1,14 +1,14 @@
 [gd_scene load_steps=10 format=3 uid="uid://hjolrjx7a3q5"]
 
 [ext_resource type="Script" path="res://scenes/game/Game.gd" id="1_6c3ru"]
-[ext_resource type="PackedScene" uid="uid://bp11d0nkbnuov" path="res://scenes/dungeon/Dungeon.tscn" id="1_7ebhj"]
+[ext_resource type="Theme" uid="uid://cf6oph0jk5473" path="res://scenes/game/game.theme" id="1_mu62p"]
 [ext_resource type="Script" path="res://scripts/nodes/LocalPlayerCtrl.gd" id="2_a7ol7"]
 [ext_resource type="Script" path="res://scripts/nodes/MsgPlayerCtrl.gd" id="4_3koai"]
 [ext_resource type="Script" path="res://scripts/nodes/GameCommandParser.gd" id="4_77uwb"]
 [ext_resource type="Theme" uid="uid://17e15ml35qoo" path="res://scenes/dungeon_editor/DungeonEditor.theme" id="5_te0lf"]
 [ext_resource type="Script" path="res://addons/CrawlDCS/nodes/controls/CrawlMiniMap.gd" id="6_ayth5"]
 [ext_resource type="Script" path="res://scripts/nodes/PlayerActionCtrl.gd" id="6_ewo1m"]
-[ext_resource type="Script" path="res://scenes/game/dungeon_view/DungeonView.gd" id="9_w8cs3"]
+[ext_resource type="PackedScene" uid="uid://qyg4nim5g4jt" path="res://scenes/game/dungeon_view/DungeonView.tscn" id="9_cngpd"]
 
 [node name="Game" type="Control"]
 layout_mode = 3
@@ -17,44 +17,25 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme = ExtResource("1_mu62p")
 script = ExtResource("1_6c3ru")
 
-[node name="TeamAView" type="SubViewportContainer" parent="."]
+[node name="DungeonViewA" parent="." instance=ExtResource("9_cngpd")]
 unique_name_in_owner = true
-layout_mode = 0
+layout_mode = 1
 offset_left = 16.0
 offset_top = 76.0
-offset_right = 836.0
-offset_bottom = 816.0
-stretch = true
+offset_right = -1084.0
+offset_bottom = -264.0
 
-[node name="SubViewport" type="SubViewport" parent="TeamAView"]
-own_world_3d = true
-handle_input_locally = false
-size = Vector2i(820, 740)
-render_target_update_mode = 4
-
-[node name="TeamADungeon" parent="TeamAView/SubViewport" instance=ExtResource("1_7ebhj")]
+[node name="DungeonViewB" parent="." instance=ExtResource("9_cngpd")]
 unique_name_in_owner = true
-
-[node name="TeamBView" type="SubViewportContainer" parent="."]
-unique_name_in_owner = true
-layout_mode = 0
+layout_mode = 1
 offset_left = 913.0
 offset_top = 76.0
-offset_right = 1733.0
-offset_bottom = 816.0
-stretch = true
-
-[node name="SubViewport" type="SubViewport" parent="TeamBView"]
-own_world_3d = true
-handle_input_locally = false
-size = Vector2i(820, 740)
-render_target_update_mode = 4
-
-[node name="TeamBDungeon" parent="TeamBView/SubViewport" instance=ExtResource("1_7ebhj")]
-unique_name_in_owner = true
-focus_pid = 2
+offset_right = -187.0
+offset_bottom = -264.0
+player_id = 2
 
 [node name="LocalPlayerCtrl" type="Node" parent="."]
 unique_name_in_owner = true
@@ -128,12 +109,6 @@ script = ExtResource("6_ewo1m")
 unique_name_in_owner = true
 script = ExtResource("6_ewo1m")
 player_id = 2
-
-[node name="DungeonView" type="Control" parent="."]
-anchors_preset = 0
-offset_right = 487.0
-offset_bottom = 422.0
-script = ExtResource("9_w8cs3")
 
 [connection signal="action_processing_completed" from="GameCommandParser" to="." method="_on_game_command_parser_action_processing_completed"]
 [connection signal="player_action_requested" from="GameCommandParser" to="PlayerActionCtrlA" method="handle_action"]

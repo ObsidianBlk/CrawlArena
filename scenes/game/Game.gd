@@ -24,9 +24,10 @@ var _cmd_time_skipped : bool = false
 # Onready Variables
 # ------------------------------------------------------------------------------
 @onready var _local_player_ctrl : LocalPlayerCtrl = %LocalPlayerCtrl
-@onready var _team_a_dungeon : Dungeon = %TeamADungeon
-@onready var _team_b_dungeon : Dungeon = %TeamBDungeon
 @onready var _msg_player_ctrl : MsgPlayerCtrl = %MsgPlayerCtrl
+
+@onready var _dungeon_view_a : Control = %DungeonViewA
+@onready var _dungeon_view_b : Control = %DungeonViewB
 
 @onready var _player_action_ctrl_a : PlayerActionCtrl = %PlayerActionCtrlA
 @onready var _player_action_ctrl_b : PlayerActionCtrl = %PlayerActionCtrlB
@@ -51,8 +52,8 @@ func _ready() -> void:
 		map = ResourceLoader.load("user://dungeons/871a756-Area052923.tres")
 	if is_instance_of(map, CrawlMap):
 		_local_player_ctrl.map = map
-		_team_a_dungeon.map = map
-		_team_b_dungeon.map = map
+		_dungeon_view_a.map = map
+		_dungeon_view_b.map = map
 		_player_action_ctrl_a.map = map
 		_player_action_ctrl_b.map = map
 		crawl_mini_map.map = map

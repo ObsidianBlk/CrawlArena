@@ -1,9 +1,10 @@
-[gd_scene load_steps=3 format=3 uid="uid://dhygjjq1xsnwv"]
+[gd_scene load_steps=3 format=3 uid="uid://qyg4nim5g4jt"]
 
+[ext_resource type="PackedScene" uid="uid://bp11d0nkbnuov" path="res://scenes/dungeon/Dungeon.tscn" id="1_r8n81"]
 [ext_resource type="Script" path="res://scenes/game/dungeon_view/DungeonView.gd" id="2_44e12"]
-[ext_resource type="Script" path="res://scenes/dungeon/Dungeon.gd" id="2_rr02m"]
 
-[node name="DungeonView" type="MarginContainer"]
+[node name="DungeonView" type="Control"]
+layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -11,24 +12,33 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("2_44e12")
 
-[node name="DVBackPanel" type="PanelContainer" parent="."]
-layout_mode = 2
+[node name="DungeonViewBackPanel" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 theme_type_variation = &"dungeonviewbackpanel"
 
-[node name="CSubView" type="SubViewportContainer" parent="DVBackPanel"]
-custom_minimum_size = Vector2(64, 64)
+[node name="CSubView" type="SubViewportContainer" parent="DungeonViewBackPanel"]
 layout_mode = 2
 stretch = true
 
-[node name="SubViewport" type="SubViewport" parent="DVBackPanel/CSubView"]
+[node name="SubViewport" type="SubViewport" parent="DungeonViewBackPanel/CSubView"]
 own_world_3d = true
 handle_input_locally = false
 size = Vector2i(1920, 1080)
 render_target_update_mode = 4
 
-[node name="DungeonScene" type="Node3D" parent="DVBackPanel/CSubView/SubViewport"]
-script = ExtResource("2_rr02m")
+[node name="Dungeon" parent="DungeonViewBackPanel/CSubView/SubViewport" instance=ExtResource("1_r8n81")]
+unique_name_in_owner = true
 
-[node name="DVFrontPanel" type="PanelContainer" parent="."]
-layout_mode = 2
+[node name="DungeonViewFrontPanel" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 theme_type_variation = &"dungeonviewfrontpanel"
