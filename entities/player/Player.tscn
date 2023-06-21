@@ -1,7 +1,8 @@
-[gd_scene load_steps=5 format=3 uid="uid://lvvoqqpfrqpf"]
+[gd_scene load_steps=6 format=3 uid="uid://lvvoqqpfrqpf"]
 
 [ext_resource type="Script" path="res://entities/player/Player.gd" id="1_rdgfc"]
 [ext_resource type="Shader" path="res://entities/player/Player.gdshader" id="2_1xyyw"]
+[ext_resource type="PackedScene" uid="uid://674a6pijri12" path="res://entities/weapons/short_sword/ShortSword.tscn" id="3_fct8w"]
 
 [sub_resource type="CapsuleMesh" id="CapsuleMesh_3uwim"]
 radius = 0.25
@@ -30,3 +31,5 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.8, 0)
 
 [node name="Camera3D" type="Camera3D" parent="Body/Gimble"]
 transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, 0, 0)
+
+[node name="ShortSword" parent="Body" instance=ExtResource("3_fct8w")]

@@ -3,6 +3,11 @@ class_name PlayerActionCtrl
 
 
 # ------------------------------------------------------------------------------
+# signals
+# ------------------------------------------------------------------------------
+signal action_processed()
+
+# ------------------------------------------------------------------------------
 # Constant
 # ------------------------------------------------------------------------------
 const META_KEY_PID : String = "player_id"
@@ -45,7 +50,10 @@ func _ready() -> void:
 # Private Methods
 # ------------------------------------------------------------------------------
 func _UpdateActiveEntity() -> void:
-	_active_entity = null
+	if _active_entity != null:
+		if _active_entity.schedule_ended.is_connected(_on_entity_schedule_ended):
+			_active_entity.schedule_ended.disconnect(_on_entity_schedule_ended)
+		_active_entity = null
 	if map == null: return
 	
 	var entities : Array = map.get_entities({"type":&"unique:player"})
@@ -55,8 +63,9 @@ func _UpdateActiveEntity() -> void:
 		var pid = entity.get_meta_value(META_KEY_PID, 0)
 		if typeof(pid) != TYPE_INT or pid != player_id: continue
 		
-		print("Active Entity: ", entity)
 		_active_entity = entity
+		if not _active_entity.schedule_ended.is_connected(_on_entity_schedule_ended):
+			_active_entity.schedule_ended.connect(_on_entity_schedule_ended)
 		break
 
 # ------------------------------------------------------------------------------
@@ -78,3 +87,11 @@ func handle_action(pid : int, code : String) -> void:
 			_active_entity.turn_left()
 		"e", "E":
 			_active_entity.turn_right()
+		"f", "F":
+			_active_entity.attack({})
+
+# ------------------------------------------------------------------------------
+# Handler Methods
+# ------------------------------------------------------------------------------
+func _on_entity_schedule_ended(_data : Dictionary) -> void:
+	action_processed.emit()

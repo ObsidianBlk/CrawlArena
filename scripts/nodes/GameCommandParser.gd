@@ -150,21 +150,6 @@ func _Handle_Actions(user : GSMCUser, payload : String) -> void:
 		team.buffer.append(act)
 	user_submitted_actions.emit(1 if user_team == "A" else 2, user.username)
 
-func _ProcessGame() -> void:
-	var team : Dictionary = _teams[_active_team]
-	if team.buffer.size() <= 0:
-		_NextTeamUser("A")
-		_NextTeamUser("B")
-		action_processing_completed.emit()
-		#set_state(STATE.Command)
-		return
-	
-	var action : String = team.buffer.pop_front()
-	player_action_requested.emit(1 if _active_team == "A" else 2, action)
-	_active_team = "A" if _active_team == "B" else "B"
-	await get_tree().create_timer(ACTION_DELAY).timeout
-	_ProcessGame()
-
 # --------------------------------------------------------------------------------------
 # Public Methods
 # --------------------------------------------------------------------------------------
@@ -179,7 +164,7 @@ func set_state(state : STATE) -> void:
 	if _game_state == STATE.Process:
 		_Handle_Team_Rand_Actions("A")
 		_Handle_Team_Rand_Actions("B")
-		_ProcessGame()
+		_on_action_processed()
 
 func get_user_count() -> int:
 	return _users.keys().size()
@@ -221,7 +206,6 @@ func handle_message(msgctx : GSMCMessage) -> void:
 				&"leave", &"x":
 					_Handle_Leave(msgctx.user)
 
-
 # --------------------------------------------------------------------------------------
 # Handler Methods
 # --------------------------------------------------------------------------------------
@@ -244,3 +228,17 @@ func _on_GSMC_user_dropped(user : GSMCUser) -> void:
 	elif user.full_uid in _users:
 		_Handle_Leave(user)
 
+func _on_action_processed() -> void:
+	if _game_state != STATE.Process: return
+	
+	var team : Dictionary = _teams[_active_team]
+	if team.buffer.size() <= 0:
+		_NextTeamUser("A")
+		_NextTeamUser("B")
+		action_processing_completed.emit()
+		return
+	
+	var action : String = team.buffer.pop_front()
+	var ateam : String = _active_team
+	_active_team = "A" if _active_team == "B" else "B"
+	player_action_requested.emit(1 if ateam == "A" else 2, action)

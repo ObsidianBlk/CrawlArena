@@ -118,3 +118,5 @@ player_id = 2
 [connection signal="user_left_team" from="GameCommandParser" to="." method="_on_game_command_parser_user_left_team"]
 [connection signal="user_submitted_actions" from="GameCommandParser" to="." method="_on_game_command_parser_user_submitted_actions"]
 [connection signal="user_turn_active" from="GameCommandParser" to="." method="_on_game_command_parser_user_turn_active"]
+[connection signal="action_processed" from="PlayerActionCtrlA" to="GameCommandParser" method="_on_action_processed"]
+[connection signal="action_processed" from="PlayerActionCtrlB" to="GameCommandParser" method="_on_action_processed"]

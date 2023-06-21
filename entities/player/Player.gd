@@ -37,6 +37,7 @@ var _group_name : StringName = &""
 @onready var _body : Node3D = $Body
 
 @onready var _mesh = $Body/MeshInstance3D
+@onready var _weapon : Node3D = $Body/ShortSword
 
 # ------------------------------------------------------------------------------
 # Setters
@@ -75,9 +76,15 @@ func set_camera_offset(o : float) -> void:
 # Override Methods
 # ------------------------------------------------------------------------------
 func _ready() -> void:
+	transition_started.connect(_on_player_transition_started)
+	transition_complete.connect(_on_player_transition_complete)
 	entity_changing.connect(_on_player_entity_changing)
 	entity_changed.connect(_on_player_entity_changed)
 	_on_player_entity_changed()
+	#_UpdateCameraPositioning()
+	#_UpdateViewerPassiveMode()
+	if _body != null:
+		_body.position.y = body_ground_offset
 
 # ------------------------------------------------------------------------------
 # Private Methods
@@ -97,6 +104,13 @@ func _UpdateViewerPassiveMode() -> void:
 	_camera.current = false if passive_mode else current
 	_mesh.visible = passive_mode
 
+func _HandleAttack() -> void:
+	entity.schedule_start()
+	_weapon.change_state(&"attack")
+	await _weapon.animation_complete
+	_weapon.change_state(&"idle")
+	entity.schedule_end()
+
 # ------------------------------------------------------------------------------
 # Handler Methods
 # ------------------------------------------------------------------------------
@@ -109,11 +123,15 @@ func _on_player_entity_changing() -> void:
 	
 	if entity.meta_value_changed.is_connected(_on_player_entity_meta_value_changed):
 		entity.meta_value_changed.disconnect(_on_player_entity_meta_value_changed)
+	if entity.attacked.is_connected(_on_player_attacked):
+		entity.attacked.disconnect(_on_player_attacked)
 
 func _on_player_entity_changed() -> void:
 	if entity == null: return
 	if not entity.meta_value_changed.is_connected(_on_player_entity_meta_value_changed):
 		entity.meta_value_changed.connect(_on_player_entity_meta_value_changed)
+	if not entity.attacked.is_connected(_on_player_attacked):
+		entity.attacked.connect(_on_player_attacked)
 	
 	_on_player_entity_meta_value_changed(META_KEY_PID)
 	_on_player_entity_meta_value_changed(META_KEY_COLOR)
@@ -132,3 +150,14 @@ func _on_player_entity_meta_value_changed(key : String) -> void:
 				_group_name = &""
 			_group_name = StringName("Player_%s"%[entity.get_meta_value(META_KEY_PID, 0)])
 			add_to_group(_group_name)
+
+func _on_player_transition_started(_dir : StringName) -> void:
+	entity.schedule_start()
+	_weapon.change_state(&"moving")
+
+func _on_player_transition_complete() -> void:
+	_weapon.change_state(&"idle")
+	entity.schedule_end()
+
+func _on_player_attacked(info : Dictionary) -> void:
+	_HandleAttack.call_deferred()

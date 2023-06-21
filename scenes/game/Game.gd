@@ -51,7 +51,7 @@ func _ready() -> void:
 	if ResourceLoader.exists("user://dungeons/871a756-Area052923.tres"):
 		map = ResourceLoader.load("user://dungeons/871a756-Area052923.tres")
 	if is_instance_of(map, CrawlMap):
-		_local_player_ctrl.map = map
+		#_local_player_ctrl.map = map
 		_dungeon_view_a.map = map
 		_dungeon_view_b.map = map
 		_player_action_ctrl_a.map = map
