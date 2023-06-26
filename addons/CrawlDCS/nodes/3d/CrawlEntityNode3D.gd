@@ -254,6 +254,7 @@ func _Face(from : Crawl.SURFACE, to : Crawl.SURFACE, ignore_transition : bool = 
 		return
 	
 	entity.lock_translation(true)
+	transition_started.emit(&"")
 	var target_angle : float = _AngleToFace(body, to)
 	var angle_between : float = abs(body.rotation.y - target_angle)
 	var duration = roundf(angle_between / DEG90) * quarter_turn_time
@@ -342,8 +343,8 @@ func _on_tween_completed(surface : Crawl.SURFACE, target_position : Vector3) -> 
 	position = Vector3(target_position)
 	if entity != null:
 		_CheckEntityVisible(_focus_position)
-	transition_complete.emit()
 	entity.lock_translation(false)
+	transition_complete.emit()
 
 func _on_ce_removed_from_map() -> void:
 	queue_free()

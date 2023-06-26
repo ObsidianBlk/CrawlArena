@@ -340,6 +340,23 @@ func get_entities_in_direction(surface : Crawl.SURFACE, options : Dictionary = {
 	options[&"position"] = dposition
 	return get_entities(options)
 
+func grab_entity(entity : CrawlEntity) -> bool:
+	if entity.uuid == uuid: return false
+	var map : CrawlMap = _mapref.get_ref()
+	if map == null: return false
+	if not map.has_entity(entity): return false
+	map.remove_entity(entity)
+	return true
+
+func drop_entity(entity : CrawlEntity) -> bool:
+	if entity.uuid == uuid: return false
+	var map : CrawlMap = _mapref.get_ref()
+	if map == null: return false
+	if map.has_entity(entity): return false
+	entity.position = position
+	map.add_entity(entity)
+	return true
+
 func schedule_start(data : Dictionary = {}) -> void:
 	# This is mostly a helper method to communicate to the owning
 	# CrawlEntityNode3D node.

@@ -12,6 +12,8 @@ signal passive_mode_changed(enabled)
 # ------------------------------------------------------------------------------
 const META_KEY_COLOR : String = "color"
 const META_KEY_PID : String = "player_id"
+const META_KEY_ITEM : String = "held_item"
+const META_KEY_WEAPON : String = "held_weapon"
 
 # ------------------------------------------------------------------------------
 # Export Variables
@@ -71,7 +73,6 @@ func set_camera_offset(o : float) -> void:
 		camera_offset = o
 		_UpdateCameraPositioning()
 
-
 # ------------------------------------------------------------------------------
 # Override Methods
 # ------------------------------------------------------------------------------
@@ -105,11 +106,19 @@ func _UpdateViewerPassiveMode() -> void:
 	_mesh.visible = passive_mode
 
 func _HandleAttack() -> void:
-	entity.schedule_start()
+	if current:
+		entity.schedule_start()
 	_weapon.change_state(&"attack")
 	await _weapon.animation_complete
 	_weapon.change_state(&"idle")
-	entity.schedule_end()
+	if current:
+		entity.schedule_end()
+
+func _GetNameString() -> String:
+	# NOTE: This method is for information during debugging... at least at the moment.
+	if entity != null:
+		return "Player-%s (%s)"%[entity.get_meta_value(META_KEY_PID, 0), self]
+	return "NONE"
 
 # ------------------------------------------------------------------------------
 # Handler Methods
@@ -123,6 +132,8 @@ func _on_player_entity_changing() -> void:
 	
 	if entity.meta_value_changed.is_connected(_on_player_entity_meta_value_changed):
 		entity.meta_value_changed.disconnect(_on_player_entity_meta_value_changed)
+	if entity.meta_value_removed.is_connected(_on_player_entity_meta_value_removed):
+		entity.meta_value_removed.disconnect(_on_player_entity_meta_value_removed)
 	if entity.attacked.is_connected(_on_player_attacked):
 		entity.attacked.disconnect(_on_player_attacked)
 
@@ -130,6 +141,8 @@ func _on_player_entity_changed() -> void:
 	if entity == null: return
 	if not entity.meta_value_changed.is_connected(_on_player_entity_meta_value_changed):
 		entity.meta_value_changed.connect(_on_player_entity_meta_value_changed)
+	if not entity.meta_value_removed.is_connected(_on_player_entity_meta_value_removed):
+		entity.meta_value_removed.connect(_on_player_entity_meta_value_removed)
 	if not entity.attacked.is_connected(_on_player_attacked):
 		entity.attacked.connect(_on_player_attacked)
 	
@@ -150,14 +163,33 @@ func _on_player_entity_meta_value_changed(key : String) -> void:
 				_group_name = &""
 			_group_name = StringName("Player_%s"%[entity.get_meta_value(META_KEY_PID, 0)])
 			add_to_group(_group_name)
+		META_KEY_ITEM:
+			# Nothing to animate for picked up items
+			entity.schedule_end()
+		META_KEY_WEAPON:
+			# Don't know what to do yet!
+			entity.schedule_end()
+			
+
+func _on_player_entity_meta_value_removed(key : String) -> void:
+	if entity == null: return
+	match key:
+		META_KEY_ITEM:
+			# Nothing to animate for picked up items
+			entity.schedule_end()
+		META_KEY_WEAPON:
+			# Don't know what to do yet!
+			entity.schedule_end()
 
 func _on_player_transition_started(_dir : StringName) -> void:
-	entity.schedule_start()
+	if current:
+		entity.schedule_start()
 	_weapon.change_state(&"moving")
 
 func _on_player_transition_complete() -> void:
 	_weapon.change_state(&"idle")
-	entity.schedule_end()
+	if current:
+		entity.schedule_end()
 
 func _on_player_attacked(info : Dictionary) -> void:
 	_HandleAttack.call_deferred()

@@ -37,6 +37,7 @@ var _teams : Dictionary = {
 }
 
 var _active_team : String = "A"
+var _action_time : float = ACTION_DELAY
 
 var _game_state : STATE = STATE.Idle
 
@@ -47,6 +48,9 @@ func _ready() -> void:
 	GSMC.user_active.connect(_on_GSMC_user_active)
 	GSMC.user_inactive.connect(_on_GSMC_user_inactive)
 	GSMC.user_dropped.connect(_on_GSMC_user_dropped)
+
+func _process(delta : float) -> void:
+	_action_time += delta
 
 # --------------------------------------------------------------------------------------
 # Private Methods
@@ -80,6 +84,33 @@ func _AnnounceActiveTeamPlayer(team : String) -> void:
 	_users[full_uid].user.send("%s... it is now your turn!"%[username])
 	user_turn_active.emit(1 if team == "A" else 2, username)
 
+func _TeamBuffersEmpty() -> bool:
+	return _teams["A"].buffer.size() <= 0 and _teams["B"].buffer.size() <= 0
+
+func _WaitAfterAction() -> void:
+	if _action_time >= ACTION_DELAY:
+		_ProcessNextAction()
+	await get_tree().create_timer(ACTION_DELAY - _action_time).timeout
+	_ProcessNextAction()
+
+func _ProcessNextAction() -> void:
+	var team : Dictionary = _teams[_active_team]
+	if _TeamBuffersEmpty():
+		_NextTeamUser("A")
+		_NextTeamUser("B")
+		action_processing_completed.emit()
+		return
+	if team.buffer.size() <= 0:
+		_active_team = "A" if _active_team == "B" else "B"
+		_action_time = 0.0
+		_WaitAfterAction()
+		return
+	
+	var action : String = team.buffer.pop_front()
+	var ateam : String = _active_team
+	_active_team = "A" if _active_team == "B" else "B"
+	_action_time = 0.0
+	player_action_requested.emit(1 if ateam == "A" else 2, action)
 
 func _Handle_Join(user : GSMCUser, payload : String) -> void:
 	if user.full_uid in _users:
@@ -164,6 +195,7 @@ func set_state(state : STATE) -> void:
 	if _game_state == STATE.Process:
 		_Handle_Team_Rand_Actions("A")
 		_Handle_Team_Rand_Actions("B")
+		_action_time = ACTION_DELAY
 		_on_action_processed()
 
 func get_user_count() -> int:
@@ -230,15 +262,4 @@ func _on_GSMC_user_dropped(user : GSMCUser) -> void:
 
 func _on_action_processed() -> void:
 	if _game_state != STATE.Process: return
-	
-	var team : Dictionary = _teams[_active_team]
-	if team.buffer.size() <= 0:
-		_NextTeamUser("A")
-		_NextTeamUser("B")
-		action_processing_completed.emit()
-		return
-	
-	var action : String = team.buffer.pop_front()
-	var ateam : String = _active_team
-	_active_team = "A" if _active_team == "B" else "B"
-	player_action_requested.emit(1 if ateam == "A" else 2, action)
+	_WaitAfterAction()
