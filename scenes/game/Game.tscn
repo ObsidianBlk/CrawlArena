@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3 uid="uid://hjolrjx7a3q5"]
+[gd_scene load_steps=11 format=3 uid="uid://hjolrjx7a3q5"]
 
 [ext_resource type="Script" path="res://scenes/game/Game.gd" id="1_6c3ru"]
 [ext_resource type="Theme" uid="uid://cf6oph0jk5473" path="res://scenes/game/game.theme" id="1_mu62p"]
@@ -9,6 +9,7 @@
 [ext_resource type="Script" path="res://addons/CrawlDCS/nodes/controls/CrawlMiniMap.gd" id="6_ayth5"]
 [ext_resource type="Script" path="res://scripts/nodes/PlayerActionCtrl.gd" id="6_ewo1m"]
 [ext_resource type="PackedScene" uid="uid://qyg4nim5g4jt" path="res://scenes/game/dungeon_view/DungeonView.tscn" id="9_cngpd"]
+[ext_resource type="PackedScene" uid="uid://bp8n5x3g5yixc" path="res://scenes/game/local_user/LocalUser.tscn" id="10_yyj4k"]
 
 [node name="Game" type="Control"]
 layout_mode = 3
@@ -110,6 +111,12 @@ unique_name_in_owner = true
 script = ExtResource("6_ewo1m")
 player_id = 2
 
+[node name="LocalUserWindow" type="Window" parent="."]
+
+[node name="LocalUser" parent="LocalUserWindow" instance=ExtResource("10_yyj4k")]
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
 [connection signal="action_processing_completed" from="GameCommandParser" to="." method="_on_game_command_parser_action_processing_completed"]
 [connection signal="player_action_requested" from="GameCommandParser" to="PlayerActionCtrlA" method="handle_action"]
 [connection signal="player_action_requested" from="GameCommandParser" to="PlayerActionCtrlB" method="handle_action"]
@@ -120,3 +127,5 @@ player_id = 2
 [connection signal="user_turn_active" from="GameCommandParser" to="." method="_on_game_command_parser_user_turn_active"]
 [connection signal="action_processed" from="PlayerActionCtrlA" to="GameCommandParser" method="_on_action_processed"]
 [connection signal="action_processed" from="PlayerActionCtrlB" to="GameCommandParser" method="_on_action_processed"]
+[connection signal="close_requested" from="LocalUserWindow" to="." method="_on_local_user_window_close_requested"]
+[connection signal="message_received" from="LocalUserWindow/LocalUser" to="." method="_on_local_user_message_received"]

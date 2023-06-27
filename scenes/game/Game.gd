@@ -32,7 +32,6 @@ var _cmd_time_skipped : bool = false
 @onready var _player_action_ctrl_a : PlayerActionCtrl = %PlayerActionCtrlA
 @onready var _player_action_ctrl_b : PlayerActionCtrl = %PlayerActionCtrlB
 
-
 @onready var _game_command_parser : GameCommandParser = %GameCommandParser
 
 @onready var _lbl_prep : Label = %LblPrep
@@ -41,12 +40,15 @@ var _cmd_time_skipped : bool = false
 @onready var _lbl_player_a : Label = %LblPlayerA
 @onready var _lbl_player_b : Label = %LblPlayerB
 
+@onready var _local_user_window : Window = $LocalUserWindow
+
 @onready var crawl_mini_map : CrawlMiniMap = %CrawlMiniMap
 
 # ------------------------------------------------------------------------------
 # Override Methods
 # ------------------------------------------------------------------------------
 func _ready() -> void:
+	_local_user_window.visible = false
 	var map : CrawlMap = null
 	if ResourceLoader.exists("user://dungeons/871a756-Area052923.tres"):
 		map = ResourceLoader.load("user://dungeons/871a756-Area052923.tres")
@@ -60,7 +62,10 @@ func _ready() -> void:
 		#_msg_player_ctrl.map = map
 
 func _unhandled_input(event : InputEvent) -> void:
-	if event.is_action_pressed("ui_cancel"):
+	if event.is_action_pressed("game_local_user_window"):
+		if not _local_user_window.visible:
+			_local_user_window.popup_centered(Vector2i(800, 800))
+	elif event.is_action_pressed("ui_cancel"):
 		action_requested.emit(&"close", null)
 
 func _process(delta : float) -> void:
@@ -91,6 +96,12 @@ func handle_message(msgctx : GSMCMessage) -> void:
 # ------------------------------------------------------------------------------
 # Handler Methods
 # ------------------------------------------------------------------------------
+func _on_local_user_message_received(msg : GSMCMessage):
+	handle_message(msg)
+
+func _on_local_user_window_close_requested():
+	_local_user_window.visible = false
+
 func _on_game_command_parser_start_requested(user : GSMCUser) -> void:
 	if not user.is_owner:
 		print("User ", user.username, " is not the master user!")

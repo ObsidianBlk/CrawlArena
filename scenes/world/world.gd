@@ -38,7 +38,7 @@ func _ready() -> void:
 #	file.close()
 	var kr : Keyring = Arena.get_keyring()
 	kr.service_changed.connect(_on_keyring_service_changed)
-	_AuthenticateTwitch()
+	#_AuthenticateTwitch()
 
 
 # ------------------------------------------------------------------------------
