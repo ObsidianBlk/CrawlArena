@@ -28,17 +28,9 @@ var _active_node : Node = null
 func _ready() -> void:
 	_settings_window.visible = false
 	
-#	if not FileAccess.file_exists("./auth"):
-#		printerr("Failed to find expected auth file.")
-#		return
-#
-#	var file : FileAccess = FileAccess.open("./auth", FileAccess.READ)
-#	var client_id : String = file.get_line()
-#	var client_secret : String = file.get_line()
-#	file.close()
 	var kr : Keyring = Arena.get_keyring()
 	kr.service_changed.connect(_on_keyring_service_changed)
-	#_AuthenticateTwitch()
+	_AuthenticateTwitch()
 
 
 # ------------------------------------------------------------------------------

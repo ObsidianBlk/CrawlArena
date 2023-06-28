@@ -11,13 +11,13 @@ signal user_joined_team(pid, username)
 signal user_left_team(pid, username)
 signal user_submitted_actions(pid, username)
 signal user_turn_active(pid, username)
+signal game_preparing()
 signal action_processing_completed()
 
 # --------------------------------------------------------------------------------------
 # Constants and ENUMs
 # --------------------------------------------------------------------------------------
 enum STATE {Idle=0, Prep=1, Command=2, Process=3}
-const ACTION_DELAY : float = 0.8
 
 # --------------------------------------------------------------------------------------
 # Export Variables
@@ -37,7 +37,6 @@ var _teams : Dictionary = {
 }
 
 var _active_team : String = "A"
-var _action_time : float = ACTION_DELAY
 
 var _game_state : STATE = STATE.Idle
 
@@ -48,9 +47,6 @@ func _ready() -> void:
 	GSMC.user_active.connect(_on_GSMC_user_active)
 	GSMC.user_inactive.connect(_on_GSMC_user_inactive)
 	GSMC.user_dropped.connect(_on_GSMC_user_dropped)
-
-func _process(delta : float) -> void:
-	_action_time += delta
 
 # --------------------------------------------------------------------------------------
 # Private Methods
@@ -87,11 +83,6 @@ func _AnnounceActiveTeamPlayer(team : String) -> void:
 func _TeamBuffersEmpty() -> bool:
 	return _teams["A"].buffer.size() <= 0 and _teams["B"].buffer.size() <= 0
 
-func _WaitAfterAction() -> void:
-	if _action_time >= ACTION_DELAY:
-		_ProcessNextAction()
-	await get_tree().create_timer(ACTION_DELAY - _action_time).timeout
-	_ProcessNextAction()
 
 func _ProcessNextAction() -> void:
 	var team : Dictionary = _teams[_active_team]
@@ -102,14 +93,11 @@ func _ProcessNextAction() -> void:
 		return
 	if team.buffer.size() <= 0:
 		_active_team = "A" if _active_team == "B" else "B"
-		_action_time = 0.0
-		_WaitAfterAction()
 		return
 	
 	var action : String = team.buffer.pop_front()
 	var ateam : String = _active_team
 	_active_team = "A" if _active_team == "B" else "B"
-	_action_time = 0.0
 	player_action_requested.emit(1 if ateam == "A" else 2, action)
 
 func _Handle_Join(user : GSMCUser, payload : String) -> void:
@@ -185,18 +173,20 @@ func _Handle_Actions(user : GSMCUser, payload : String) -> void:
 # Public Methods
 # --------------------------------------------------------------------------------------
 func set_state(state : STATE) -> void:
+	if state == _game_state: return
 	_game_state = state
 	if _game_state == STATE.Idle:
 		_Handle_Clear_Team("A")
 		_Handle_Clear_Team("B")
+	if _game_state == STATE.Prep:
+		game_preparing.emit()
 	if _game_state == STATE.Command:
 		_AnnounceActiveTeamPlayer("A")
 		_AnnounceActiveTeamPlayer("B")
 	if _game_state == STATE.Process:
 		_Handle_Team_Rand_Actions("A")
 		_Handle_Team_Rand_Actions("B")
-		_action_time = ACTION_DELAY
-		_on_action_processed()
+		_ProcessNextAction()
 
 func get_user_count() -> int:
 	return _users.keys().size()
@@ -262,4 +252,4 @@ func _on_GSMC_user_dropped(user : GSMCUser) -> void:
 
 func _on_action_processed() -> void:
 	if _game_state != STATE.Process: return
-	_WaitAfterAction()
+	_ProcessNextAction()

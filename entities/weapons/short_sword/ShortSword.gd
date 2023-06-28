@@ -5,6 +5,7 @@ extends Node3D
 # Signals
 # ------------------------------------------------------------------------------
 signal animation_complete(anim_name)
+signal struck()
 
 # ------------------------------------------------------------------------------
 # Export Variables
@@ -33,6 +34,12 @@ func set_d_count(c : int) -> void:
 
 
 # ------------------------------------------------------------------------------
+# Private Methods
+# ------------------------------------------------------------------------------
+func _Strike() -> void:
+	struck.emit()
+
+# ------------------------------------------------------------------------------
 # Public Methods
 # ------------------------------------------------------------------------------
 func change_state(state : StringName) -> void:
@@ -44,11 +51,11 @@ func change_state(state : StringName) -> void:
 		&"attack":
 			_anim.play("attack")
 
-func calculate_damage() -> float:
+func calculate_damage() -> int:
 	var dmg : int = 0
 	for _i in range(d_count):
 		dmg += randi_range(1, d_sides)
-	return float(dmg + mod)
+	return dmg + mod
 
 
 # ------------------------------------------------------------------------------

@@ -14,6 +14,7 @@ const META_KEY_COLOR : String = "color"
 const META_KEY_PID : String = "player_id"
 const META_KEY_ITEM : String = "held_item"
 const META_KEY_WEAPON : String = "held_weapon"
+const META_KEY_HP : String = "hp"
 
 # ------------------------------------------------------------------------------
 # Export Variables
@@ -30,6 +31,7 @@ const META_KEY_WEAPON : String = "held_weapon"
 # Variables
 # ------------------------------------------------------------------------------
 var _group_name : StringName = &""
+var _blinking : bool = false
 
 # ------------------------------------------------------------------------------
 # Onready Variables
@@ -77,6 +79,7 @@ func set_camera_offset(o : float) -> void:
 # Override Methods
 # ------------------------------------------------------------------------------
 func _ready() -> void:
+	_weapon.struck.connect(_on_weapon_struck)
 	transition_started.connect(_on_player_transition_started)
 	transition_complete.connect(_on_player_transition_complete)
 	entity_changing.connect(_on_player_entity_changing)
@@ -113,6 +116,28 @@ func _HandleAttack() -> void:
 	_weapon.change_state(&"idle")
 	if current:
 		entity.schedule_end()
+
+func _Blink(color : Color) -> void:
+	if _blinking: return
+	_blinking = true
+	var timer_delay : float = 0.2
+	_mesh.set_instance_shader_parameter("color", color)
+	await get_tree().create_timer(timer_delay).timeout
+	
+	_mesh.set_instance_shader_parameter("color", entity.get_meta_value(META_KEY_COLOR, Color.WHITE))
+	await get_tree().create_timer(timer_delay).timeout
+	
+	_mesh.set_instance_shader_parameter("color", color)
+	await get_tree().create_timer(timer_delay).timeout
+	
+	_mesh.set_instance_shader_parameter("color", entity.get_meta_value(META_KEY_COLOR, Color.WHITE))
+	await get_tree().create_timer(timer_delay).timeout
+	
+	_mesh.set_instance_shader_parameter("color", color)
+	await get_tree().create_timer(timer_delay).timeout
+	
+	_mesh.set_instance_shader_parameter("color", entity.get_meta_value(META_KEY_COLOR, Color.WHITE))
+	_blinking = false
 
 func _GetNameString() -> String:
 	# NOTE: This method is for information during debugging... at least at the moment.
@@ -163,6 +188,8 @@ func _on_player_entity_meta_value_changed(key : String) -> void:
 				_group_name = &""
 			_group_name = StringName("Player_%s"%[entity.get_meta_value(META_KEY_PID, 0)])
 			add_to_group(_group_name)
+		META_KEY_HP:
+			_Blink(Color.YELLOW)
 		META_KEY_ITEM:
 			# Nothing to animate for picked up items
 			entity.schedule_end()
@@ -190,6 +217,16 @@ func _on_player_transition_complete() -> void:
 	_weapon.change_state(&"idle")
 	if current:
 		entity.schedule_end()
+
+func _on_weapon_struck() -> void:
+	if entity == null: return
+	var targets = entity.get_adjacent_entities({"type":&"unique:player"})
+	for target in targets:
+		var hp : int = target.get_meta_value(META_KEY_HP, 0)
+		if hp > 0:
+			var dmg : int = _weapon.calculate_damage()
+			target.set_meta_value(META_KEY_HP, hp - dmg)
+			break
 
 func _on_player_attacked(info : Dictionary) -> void:
 	_HandleAttack.call_deferred()

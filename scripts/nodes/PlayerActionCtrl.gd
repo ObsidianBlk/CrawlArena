@@ -6,6 +6,8 @@ class_name PlayerActionCtrl
 # signals
 # ------------------------------------------------------------------------------
 signal action_processed()
+signal hp_changed(pid, hp, max_hp)
+signal defeated()
 
 # ------------------------------------------------------------------------------
 # Constant
@@ -13,7 +15,10 @@ signal action_processed()
 const META_KEY_PID : String = "player_id"
 const META_KEY_ITEM : String = "held_item"
 const META_KEY_WEAPON : String = "held_weapon"
+const META_KEY_HP : String = "hp"
 const CMD_DELAY : float = 0.8
+
+const MAX_HP : int = 18
 
 # ------------------------------------------------------------------------------
 # Export Variables
@@ -24,7 +29,10 @@ const CMD_DELAY : float = 0.8
 # ------------------------------------------------------------------------------
 # Variables
 # ------------------------------------------------------------------------------
+var _alive : bool = true
 var _active_entity : CrawlEntity = null
+
+var _action_delay : float = 0.0
 
 # ------------------------------------------------------------------------------
 # Setters
@@ -48,6 +56,9 @@ func set_player_id(pid : int) -> void:
 func _ready() -> void:
 	_UpdateActiveEntity()
 
+func _process(delta : float) -> void:
+	_action_delay += delta
+
 # ------------------------------------------------------------------------------
 # Private Methods
 # ------------------------------------------------------------------------------
@@ -55,6 +66,8 @@ func _UpdateActiveEntity() -> void:
 	if _active_entity != null:
 		if _active_entity.schedule_ended.is_connected(_on_entity_schedule_ended):
 			_active_entity.schedule_ended.disconnect(_on_entity_schedule_ended)
+		if _active_entity.meta_value_changed.is_connected(_on_entity_meta_value_changed):
+			_active_entity.meta_value_changed.disconnect(_on_entity_meta_value_changed)
 		_active_entity = null
 	if map == null: return
 	
@@ -68,13 +81,20 @@ func _UpdateActiveEntity() -> void:
 		_active_entity = entity
 		if not _active_entity.schedule_ended.is_connected(_on_entity_schedule_ended):
 			_active_entity.schedule_ended.connect(_on_entity_schedule_ended)
+		if not _active_entity.meta_value_changed.is_connected(_on_entity_meta_value_changed):
+			_active_entity.meta_value_changed.connect(_on_entity_meta_value_changed)
 		break
+
+func _ActionProcessed() -> void:
+	if _action_delay < CMD_DELAY:
+		await get_tree().create_timer(CMD_DELAY - _action_delay).timeout
+	action_processed.emit()
 
 func _HandleMove(direction : StringName) -> void:
 	if _active_entity.can_move(direction):
 		_active_entity.move(direction)
 	else:
-		action_processed.emit()
+		_ActionProcessed()
 
 func _CheckGrab(meta_key : String, type : StringName) -> bool:
 	if _active_entity.has_meta_key(meta_key): return false
@@ -90,16 +110,24 @@ func _HandleGrab() -> void:
 	if _CheckGrab(META_KEY_ITEM, &"item"): return
 	if _CheckGrab(META_KEY_WEAPON, &"weapon"): return
 	# If we get here, all above statements returned false and nothing was grabbed
-	action_processed.emit()
+	_ActionProcessed()
 
 # ------------------------------------------------------------------------------
 # Public Methods
 # ------------------------------------------------------------------------------
+func reset() -> void:
+	if _active_entity != null:
+		_active_entity.set_meta_value(META_KEY_HP, MAX_HP)
+
 func handle_action(pid : int, code : String) -> void:
-	if _active_entity == null or pid != player_id:
-		action_processed.emit()
+	if pid != player_id:
 		return
 	
+	_action_delay = 0.0
+	if _active_entity == null or not _alive:
+		_ActionProcessed()
+		return
+
 	match code:
 		"w", "W":
 			_HandleMove(&"foreward")
@@ -121,9 +149,19 @@ func handle_action(pid : int, code : String) -> void:
 			_active_entity.attack({})
 		"g", "G":
 			_HandleGrab()
+		_:
+			_ActionProcessed()
 
 # ------------------------------------------------------------------------------
 # Handler Methods
 # ------------------------------------------------------------------------------
 func _on_entity_schedule_ended(_data : Dictionary) -> void:
-	action_processed.emit()
+	_ActionProcessed()
+
+func _on_entity_meta_value_changed(key : String) -> void:
+	if key == META_KEY_HP:
+		var val = _active_entity.get_meta_value(key, MAX_HP)
+		hp_changed.emit(player_id, val, MAX_HP)
+		if val <= 0:
+			_alive = false
+			defeated.emit()

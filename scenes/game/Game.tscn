@@ -118,6 +118,8 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 
 [connection signal="action_processing_completed" from="GameCommandParser" to="." method="_on_game_command_parser_action_processing_completed"]
+[connection signal="game_preparing" from="GameCommandParser" to="PlayerActionCtrlA" method="reset"]
+[connection signal="game_preparing" from="GameCommandParser" to="PlayerActionCtrlB" method="reset"]
 [connection signal="player_action_requested" from="GameCommandParser" to="PlayerActionCtrlA" method="handle_action"]
 [connection signal="player_action_requested" from="GameCommandParser" to="PlayerActionCtrlB" method="handle_action"]
 [connection signal="start_requested" from="GameCommandParser" to="." method="_on_game_command_parser_start_requested"]
